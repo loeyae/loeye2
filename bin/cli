@@ -1,0 +1,20 @@
+#!/usr/bin/env php
+<?php
+
+/**
+ * cli.php
+ *
+ * @author  Zhang Yi <loeyae@gmail.com>
+ * @version SVN: $Id: Zhang Yi $
+ */
+
+mb_internal_encoding('UTF-8');
+
+define('LOEYE_MODE', 'prod');
+define('APP_BASE_DIR', dirname(__DIR__));
+
+require_once APP_BASE_DIR . DIRECTORY_SEPARATOR .'vendor'. DIRECTORY_SEPARATOR .'autoload.php';
+
+$application = new \loeye\console\Application('loeye app', '1');
+$exitCode = $application->run();
+exit($exitCode);

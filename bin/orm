@@ -1,0 +1,73 @@
+<?php
+
+/**
+ * orm.php
+ *
+ * @author  Zhang Yi <loeyae@gmail.com>
+ * @version SVN: $Id: Zhang Yi $
+ */
+use Doctrine\ORM\Tools\Console\ConsoleRunner;
+use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Output\ConsoleOutput;
+
+mb_internal_encoding('UTF-8');
+
+define('LOEYE_MODE', 'prod');
+define('APP_BASE_DIR', dirname(__DIR__));
+
+require_once APP_BASE_DIR . DIRECTORY_SEPARATOR .'vendor'. DIRECTORY_SEPARATOR .'autoload.php';
+
+$argv = $_SERVER['argv'];
+$property = $argv[1];
+if ($property == 'help') {
+    $output = new ConsoleOutput();
+    $output->writeln('build sheme: orm <property> convert:mapping', OutputInterface::VERBOSITY_QUIET);
+    $output->writeln('build sheme: orm <property> generate:entities', OutputInterface::VERBOSITY_QUIET);
+    $output->writeln('build sheme: orm <property> generate:entities:mapping', OutputInterface::VERBOSITY_QUIET);
+    $output->writeln('build sheme: orm <property> <doctrine command> [doctrine command options[..]]', OutputInterface::VERBOSITY_QUIET);
+} else {
+    try {
+        unset($_SERVER['argv'][1]);
+        $_SERVER['argv'] = array_values($_SERVER['argv']);
+        $command = $_SERVER['argv'][1];
+        $fromDB = false;
+        if ($command == 'convert:mapping') {
+            array_push($_SERVER['argv'], '--from-database');
+            array_push($_SERVER['argv'], '-f');
+            array_push($_SERVER['argv'], '--namespace="app\models\entity\\" yml');
+            array_push($_SERVER['argv'], 'yml');
+            array_push($_SERVER['argv'], realpath(dirname(__DIR__). '/app/models/scheme'));
+            $fromDB = true;
+        } else if ($command == 'generate:entities') {
+            array_push($_SERVER['argv'], '--generate-annotations=true');
+            array_push($_SERVER['argv'], '--regenerate-entities=true');
+            array_push($_SERVER['argv'], '--update-entities=true');
+            array_push($_SERVER['argv'], '--generate-methods=true');
+            array_push($_SERVER['argv'], '--no-backup');
+            array_push($_SERVER['argv'], realpath(dirname(__DIR__). '/app/models/entity'));
+            $fromDB = true;
+        } else if ($command == 'generate:entities:mapping') {
+            array_push($_SERVER['argv'], '--generate-annotations=true');
+            array_push($_SERVER['argv'], '--regenerate-entities=true');
+            array_push($_SERVER['argv'], '--update-entities=true');
+            array_push($_SERVER['argv'], '--generate-methods=true');
+            array_push($_SERVER['argv'], '--no-backup');
+            array_push($_SERVER['argv'], realpath(dirname(__DIR__)));
+            $fromDB = false;
+        }
+        $appConfig = new \loeye\base\AppConfig($property);
+        $dbKey = $appConfig->getSetting('application.database') ?? 'default';
+        $config = new \loeye\base\Configuration($property, 'database');
+        $dbSetting = $config->get($dbKey);
+        if (!$dbSetting) {
+            throw new Exception('Invalid database setting: '. $dbKey .'.');
+        }
+        $entityManager = \loeye\database\EntityManager::getManager($dbSetting, $fromDB);
+        $helperSet = ConsoleRunner::createHelperSet($entityManager);
+        $commands = [];
+        ConsoleRunner::run($helperSet, $commands);
+    } catch (Exception $ex){
+         $output = new ConsoleOutput();
+         $output->writeln($ex->getMessage(), OutputInterface::VERBOSITY_QUIET);
+    }
+}
