@@ -504,11 +504,11 @@ class Context implements \ArrayAccess
     /**
      * setParallelClientManager
      *
-     * @param  \loeye\rest\ParallelClientManager $clientMgr client mgr
+     * @param  \loeye\client\ParallelClientManager $clientMgr client mgr
      *
      * @return void
      */
-    public function setParallelClientManager(\loeye\rest\ParallelClientManager $clientManager)
+    public function setParallelClientManager(\loeye\client\ParallelClientManager $clientManager)
     {
         $this->_parallelClientManager = $clientManager;
     }
@@ -516,7 +516,7 @@ class Context implements \ArrayAccess
     /**
      * getParallelClientMgr
      *
-     * @return \loeye\rest\ParallelClientManager
+     * @return \loeye\client\ParallelClientManager
      */
     public function getParallelClientManager()
     {
