@@ -36,7 +36,7 @@ class Request implements \ArrayAccess
     private $_moduleId;
     private $_browser;
     private $_device;
-    protected $allowedFormatType = array();
+    protected $_allowedFormatType = array();
     private $isAjaxRequest;
     public $isHttps;
     public $isFlashRequest;
