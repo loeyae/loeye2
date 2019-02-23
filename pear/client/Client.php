@@ -141,7 +141,7 @@ abstract class Client
      *
      * @return void
      */
-    protected function request($cmd, \loeye\client\Request $req, &$ret)
+    protected function request($cmd, Request $req, &$ret)
     {
         $header = array();
         if (!isset($this->_headers['Expect'])) {
@@ -177,12 +177,12 @@ abstract class Client
      * _parallelRequest
      *
      * @param string                  $cmd  command
-     * @param \LOEYE\RestRequest $req  request
+     * @param \loeye\client\Request $req  request
      * @param mixed                   &$ret ret
      *
      * @return void
      */
-    private function _parallelRequest($cmd, RestRequest $req, &$ret = false)
+    private function _parallelRequest($cmd, Request $req, &$ret = false)
     {
         $this->_parallelRequestInfo[] = array(
             'cmd' => $cmd,
@@ -199,7 +199,7 @@ abstract class Client
      *
      * @return mixed
      */
-    private function _directRequest($cmd, \loeye\client\Request $req)
+    private function _directRequest($cmd, Request $req)
     {
         $req->execute();
         $resp = new Response($req);
