@@ -25,7 +25,7 @@ namespace loeye\web;
 class Request extends \loeye\std\Request
 {
 
-    protected $allowedFormatType = array(
+    protected $_allowedFormatType = array(
         \loeye\base\RENDER_TYPE_SEGMENT,
         \loeye\base\RENDER_TYPE_HTML,
         \loeye\base\RENDER_TYPE_XML,
