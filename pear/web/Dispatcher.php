@@ -97,7 +97,7 @@ class Dispatcher extends \loeye\std\Dispatcher
         };
         $this->context->setModule($this->_mDfnObj);
 
-        $clientManager = new \loeye\rest\ParallelClientManager();
+        $clientManager = new \loeye\client\ParallelClientManager();
         $this->context->setParallelClientManager($clientManager);
 
         $inputs          = $this->_mDfnObj->getInputs();
