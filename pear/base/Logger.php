@@ -52,8 +52,8 @@ class Logger
                 . 'error.log';
         $key     = md5($logfile);
         if (!isset(self::$logger[$key])) {
-            $dateFormat         = "Y-m-d H:i:s u";
-            $output             = "[%datetime%][%level_name%]%channel%: %message% %context% %extra%\n";
+            $dateFormat         = "Y-m-d H:i:s";
+            $output             = "[%datetime%][%level_name%]%channel%: %message%\n";
             $formatter          = new Monolog\Formatter\LineFormatter($output, $dateFormat);
             $handler            = new \Monolog\Handler\StreamHandler($logfile, RUNTIME_LOGGER_LEVEL);
             $handler->setFormatter($formatter);
@@ -107,8 +107,8 @@ class Logger
                 $type    = self::LOEYE_LOGGER_TYPE_ERROR;
                 break;
         }
-        $log = $message . ' (' . $file . ':' . $line . ')' . PHP_EOL . 'Stack trace:' . PHP_EOL;
-        $log .= self::getTraceInfo();
+        $log = [$message, '(' . $file . ':' . $line . ')', 'Stack trace:'];
+        $log += self::getTraceInfo();
         self::log($log, $type);
     }
 
@@ -126,7 +126,7 @@ class Logger
             $message, $file, $line, $type = Logger::LOEYE_LOGGER_TYPE_WARNING
     )
     {
-        $log = $message . ' (' . $file . ':' . $line . ')' . PHP_EOL;
+        $log = [$message, '(' . $file . ':' . $line . ')'];
         self::log($log, $type);
     }
 
@@ -142,16 +142,19 @@ class Logger
      */
     static public function trace($message, $code, $file, $line, $type = self::LOEYE_LOGGER_TYPE_DEBUG)
     {
-        $log = $message . ' error code ' . $code;
-        $log .= ' (' . $file . ':' . $line . ')' . PHP_EOL . 'Stack trace:' . PHP_EOL;
-        $log .= self::getTraceInfo();
+        $log = [];
+        $log[] = $message;
+        $log[] = 'error code ' . $code;
+        $log[] = '(' . $file . ':' . $line . ')';
+        $log[] = 'Stack trace:';
+        $log += self::getTraceInfo();
         self::log($log, $type);
     }
 
     /**
      * log
      *
-     * @param string $message message
+     * @param string|array $message message
      * @param int    $type    message type
      * @param string $file    file
      *
@@ -160,17 +163,23 @@ class Logger
     static public function log($message, $type = self::LOEYE_LOGGER_TYPE_ERROR, $file = null)
     {
         $logger = self::getLogger(PROJECT_NAMESPACE, $file);
-        $logger->log($type, $message);
+        if (is_array($message)) {
+            foreach ($message as $msg) {
+                $logger->log($type, $msg);
+            }
+        } else {
+            $logger->log($type, $message);
+        }
     }
 
     /**
      * getTraceInfo
      *
-     * @return string
+     * @return array
      */
     static public function getTraceInfo()
     {
-        $message = '';
+        $message = [];
         $trace   = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
         foreach ($trace as $i => $t) {
             if (!isset($t['file'])) {
@@ -182,14 +191,15 @@ class Logger
             if (!isset($t['function'])) {
                 $t['function'] = 'unknown';
             }
-            $message .= "#$i {$t['file']}({$t['line']}): ";
+            $msg = "{$t['file']}({$t['line']}): ";
             if (isset($t['class'])) {
-                $message .= $t['class'] . '->';
+                $msg .= $t['class'] . '->';
             }
-            $message .= "{$t['function']}()" . '\r\n';
+            $msg       .= "{$t['function']}()";
+            $message[] = $msg;
         }
         if (filter_has_var(INPUT_SERVER, 'REQUEST_URI')) {
-            $message .= "# REQUEST_URI: " . filter_input(INPUT_SERVER, 'REQUEST_URI') . '\r\n';
+            $message[] = "# REQUEST_URI: " . filter_input(INPUT_SERVER, 'REQUEST_URI') .PHP_EOL;
         }
         return $message;
     }
