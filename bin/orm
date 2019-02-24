@@ -23,7 +23,6 @@ if ($property == 'help') {
     $output = new ConsoleOutput();
     $output->writeln('build sheme: orm <property> convert:mapping', OutputInterface::VERBOSITY_QUIET);
     $output->writeln('build sheme: orm <property> generate:entities', OutputInterface::VERBOSITY_QUIET);
-    $output->writeln('build sheme: orm <property> generate:entities:mapping', OutputInterface::VERBOSITY_QUIET);
     $output->writeln('build sheme: orm <property> <doctrine command> [doctrine command options[..]]', OutputInterface::VERBOSITY_QUIET);
 } else {
     try {
@@ -32,28 +31,22 @@ if ($property == 'help') {
         $command = $_SERVER['argv'][1];
         $fromDB = false;
         if ($command == 'convert:mapping') {
+            $_SERVER['argv'][1] = 'orm:convert-mapping';
             array_push($_SERVER['argv'], '--from-database');
             array_push($_SERVER['argv'], '-f');
-            array_push($_SERVER['argv'], '--namespace="app\models\entity\\" yml');
+            array_push($_SERVER['argv'], '--namespace=app\\models\\entity\\');
             array_push($_SERVER['argv'], 'yml');
             array_push($_SERVER['argv'], realpath(dirname(__DIR__). '/app/models/scheme'));
             $fromDB = true;
         } else if ($command == 'generate:entities') {
-            array_push($_SERVER['argv'], '--generate-annotations=true');
-            array_push($_SERVER['argv'], '--regenerate-entities=true');
-            array_push($_SERVER['argv'], '--update-entities=true');
-            array_push($_SERVER['argv'], '--generate-methods=true');
-            array_push($_SERVER['argv'], '--no-backup');
-            array_push($_SERVER['argv'], realpath(dirname(__DIR__). '/app/models/entity'));
-            $fromDB = true;
-        } else if ($command == 'generate:entities:mapping') {
+            $_SERVER['argv'][1] = 'orm:generate-entities';
             array_push($_SERVER['argv'], '--generate-annotations=true');
             array_push($_SERVER['argv'], '--regenerate-entities=true');
             array_push($_SERVER['argv'], '--update-entities=true');
             array_push($_SERVER['argv'], '--generate-methods=true');
             array_push($_SERVER['argv'], '--no-backup');
             array_push($_SERVER['argv'], realpath(dirname(__DIR__)));
-            $fromDB = false;
+            $fromDB = true;
         }
         $appConfig = new \loeye\base\AppConfig($property);
         $dbKey = $appConfig->getSetting('application.database') ?? 'default';
