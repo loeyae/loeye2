@@ -151,7 +151,7 @@ class DB
      *
      * @param object $entity
      *
-     * @return null
+     * @return void
      */
     public function save($entity)
     {
