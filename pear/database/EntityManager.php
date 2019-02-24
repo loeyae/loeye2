@@ -43,22 +43,22 @@ class EntityManager
 //        $dbconfig->setEntityNamespaces(['\\app\\models\\entity']);
         $cache    = new FilesystemCache(static::$cacheDir, 'cache');
         $dbconfig->setMetadataCacheImpl($cache);
-        if (!$fromDB) {
-            $driverImpl = $dbconfig->newDefaultAnnotationDriver(array(static::$entitiesDir));
-        } else {
-            $driverImpl = new YamlDriver(array(static::$schemeDir));
-        }
+//        if (!$fromDB) {
+//            $driverImpl = $dbconfig->newDefaultAnnotationDriver(array(static::$entitiesDir));
+//        } else {
+        $driverImpl = new YamlDriver(array(static::$schemeDir));
+//        }
 //        $driverImpl->setGlobalBasename($file);
         $dbconfig->setMetadataDriverImpl($driverImpl);
         $dbconfig->setQueryCacheImpl($cache);
 
         $dbconfig->setProxyDir(static::$proxiesDir);
-        $dbconfig->setProxyNamespace('Proxies');
+        $dbconfig->setProxyNamespace('\\app\\models\\proxy\\');
 
         $logger = new \Doctrine\DBAL\Logging\LoggerChain();
         $logger->addLogger(new \loeye\database\Logger());
         $dbconfig->setSQLLogger($logger);
-        $dbconfig->setAutoGenerateProxyClasses(true);
+        $dbconfig->setAutoGenerateProxyClasses(\Doctrine\Common\Proxy\AbstractProxyFactory::AUTOGENERATE_FILE_NOT_EXISTS);
         return EM::create($dbSetting, $dbconfig);
     }
 
