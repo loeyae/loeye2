@@ -27,6 +27,12 @@ class Request extends \loeye\std\Request
 
     private $_content;
 
+    protected $_allowedFormatType = array(
+        \loeye\base\RENDER_TYPE_SEGMENT,
+        \loeye\base\RENDER_TYPE_XML,
+        \loeye\base\RENDER_TYPE_JSON,
+    );
+
     /**
      * offsetExists
      *
@@ -61,6 +67,21 @@ class Request extends \loeye\std\Request
         else:
             return parent::offsetGet($offset);
         endif;
+    }
+
+    /**
+     * getFormatType
+     *
+     * @return string
+     */
+    public function getFormatType()
+    {
+        $format = $this->get['fmt'] ?? \loeye\base\RENDER_TYPE_JSON;
+        if (in_array($format, $this->_allowedFormatType)) {
+            return $format;
+        } else {
+            return \loeye\base\RENDER_TYPE_SEGMENT;
+        }
     }
 
     /**
