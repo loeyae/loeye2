@@ -17,10 +17,6 @@
 
 namespace loeye\web;
 
-define('LOEYE_CONTEXT_TRACE_KEY', 'LOEYE_TEST_TRACE');
-define('LOEYE_PROCESS_MODE__NORMAL', 0);
-define('LOEYE_PROCESS_MODE__TEST', 1);
-
 /**
  * SimpleDispatcher
  *
