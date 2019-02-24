@@ -48,14 +48,14 @@ class DB
     {
         $property = $appConfig->getPropertyName();
         $settins  = $appConfig->getSetting('application.database');
-        $config   = $this->propertyConfig($property, null);
+        $config   = $this->propertyConfig($property, static::BUNDLE);
         if (is_string($settins)) {
             $this->defaultType = $settins;
         } else {
             $this->defaultType = $settins['default'] ?? null;
             $this->isDevMode   = $settins['is_dev_mode'] ?? false;
         }
-        $this->_getEntityManager($config, $property, $type);
+        $this->_getEntityManager($config, $type);
     }
 
     /**
@@ -85,7 +85,7 @@ class DB
      * @return void
      * @throws Exception
      */
-    private function _getEntityManager(Configuration $config, $property, $type)
+    private function _getEntityManager(Configuration $config, $type)
     {
         $key = $type ?? $this->defaultType;
         if (!$key) {
@@ -95,28 +95,7 @@ class DB
         if (!$dbSetting) {
             throw new Exception('Invalid database setting.');
         }
-        $entitiesDir = PROJECT_MODELS_DIR;
-        $ormCacheDir = RUNTIME_CACHE_DIR . '/' . PROJECT_NAMESPACE . '/' . $property . '/db';
-        $ymlDir      = $ormCacheDir . '/yml';
-        $cacheDir    = $ormCacheDir . '/cache';
-        $dbconfig    = Setup::createAnnotationMetadataConfiguration(array($entitiesDir), $this->isDevMode);
-//        $dbconfig->setEntityNamespaces(array(PROJECT_NAMESPACE .'\\models'));
-        $cache       = new FilesystemCache($cacheDir, 'cache');
-        $dbconfig->setMetadataCacheImpl($cache);
-//        $driverImpl = $dbconfig->newDefaultAnnotationDriver(array($entitiesDir));
-        $driverImpl  = new \Doctrine\ORM\Mapping\Driver\YamlDriver(array($ymlDir));
-        $dbconfig->setMetadataDriverImpl($driverImpl);
-        $dbconfig->setQueryCacheImpl($cache);
-
-//        $proxiesDir = $ormCacheDir.'/proxies';
-//        $dbconfig->setProxyDir($proxiesDir);
-//        $dbconfig->setProxyNamespace('Proxies');
-
-        $logger   = new \Doctrine\DBAL\Logging\LoggerChain();
-        $logger->addLogger(new \loeye\database\Logger());
-        $dbconfig->setSQLLogger($logger);
-//        $dbconfig->setAutoGenerateProxyClasses(true);
-        $this->em = EntityManager::create($dbSetting, $dbconfig);
+        $this->em = \loeye\database\EntityManager::getManager($dbSetting);
     }
 
     /**
@@ -149,12 +128,31 @@ class DB
         return $query->getResult();
     }
 
-    public function entity($name, $id)
+    /**
+     *
+     * @param string       $name        The class name of the entity to find.
+     * @param mixed        $id          The identity of the entity to find.
+     * @param integer|null $lockMode    One of the \Doctrine\DBAL\LockMode::* constants
+     *                                  or NULL if no specific lock mode should be used
+     *                                  during the search.
+     * @param integer|null $lockVersion The version of the entity to find when using
+     *                                  optimistic locking.
+     *
+     * @return object|null The entity instance or NULL if the entity can not be found.
+     */
+    public function entity($name, $id, $lockMode = null, $lockVersion = null)
     {
-        $entityName = '\\' . PROJECT_NAMESPACE . '\\models\\' . $name;
-        return $this->em->find($entityName, $id);
+        $entityName = '\\' . PROJECT_NAMESPACE . '\\models\\entity\\' . mb_convert_case($name, MB_CASE_TITLE);
+        return $this->em->find($entityName, $id, $lockMode, $lockVersion);
     }
 
+    /**
+     * save
+     *
+     * @param object $entity
+     *
+     * @return null
+     */
     public function save($entity)
     {
         $this->em->persist($entity);
