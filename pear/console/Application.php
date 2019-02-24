@@ -39,9 +39,20 @@ class Application extends Base
     {
         $commandsDir = realpath(PROJECT_DIR . DIRECTORY_SEPARATOR . self::DN);
         $ns          = '\\' . PROJECT_NAMESPACE . '\\' . self::DN;
-        foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($commandsDir, \FilesystemIterator::SKIP_DOTS)) as $file) {
+        $this->loadCommandByDir($commandsDir, $ns);
+    }
+
+    protected function loadCommandByDir($dir, $ns)
+    {
+        foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($dir, \FilesystemIterator::SKIP_DOTS)) as $file) {
             if ($file->isFile()) {
-                $cn = $ns . '\\' . $file->getBasename('.' . $file->getExtension());
+                $path = $file->getPath();
+                if ($path != $ns) {
+                    $_ns = str_replace($dir, $ns, $path);
+                    $cn = $_ns . '\\' . $file->getBasename('.' . $file->getExtension());
+                } else {
+                    $cn = $ns . '\\' . $file->getBasename('.' . $file->getExtension());
+                }
                 $this->add(new $cn());
             }
         }
