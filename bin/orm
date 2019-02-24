@@ -29,7 +29,7 @@ if ($property == 'help') {
         unset($_SERVER['argv'][1]);
         $_SERVER['argv'] = array_values($_SERVER['argv']);
         $command = $_SERVER['argv'][1];
-        $fromDB = false;
+        $fromDB = true;
         if ($command == 'convert:mapping') {
             $_SERVER['argv'][1] = 'orm:convert-mapping';
             array_push($_SERVER['argv'], '--from-database');
@@ -37,7 +37,6 @@ if ($property == 'help') {
             array_push($_SERVER['argv'], '--namespace=app\\models\\entity\\');
             array_push($_SERVER['argv'], 'yml');
             array_push($_SERVER['argv'], realpath(dirname(__DIR__). '/app/models/scheme'));
-            $fromDB = true;
         } else if ($command == 'generate:entities') {
             $_SERVER['argv'][1] = 'orm:generate-entities';
             array_push($_SERVER['argv'], '--generate-annotations=true');
@@ -46,7 +45,6 @@ if ($property == 'help') {
             array_push($_SERVER['argv'], '--generate-methods=true');
             array_push($_SERVER['argv'], '--no-backup');
             array_push($_SERVER['argv'], realpath(dirname(__DIR__)));
-            $fromDB = true;
         }
         $appConfig = new \loeye\base\AppConfig($property);
         $dbKey = $appConfig->getSetting('application.database') ?? 'default';
