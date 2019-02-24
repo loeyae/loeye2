@@ -460,11 +460,11 @@ class Context implements \ArrayAccess
     /**
      * setRequest
      *
-     * @param \loeye\web\Request $request request
+     * @param \loeye\std\Request $request request
      *
      * @return void
      */
-    public function setRequest(\loeye\web\Request $request)
+    public function setRequest(\loeye\std\Request $request)
     {
         $this->_request = $request;
     }
@@ -472,7 +472,7 @@ class Context implements \ArrayAccess
     /**
      * getRequest
      *
-     * @return \loeye\web\Request
+     * @return \loeye\std\Request
      */
     public function getRequest()
     {
@@ -482,11 +482,11 @@ class Context implements \ArrayAccess
     /**
      * setResponse
      *
-     * @param \loeye\web\Response $response response
+     * @param \loeye\std\Response $response response
      *
      * @return void
      */
-    public function setResponse(\loeye\web\Response $response)
+    public function setResponse(\loeye\std\Response $response)
     {
         $this->_response = $response;
     }
