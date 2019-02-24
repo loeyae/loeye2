@@ -25,6 +25,10 @@ if (!defined('LOEYE_PROCESS_MODE__TEST')) {
     define('LOEYE_PROCESS_MODE__TEST', 1);
 }
 
+if (!defined('LOEYE_PROCESS_MODE__ERROR_EXIT')) {
+    define('LOEYE_PROCESS_MODE__ERROR_EXIT', 2);
+}
+
 if (!defined('LOEYE_CONTEXT_TRACE_KEY')) {
     define('LOEYE_CONTEXT_TRACE_KEY', 'LOEYE_TEST_TRACE');
 }
