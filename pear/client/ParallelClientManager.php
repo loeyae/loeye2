@@ -29,9 +29,9 @@ class ParallelClientManager
 
     /**
      *
-     * @var \loeye\client\Client[]
+     * @var \loeye\client\Client array
      */
-    private $_parallelClient;
+    private $_parallelClient = [];
 
     /**
      * addClient
