@@ -18,10 +18,6 @@
 namespace loeye\web;
 
 define('LOEYE_PLUGIN_HAS_ERROR', 'lyHasError');
-define('LOEYE_CONTEXT_TRACE_KEY', 'LOEYE_TEST_TRACE');
-define('LOEYE_PROCESS_MODE__NORMAL', 0);
-define('LOEYE_PROCESS_MODE__TEST', 1);
-define('LOEYE_PROCESS_MODE__ERROR_EXIT', 2);
 
 /**
  * Description of Dispatcher
