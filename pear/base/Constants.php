@@ -19,14 +19,6 @@ namespace loeye\base;
 
 define('LOEYE_DIR', dirname(dirname(__FILE__)));
 
-if (!defined('LOEYE_PROCESS_MODE__NORMAL')) {
-    define('LOEYE_PROCESS_MODE__NORMAL', 1);
-}
-
-if (!defined('LOEYE_PROCESS_MODE__TEST')) {
-    define('LOEYE_PROCESS_MODE__TEST', 2);
-}
-
 if (!defined('LOEYE_MODE_DEV')) {
     define('LOEYE_MODE_DEV', 'dev');
 }
