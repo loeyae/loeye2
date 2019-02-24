@@ -130,7 +130,32 @@ abstract class Response implements \ArrayAccess
         return (!empty($this->format)) ? $this->format : null;
     }
 
-    abstract public function setHeaders();
+    /**
+     * getHeader
+     *
+     * @return string
+     */
+    public function getHeaders()
+    {
+        return $this->header;
+    }
+
+
+    /**
+     * setHeaders
+     *
+     * @return void
+     */
+    public function setHeaders()
+    {
+        foreach ($this->header as $key => $value) {
+            if (is_numeric($key)) {
+                header($value);
+            } else {
+                header("$key:$value");
+            }
+        }
+    }
 
     abstract public function getOutput();
 }
