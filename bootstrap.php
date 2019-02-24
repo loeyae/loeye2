@@ -7,7 +7,7 @@
  * @version SVN: $Id: Zhang Yi $
  */
 define('RUNTIME_NS', 'app');
-define('RUNTIME_PP', 'tools');
+define('RUNTIME_PP', 'sample');
 define('RUNTIME_TYPE', 'default');
 
 use Doctrine\ORM\Tools\Setup;
