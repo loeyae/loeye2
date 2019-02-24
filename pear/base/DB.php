@@ -147,6 +147,21 @@ class DB
     }
 
     /**
+     * Finds entities by a set of criteria.
+     *
+     * @param array      $criteria
+     * @param array|null $orderBy
+     * @param int|null   $limit
+     * @param int|null   $offset
+     * 
+     * @return array The objects.
+     */
+    public function repository($entityName, $criteria, $orderBy = null, $limit = null, $offset = null)
+    {
+        return $this->em->getRepository($entityName)->findBy($criteria, $orderBy, $limit, $offset);
+    }
+
+    /**
      *
      * @param string       $name        The class name of the entity to find.
      * @param mixed        $id          The identity of the entity to find.
