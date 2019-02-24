@@ -68,9 +68,9 @@ class Dispatcher extends \loeye\std\Dispatcher
             $handlerObject->handle();
             $this->excuteOutput();
         } catch (\Exception $exc) {
-            Utils::errorLog($exc);
+            \loeye\base\Utils::errorLog($exc);
             $request = ($this->getContext()->getRequest() ?? new Request());
-            $response = ($this->getContext()->getResponse() ?? new Response());
+            $response = ($this->getContext()->getResponse() ?? new Response($request));
 
             $format = ($request->getFormatType());
             if (empty($format)) {
@@ -122,7 +122,7 @@ class Dispatcher extends \loeye\std\Dispatcher
         $request = new \loeye\service\Request($moduleId);
 
         $this->context->setRequest($request);
-        $response = new \loeye\service\Response();
+        $response = new \loeye\service\Response($request);
         $response->setFormat($request->getFormatType());
         $this->context->setResponse($response);
     }
