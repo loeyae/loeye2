@@ -38,8 +38,9 @@ class EntityManager
 
     static public function getManager($dbSetting, $fromDB = false)
     {
-        $dbconfig = Setup::createAnnotationMetadataConfiguration(array(static::$entitiesDir), static::$isDevMode);
+        $dbconfig = Setup::createAnnotationMetadataConfiguration([], static::$isDevMode);
 //        $dbconfig->add(array(PROJECT_NAMESPACE .'\\models'));
+//        $dbconfig->setEntityNamespaces(['\\app\\models\\entity']);
         $cache    = new FilesystemCache(static::$cacheDir, 'cache');
         $dbconfig->setMetadataCacheImpl($cache);
         if (!$fromDB) {
