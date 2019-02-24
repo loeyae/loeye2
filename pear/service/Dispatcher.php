@@ -59,7 +59,11 @@ class Dispatcher extends \loeye\std\Dispatcher
             $this->initConfigConstants();
             $this->initComponent();
             $this->setTimezone();
-            $handler = PROJECT_NAMESPACE . '\\'. $this->module .'\\'. $this->service .'\\'. $this->handler . mb_convert_case(self::KEY_HANDLER, MB_CASE_TITLE);
+            $handlerNamespace = $this->context->getAppConfig()->getSetting('handler_namespace', '');
+            if (!$handlerNamespace) {
+                $handlerNamespace = PROJECT_NAMESPACE . '\\services\\handler\\' . mb_convert_case($this->context->getAppConfig()->getPropertyName(), MB_CASE_LOWER);
+            }
+            $handler = $handlerNamespace .'\\'. $this->service .'\\'. $this->handler . mb_convert_case(self::KEY_HANDLER, MB_CASE_TITLE);
             if (!class_exists($handler)) {
                 throw new \loeye\base\Exception('bad request', 404);
             }
