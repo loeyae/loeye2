@@ -120,33 +120,6 @@ class Response extends \loeye\std\Response
     {
         return;
     }
-
-    /**
-     * getHeader
-     *
-     * @return string
-     */
-    public function getHeaders()
-    {
-        return $this->header;
-    }
-
-    /**
-     * setHeaders
-     *
-     * @return void
-     */
-    public function setHeaders()
-    {
-        foreach ($this->header as $key => $value) {
-            if (is_numeric($key)) {
-                header($value);
-            } else {
-                header("$key:$value");
-            }
-        }
-    }
-
     /**
      * addHtmlHead
      *
