@@ -44,7 +44,7 @@ class Response extends \loeye\std\Response
         $this->_statusMessage  = 'OK';
         $this->_contentType    = 'text/plain; charset=utf-8';
         $this->_responseData   = '';
-        $this->header = ['Content-Type'=> $this->_contentType];
+        $this->header = [];
     }
 
     /**
