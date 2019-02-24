@@ -24,6 +24,9 @@ namespace loeye\service;
  */
 abstract class Resource implements \loeye\std\Handler
 {
+    use \loeye\std\ConfigTrait;
+
+    const BUNDLE = 'service';
 
     /**
      *
