@@ -108,12 +108,24 @@ class DB
         return $this->em;
     }
 
+    /**
+     * createQueryBuilder
+     *
+     * @return \Doctrine\ORM\QueryBuilder
+     */
     public function createQueryBuilder()
     {
         return $this->em->createQueryBuilder();
     }
 
-    public function createNativeQuery($sql, $rsm)
+    /**
+     *
+     * @param string                                    $sql sql
+     * @param \Doctrine\ORM\Query\ResultSetMapping|null $rsm
+     *
+     * @return \Doctrine\ORM\NativeQuery
+     */
+    public function createNativeQuery($sql, $rsm = null)
     {
         if (!$rsm) {
             $rsm = new \Doctrine\ORM\Query\ResultSetMapping();
@@ -121,10 +133,16 @@ class DB
         return $this->em->createNativeQuery($sql, $rsm);
     }
 
+    /**
+     * query
+     *
+     * @param string $sql sql
+     *
+     * @return mixed
+     */
     public function query($sql)
     {
-        $rsm   = new \Doctrine\ORM\Query\ResultSetMapping();
-        $query = $this->em->createNativeQuery($sql, $rsm);
+        $query = $this->createNativeQuery($sql);
         return $query->getResult();
     }
 
@@ -142,8 +160,7 @@ class DB
      */
     public function entity($name, $id, $lockMode = null, $lockVersion = null)
     {
-        $entityName = '\\' . PROJECT_NAMESPACE . '\\models\\entity\\' . mb_convert_case($name, MB_CASE_TITLE);
-        return $this->em->find($entityName, $id, $lockMode, $lockVersion);
+        return $this->em->find($name, $id, $lockMode, $lockVersion);
     }
 
     /**
