@@ -316,6 +316,16 @@ class Context implements \ArrayAccess
     }
 
     /**
+     * db
+     * 
+     * @return \loeye\base\DB
+     */
+    public function db()
+    {
+        return DB::getInstance($this->getAppConfig());
+    }
+
+    /**
      * getData
      *
      * @return array
