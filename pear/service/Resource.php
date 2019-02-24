@@ -27,7 +27,7 @@ abstract class Resource implements \loeye\std\Handler
 
     /**
      *
-     * @var type
+     * @var \loeye\base\Context
      */
     protected $context;
 
