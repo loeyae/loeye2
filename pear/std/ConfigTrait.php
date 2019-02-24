@@ -39,9 +39,17 @@ trait ConfigTrait
         return new \loeye\base\Configuration(static::BUNDLE, $bundle);
     }
 
-    protected function propertyConfig($property, $bundle)
+    /**
+     * propertyConfig
+     *
+     * @param string $property property
+     * @param string $bundle   bundle
+     *
+     * @return \loeye\base\Configuration
+     */
+    protected function propertyConfig($property, $bundle = null)
     {
-
+        return new \loeye\base\Configuration($property, $bundle);
     }
 
 }
