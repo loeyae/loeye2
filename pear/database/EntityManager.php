@@ -36,6 +36,14 @@ class EntityManager
     static protected $cacheDir    = RUNTIME_CACHE_DIR . '/' . PROJECT_NAMESPACE . '/db';
     static protected $isDevMode   = LOEYE_MODE == LOEYE_MODE_DEV ? true : false;
 
+    /**
+     * getManager
+     *
+     * @param array $dbSetting database setting
+     * @param bool  $fromDB    is from database
+     *
+     * @return \Doctrine\ORM\EntityManager
+     */
     static public function getManager($dbSetting, $fromDB = true)
     {
         $dbconfig = Setup::createAnnotationMetadataConfiguration([], static::$isDevMode);
