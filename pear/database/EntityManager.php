@@ -36,24 +36,24 @@ class EntityManager
     static protected $cacheDir    = RUNTIME_CACHE_DIR . '/' . PROJECT_NAMESPACE . '/db';
     static protected $isDevMode   = LOEYE_MODE == LOEYE_MODE_DEV ? true : false;
 
-    static public function getManager($dbSetting, $fromDB = false)
+    static public function getManager($dbSetting, $fromDB = true)
     {
         $dbconfig = Setup::createAnnotationMetadataConfiguration([], static::$isDevMode);
 //        $dbconfig->add(array(PROJECT_NAMESPACE .'\\models'));
-//        $dbconfig->setEntityNamespaces(['\\app\\models\\entity']);
+//        $dbconfig->setEntityNamespaces(['\\'. PROJECT_NAMESPACE .'\\models\\entity\\']);
         $cache    = new FilesystemCache(static::$cacheDir, 'cache');
         $dbconfig->setMetadataCacheImpl($cache);
-//        if (!$fromDB) {
-//            $driverImpl = $dbconfig->newDefaultAnnotationDriver(array(static::$entitiesDir));
-//        } else {
-        $driverImpl = new YamlDriver(array(static::$schemeDir));
-//        }
+        if (!$fromDB) {
+            $driverImpl = $dbconfig->newDefaultAnnotationDriver(array(static::$entitiesDir));
+        } else {
+            $driverImpl = new YamlDriver(array(static::$schemeDir));
+        }
 //        $driverImpl->setGlobalBasename($file);
         $dbconfig->setMetadataDriverImpl($driverImpl);
         $dbconfig->setQueryCacheImpl($cache);
 
         $dbconfig->setProxyDir(static::$proxiesDir);
-        $dbconfig->setProxyNamespace('\\app\\models\\proxy\\');
+        $dbconfig->setProxyNamespace('\\'. PROJECT_NAMESPACE .'\\models\\proxy\\');
 
         $logger = new \Doctrine\DBAL\Logging\LoggerChain();
         $logger->addLogger(new \loeye\database\Logger());
