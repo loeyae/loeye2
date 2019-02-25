@@ -52,12 +52,6 @@ abstract class Handler extends Resource
     protected $cmd;
     protected $output;
 
-    /**
-     * app cinfiguration
-     *
-     * @var \LOEYE\AppConfig
-     */
-    protected $config;
     public static $ERR_MAPPIG = array(
         self::ERR_CANNOT_PARSE_JSON   => LOEYE_REST_STATUS_BAD_REQUEST,
         self::ERR_MISS_REQUIRE_FIELD  => LOEYE_REST_STATUS_BAD_REQUEST,
