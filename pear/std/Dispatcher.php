@@ -33,9 +33,6 @@ if (!defined('LOEYE_CONTEXT_TRACE_KEY')) {
     define('LOEYE_CONTEXT_TRACE_KEY', 'LOEYE_TEST_TRACE');
 }
 
-require_once LOEYE_DIR . DIRECTORY_SEPARATOR . 'base' . DIRECTORY_SEPARATOR . 'Constants.php';
-require_once LOEYE_DIR . DIRECTORY_SEPARATOR . 'base' . DIRECTORY_SEPARATOR . 'Exception.php';
-
 /**
  * Dispatcher
  *
