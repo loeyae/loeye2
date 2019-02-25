@@ -120,9 +120,11 @@ abstract class Handler extends Resource
             }
             $this->render($resp);
         } catch (\loeye\base\Exception $exc) {
+            \loeye\base\Utils::errorLog($exc);
             $code = $exc->getCode();
             $this->render($resp, $code, $exc->getMessage());
         } catch (\Exception $exc) {
+            \loeye\base\Utils::errorLog($exc);
             $code = $exc->getCode();
             $this->render($resp, $code, 'Server Internal Error');
         }
