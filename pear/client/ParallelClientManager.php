@@ -17,7 +17,6 @@
 
 namespace loeye\client;
 
-use GuzzleHttp\Client;
 
 /**
  * Description of ParallelClientManager
@@ -40,7 +39,7 @@ class ParallelClientManager
      *
      * @return void
      */
-    public function addClient(Client $client)
+    public function addClient(\loeye\client\Client $client)
     {
         $client->setParallel();
         $this->_parallelClient[] = $client;
