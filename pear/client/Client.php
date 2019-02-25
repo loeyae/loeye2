@@ -25,14 +25,30 @@ namespace loeye\client;
 abstract class Client
 {
 
+    use \loeye\std\ConfigTrait;
+
+    /**
+     * request status ok
+     *
+     * @var int
+     */
     const REQUEST_STATUS_OK = 200;
 
+    /**
+     * @var string config bundle
+     */
+    const BUNDLE = 'client';
+
+    /**
+     * service base url
+     * @var string
+     */
     protected $baseUrl;
 
     /**
      * Configuration
      *
-     * @var Configuration
+     * @var \loeye\base\Configuration
      */
     protected $config;
     protected $timeout   = 5;
@@ -49,14 +65,13 @@ abstract class Client
     /**
      * __construct
      *
-     * @param string $configBaseDir config base dir
-     * @param string $bundle        bundle
+     * @param string $bundle bundle
      *
      * @return void
      */
-    public function __construct($configBaseDir, $bundle)
+    public function __construct($bundle = null)
     {
-        $this->config = new \loeye\base\Configuration($configBaseDir, $bundle);
+        $this->config = $this->propertyConfig(static::BUNDLE, $bundle);
         $config       = $this->config->get('service');
         if (empty($config['server_url']) || !is_string($config['server_url'])) {
             throw new Exception("无效的服务端url设置",
