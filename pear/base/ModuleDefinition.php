@@ -263,9 +263,11 @@ class ModuleDefinition
                 $this->_modules[$moduleSetting['module']['module_id']] = $moduleSetting['module'];
                 if ($moduleId == $moduleSetting['module']['module_id']) {
                     $this->_currentModule = $moduleSetting['module'];
+                    return true;
                 }
             }
         }
+        throw new Exception("Not Found", Exception::MODULE_NOT_FOUND_CODE);
     }
 
     /**
