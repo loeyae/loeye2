@@ -28,6 +28,13 @@ abstract class Client
     use \loeye\std\ConfigTrait;
 
     /**
+     * request no error
+     *
+     * @var int
+     */
+    const REQUEST_NO_ERROR = 0;
+
+    /**
      * request status ok
      *
      * @var int
