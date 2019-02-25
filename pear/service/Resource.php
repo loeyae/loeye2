@@ -17,7 +17,7 @@
 
 namespace loeye\service;
 
-require_once 'Constants.php';
+require_once 'Constants.php
 
 /**
  * Resource
