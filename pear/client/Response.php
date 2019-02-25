@@ -58,7 +58,7 @@ class Response
         $this->_req     = $request;
         $this->_res     = $request->getResponse();
         $this->_cookies = new \GuzzleHttp\Cookie\CookieJar();
-        if ($cookieHeader   = $response->getHeader('Set-Cookie')) {
+        if ($cookieHeader   = $this->_res->getHeader('Set-Cookie')) {
             foreach ($cookieHeader as $cookie) {
                 $sc = SetCookie::fromString($cookie);
                 if (!$sc->getDomain()) {
