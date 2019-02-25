@@ -1,0 +1,31 @@
+# index.yml
+#
+#Licensed under the Apache License, Version 2.0 (the "License"),
+#see LICENSE for more details: http://www.apache.org/licenses/LICENSE-2.0.
+#
+# @author   Zhang Yi <loeyae@gmail.com>
+# @version  SVN: $Id: Zhang Yi $
+#
+#
+#  module:
+#    module_id: module.index
+#    plugin:
+#        -
+#            name: PluginName
+#            src: PluginPath
+#    view:
+#      default:
+#        src: ViewPath
+- settings: [master]
+  module:
+    module_id: sample.test.index
+    plugin:
+        -
+            name: \loeye\plugin\GetConfigSettingPlugin
+            bundle: database
+            config_keys: [default.driver]
+            out_keys:
+                default.driver: test.output
+    view:
+      default:
+        tpl: sample.index.tpl

@@ -1,0 +1,53 @@
+app\models\entity\Product:
+    type: entity
+    table: product
+    indexes:
+        type:
+            columns:
+                - type
+        name:
+            columns:
+                - name
+                - created
+    id:
+        id:
+            type: integer
+            nullable: false
+            options:
+                unsigned: false
+                comment: ID
+            id: true
+            generator:
+                strategy: IDENTITY
+    fields:
+        type:
+            type: integer
+            nullable: false
+            options:
+                unsigned: false
+                comment: 分类
+        name:
+            type: string
+            nullable: true
+            length: 32
+            options:
+                fixed: false
+                comment: 名称
+        created:
+            type: integer
+            nullable: false
+            options:
+                unsigned: true
+                comment: 生成时间
+        content:
+            type: text
+            nullable: true
+            length: 0
+            options:
+                fixed: false
+        utime:
+            type: datetime
+            nullable: false
+            options:
+                default: CURRENT_TIMESTAMP
+    lifecycleCallbacks: {  }

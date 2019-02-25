@@ -1,0 +1,25 @@
+# master.yml
+#
+#Licensed under the Apache License, Version 2.0 (the "License"),
+#see LICENSE for more details: http://www.apache.org/licenses/LICENSE-2.0.
+#
+# @author   Zhang Yi <loeyae@gmail.com>
+# @version  SVN: $Id: Zhang Yi $
+#
+#    rout name:
+#        path: ^(regexp)$
+#        module_id: module id
+#        regex:
+#            reg name: regexp
+#
+#        regex item ex: id: \d{2}
+#
+- settings: [master]
+  routes:
+      rewrite:
+          module_id: '{module}.{prop}.{idx}'
+          path: /{module}/{prop}/{idx}.html
+          regex:
+              module: \w+
+              prop: \w+
+              idx: \w+

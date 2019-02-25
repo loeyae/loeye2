@@ -1,0 +1,38 @@
+# parallel.yml
+#
+#Licensed under the Apache License, Version 2.0 (the "License"),
+#see LICENSE for more details: http://www.apache.org/licenses/LICENSE-2.0.
+#
+# @author   Zhang Yi <loeyae@gmail.com>
+# @version  SVN: $Id: Zhang Yi $
+#
+#
+#  module:
+#    module_id: module.parallel
+#    plugin:
+#        -
+#            name: PluginName
+#            src: PluginPath
+#    view:
+#      default:
+#        src: ViewPath
+- settings: [master]
+  module:
+    module_id: sample.test.parallel
+    plugin:
+        -
+            parallel:
+                -
+                    name: \app\plugins\sample\GetParallelPlugin
+                    inputs:
+                        sample_get_id: $_GET[id]
+                    out: test.output
+                    if: $_GET[id] < 2
+                -
+                    name: \app\plugins\sample\ListParallelPlugin
+                    inputs:
+                        sample_get_id: $_GET[id]
+                    out: test.output1
+    view:
+      default:
+        tpl: sample.index.tpl

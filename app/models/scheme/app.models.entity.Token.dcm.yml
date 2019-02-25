@@ -1,0 +1,46 @@
+app\models\entity\Token:
+    type: entity
+    table: token
+    id:
+        appid:
+            type: string
+            nullable: false
+            length: 16
+            options:
+                fixed: true
+            id: true
+            generator:
+                strategy: IDENTITY
+    fields:
+        secret:
+            type: string
+            nullable: true
+            length: 32
+            options:
+                fixed: true
+        token:
+            type: text
+            nullable: true
+            length: 65535
+            options:
+                fixed: false
+        createTime:
+            type: integer
+            nullable: false
+            options:
+                unsigned: false
+            column: create_time
+        refreshTime:
+            type: integer
+            nullable: true
+            options:
+                unsigned: false
+            column: refresh_time
+        expireIn:
+            type: integer
+            nullable: false
+            options:
+                unsigned: false
+                default: '0'
+            column: expire_in
+    lifecycleCallbacks: {  }

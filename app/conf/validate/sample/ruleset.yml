@@ -1,0 +1,162 @@
+# ruleset.yml
+#
+#Licensed under the Apache License, Version 2.0 (the "License"),
+#see LICENSE for more details: http://www.apache.org/licenses/LICENSE-2.0.
+#
+# @author   Zhang Yi <loeyae@gmail.com>
+# @version  SVN: $Id: Zhang Yi $
+#
+#    rulename:
+#        type: type name
+#        type_errmsg: 'type error'
+#        filter:
+#            filter_type: filter name
+#        filter_errmsg: 'filter error'
+#        required_value_errmsg: 'required error'
+#
+- settings: [master]
+  rulesets:
+    id:
+        type: numeric
+        type_errmsg: 'type error'
+        filter:
+            filter_type: FILTER_VALIDATE_INT
+        filter_errmsg: 'filter error'
+        required_value_errmsg: 'required error'
+        min_number: 1
+        min_number_errmsg: 'min number error'
+    title:
+        type: string
+        type_errmsg: 'type error'
+        filter:
+            filter_type: FILTER_SANITIZE_STRING
+            options: FILTER_FLAG_NO_ENCODE_QUOTES
+        filter_errmsg: 'filter error'
+        required_value_errmsg: 'required error'
+        max_length: 32
+        max_length_errmsg: 'word max length error'
+    category:
+        type: numeric
+        type_errmsg: 'type error'
+        filter:
+            filter_type: FILTER_VALIDATE_INT
+        filter_errmsg: 'filter error'
+        required_value_errmsg: 'required error'
+        min_number: 1
+        min_number_errmsg: 'min number error'
+    parent:
+        type: numeric
+        type_errmsg: 'type error'
+        filter:
+            filter_type: FILTER_VALIDATE_INT
+        filter_errmsg: 'filter error'
+        required_value_errmsg: 'required error'
+        min_number: 0
+        min_number_errmsg: 'min number error'
+    status:
+        type: numeric
+        type_errmsg: 'type error'
+        filter:
+            filter_type: FILTER_VALIDATE_INT
+        filter_errmsg: 'filter error'
+        required_value_errmsg: 'required error'
+        min_number: 1
+        min_number_errmsg: 'min number error'
+        max_number: 5
+        max_number_errmsg: 'max number error'
+    author:
+        type: string
+        type_errmsg: 'type error'
+        filter:
+            filter_type: FILTER_SANITIZE_STRING
+            options: FILTER_FLAG_NO_ENCODE_QUOTES
+        filter_errmsg: 'filter error'
+        required_value_errmsg: 'required error'
+        max_length: 32
+        max_length_errmsg: 'word max length error'
+    origin:
+        type: numeric
+        type_errmsg: 'type error'
+        filter:
+            filter_type: FILTER_VALIDATE_INT
+        filter_errmsg: 'filter error'
+        required_value_errmsg: 'required error'
+        required_value_if_match_errmsg: 'required value if match error'
+        min_number: 1
+        min_number_errmsg: 'min number error'
+        max_number: 2
+        max_number_errmsg: 'max number error'
+    refer_author:
+        type: string
+        type_errmsg: 'type error'
+        filter:
+            filter_type: FILTER_SANITIZE_STRING
+            options: FILTER_FLAG_NO_ENCODE_QUOTES
+        filter_errmsg: 'filter error'
+        required_value_errmsg: 'required error'
+        max_length: 64
+        max_length_errmsg: 'word max length error'
+    refer_addr:
+        type: string
+        type_errmsg: 'type error'
+        filter:
+            filter_type: FILTER_SANITIZE_STRING
+            options: FILTER_FLAG_NO_ENCODE_QUOTES
+        filter_errmsg: 'filter error'
+        required_value_errmsg: 'required error'
+        max_length: 256
+        max_length_errmsg: 'word max length error'
+    tag:
+        type: string
+        type_errmsg: 'type error'
+        filter:
+            filter_type: FILTER_SANITIZE_STRING
+            options: FILTER_FLAG_NO_ENCODE_QUOTES
+        filter_errmsg: 'filter error'
+        required_value_errmsg: 'required error'
+        max_length: 256
+        max_length_errmsg: 'word max length error'
+    keyword:
+        type: string
+        type_errmsg: 'type error'
+        filter:
+            filter_type: FILTER_SANITIZE_STRING
+            options: FILTER_FLAG_NO_ENCODE_QUOTES
+        filter_errmsg: 'filter error'
+        required_value_errmsg: 'required error'
+        max_length: 256
+        max_length_errmsg: 'word max length error'
+    summary:
+        type: string
+        type_errmsg: 'type error'
+        filter:
+            filter_type: FILTER_SANITIZE_SPECIAL_CHARS
+            options: FILTER_FLAG_STRIP_LOW
+        filter_errmsg: 'filter error'
+        required_value_errmsg: 'required error'
+        max_length: 128
+        max_length_errmsg: 'word max length error'
+    images:
+        type: array
+        type_errmsg: 'type error'
+        required_value_errmsg: 'required error'
+        max_count: 10
+        max_count_errmsg: 'element max count error'
+    images_element:
+        type: string
+        type_errmsg: 'type error'
+        filter:
+            filter_type: FILTER_VALIDATE_URL
+        filter_errmsg: 'filter error'
+        required_value_errmsg: 'required error'
+    content:
+        type: string
+        type_errmsg: 'type error'
+        filter:
+            filter_type: FILTER_UNSAFE_RAW
+        filter_errmsg: 'filter error'
+        required_value_errmsg: 'required error'
+        max_length: 50000
+        max_length_errmsg: 'word max length error'
+        strip_tags: '<p><strong><span><ul><ol><li><u><sup><h1><h2><h3><h4><h5><h6><br><img><embed><pre><table><thead><tbody><tr><th><td>'
+        strip_tags_errmsg: ''
