@@ -10,6 +10,7 @@
         "symfony/validator": "^4.1",
         "symfony/config": "^4.1",
         "symfony/console": "^4.1",
+        "symfony/translation": "^4.1",
         "symfony/intl": "^4.1",
         "php-amqplib/php-amqplib": "^2.7",
         "doctrine/orm": "^2.6",
@@ -26,6 +27,11 @@
         }
     ],
     "autoload": {
+        "files": [
+            "pear/base/Constants.php",
+            "pear/base/Exception.php",
+            "pear/service/Constants.php"
+        ],
         "psr-4": {
             "loeye\\": "pear/",
             "app\\": "app/"
