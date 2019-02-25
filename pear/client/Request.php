@@ -236,7 +236,7 @@ class Request
      *
      * @param \GuzzleHttp\Psr\Http\Message\ResponseInterface $res
      */
-    public function setResponse(\GuzzleHttp\Psr\Http\Message\ResponseInterface $res)
+    public function setResponse(\Psr\Http\Message\ResponseInterface $res)
     {
         $this->_res = $res;
     }
