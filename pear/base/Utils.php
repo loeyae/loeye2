@@ -28,14 +28,14 @@ class Utils
     /**
      * addParallelClient
      *
-     * @param \loeye\std\Client $client  client
+     * @param \loeye\client\Client $client  client
      * @param \loeye\base\Context    $context context
      *
      * @return void
      */
-    static public function addParallelClient(\loeye\std\Client $client, Context $context)
+    static public function addParallelClient(\loeye\client\Client $client, Context $context)
     {
-        $context->getParallelClientMgr()->addClient($client);
+        $context->getParallelClientManager()->addClient($client);
     }
 
     /**
