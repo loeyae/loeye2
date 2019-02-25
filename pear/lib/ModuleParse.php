@@ -200,9 +200,9 @@ class ModuleParse
     static private function _getExpressionResult($matches, \loeye\base\Context $context)
     {
         $preoperator = empty($matches[2][0]) ? null : $matches[2][0];
-        $subject1    = empty($matches[3][0]) ? $matches[3][0] : $this->parseInput($matches[3][0], $context);
+        $subject1    = empty($matches[3][0]) ? $matches[3][0] : self::parseInput($matches[3][0], $context);
         $operator    = empty($matches[4][0]) ? null : $matches[4][0];
-        $subject2    = (!isset($matches[5][0]) || $matches[5][0] == '') ? null : $this->parseInput($matches[5][0], $context);
+        $subject2    = (!isset($matches[5][0]) || $matches[5][0] == '') ? null : self::parseInput($matches[5][0], $context);
         return \loeye\lib\Operator::excute($subject1, $operator, $subject2, $preoperator);
     }
 
