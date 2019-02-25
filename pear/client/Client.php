@@ -28,13 +28,6 @@ abstract class Client
     use \loeye\std\ConfigTrait;
 
     /**
-     * request no error
-     *
-     * @var int
-     */
-    const REQUEST_NO_ERROR = 0;
-
-    /**
      * request status ok
      *
      * @var int
@@ -81,8 +74,8 @@ abstract class Client
         $this->config = $this->propertyConfig(static::BUNDLE, $bundle);
         $config       = $this->config->get('service');
         if (empty($config['server_url']) || !is_string($config['server_url'])) {
-            throw new Exception("无效的服务端url设置",
-                    Exception::INVALID_CONFIG_SET_CODE);
+            throw new \loeye\base\Exception("无效的服务端url设置",
+                    \loeye\base\Exception::INVALID_CONFIG_SET_CODE);
         }
         $this->baseUrl = $config['server_url'];
         if (!empty($config['timeout']) && $config['timeout'] > 0 && $config['timeout'] <= 30) {
