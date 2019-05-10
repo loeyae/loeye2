@@ -11,8 +11,8 @@
  * @category PHP
  * @package  LOEYE
  * @author   Zhang Yi <loeyae@gmail.com>
- * @version  GIT: $Id: Zhang Yi $
- * @link     https://github.com/loeyae/loeye.git
+ * @version  2018-07-23 22:44:28
+ * @link     https://github.com/loeyae/loeye2.git
  */
 
 namespace loeye\service;
@@ -94,13 +94,7 @@ abstract class Resource implements \loeye\std\Handler
             $response->setFormat('json');
         }
         if (method_exists($this, $method)) {
-            try {
-                $this->$method($request, $response);
-            } catch (\Exception $exc) {
-                $response->setStatusCode(LOEYE_REST_STATUS_BAD_REQUEST);
-                $response->setStatusMessage('Bad request');
-                $response->setContent('text/pain; charset=utf-8', $exc->getMessage());
-            }
+            $this->$method($request, $response);
         } else {
             $response->setStatusCode(LOEYE_REST_STATUS_METHOD_NOT_FOUND);
             $response->setStatusMessage('Request method not found');

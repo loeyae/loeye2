@@ -9,8 +9,8 @@
  * @package  LOEYE
  * @author   Zhang Yi <loeyae@gmail.com>
  * @license  http://www.apache.org/licenses/LICENSE-2.0 Apache License
- * @version  GIT: $Id $
- * @link     URL description
+ * @version  2018-07-23 22:44:28
+ * @link     https://github.com/loeyae/loeye2.git
  */
 
 namespace loeye\base;
@@ -317,7 +317,7 @@ class Context implements \ArrayAccess
 
     /**
      * db
-     * 
+     *
      * @return \loeye\base\DB
      */
     public function db()

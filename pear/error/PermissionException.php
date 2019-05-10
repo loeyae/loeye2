@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Render.php
+ * PermissionException.php
  *
  * PHP version 7
  *
@@ -11,35 +11,28 @@
  * @category PHP
  * @package  LOEYE
  * @author   Zhang Yi <loeyae@gmail.com>
- * @version  2018-07-23 22:44:28
+ * @version  Expression GitVersion is undefined on line 14, column 16 in Templates/Scripting/LoeyeNewClass.php.
  * @link     https://github.com/loeyae/loeye2.git
  */
 
-namespace loeye\std;
+namespace loeye\error;
 
 /**
- * interface Render
+ * PermissionException
  *
  * @author   Zhang Yi <loeyae@gmail.com>
  */
-interface Render
+class PermissionException extends \loeye\base\Exception
 {
 
     /**
-     * header
-     *
-     * @param \loeye\std\Response $response response
-     *
-     * @return void
+     * default error code
      */
-    public function header(Response $response);
+    const DEFAULT_ERROR_CODE = 430000;
 
     /**
-     * oupput
-     *
-     * @param \loeye\std\Response $response response
-     *
-     * @return void
+     * default error message
      */
-    public function output(Response $response);
+    const DEFAULT_ERROR_MSG = "Permission Error";
+    
 }

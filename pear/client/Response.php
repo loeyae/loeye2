@@ -11,8 +11,8 @@
  * @category PHP
  * @package  LOEYE
  * @author   Zhang Yi <loeyae@gmail.com>
- * @version  GIT: $Id: Zhang Yi $
- * @link     https://github.com/loeyae/loeye.git
+ * @version  2018-07-23 22:44:28
+ * @link     https://github.com/loeyae/loeye2.git
  */
 
 namespace loeye\client;

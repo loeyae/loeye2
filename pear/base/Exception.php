@@ -11,8 +11,8 @@
  * @category PHP
  * @package  LOEYE
  * @author   Zhang Yi <loeyae@gmail.com>
- * @version  GIT: $Id: Zhang Yi $
- * @link     https://github.com/loeyae/loeye.git
+ * @version  2018-07-23 22:44:28
+ * @link     https://github.com/loeyae/loeye2.git
  */
 
 namespace loeye\base;
@@ -72,33 +72,15 @@ function ExceptionHandler(\Exception $exc, Context $context)
 class Exception extends \Exception
 {
 
+    /**
+     * default error code
+     */
     const DEFAULT_ERROR_CODE = 500;
-    const INVALID_CONFIG_SET_CODE = 500001;
-    const INVALID_LANGUAGE_SET_CODE = 500002;
-    const INVALID_PARAMETER_CODE = 500100;
-    const INVALID_MODULE_ID_CODE = 500200;
-    const INVALID_FILE_TYPE_CODE = 500301;
-    const PDO_GENERIC_ERROR_CODE = 500400;
-    const PDO_SQL_SETTING_ERROR_CODE = 500401;
-    const INVALID_PLUGIN_ERROR_CODE = 500500;
-    const INVALID_PLUGIN_SET_CODE = 500501;
-    const INVALID_PLUGIN_INSTANCE_CODE = 500502;
-    const ACCESS_DENIED = 401;
-    const LOGIN_FAILED = 401001;
-    const ACCESS_UNAPPROVED = 401002;
-    const CRUMB_ERROR_CODE = 401003;
-    const REPEAT_ERROR_CODE = 401004;
-    const PAGE_NOT_FOUND_CODE = 404;
-    const MODULE_NOT_FOUND_CODE = 404010;
-    const FILE_NOT_FOUND_CODE = 404020;
-    const LANGUAGE_FILE_NOT_FOUND_CODE = 404021;
-    const RECORD_NOT_FOUND_CODE = 404040;
-    const DEFAULT_LOGIC_ERROR = 900;
-    const CONTEXT_KEY_NOT_FOUND  = 900101;
-    const CONTEXT_VALUE_IS_EMPTY = 900102;
-    const DATA_KEY_NOT_FOUND          = 900201;
-    const DATA_VALUE_IS_EMPTY         = 900202;
-    const DATA_AT_LEAST_EXIST_ONE_KEY = 900203;
+
+    /**
+     * default error message
+     */
+    const DEFAULT_ERROR_MSG = "Internal Error";
 
     /**
      * __construct
@@ -108,8 +90,11 @@ class Exception extends \Exception
      *
      * @return void
      */
-    public function __construct($errorMessage, $errorCode = self::DEFAULT_ERROR_CODE)
+    public function __construct(string $errorMessage = self::DEFAULT_ERROR_MSG, int $errorCode = self::DEFAULT_ERROR_CODE, array $parameter = [])
     {
+        if ($parameter) {
+            $errorMessage = str_replace(array_keys($parameter), array_values($parameter), $errorMessage);
+        }
         parent::__construct($errorMessage, $errorCode);
     }
 

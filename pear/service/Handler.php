@@ -11,11 +11,13 @@
  * @category PHP
  * @package  LOEYE
  * @author   Zhang Yi <loeyae@gmail.com>
- * @version  GIT: $Id: Zhang Yi $
- * @link     https://github.com/loeyae/loeye.git
+ * @version  2018-07-23 22:44:28
+ * @link     https://github.com/loeyae/loeye2.git
  */
 
 namespace loeye\service;
+
+use \loeye\error\RequestParameterException;
 
 /**
  * Description of BaseHandler
@@ -25,18 +27,6 @@ namespace loeye\service;
 abstract class Handler extends Resource
 {
 
-    const ERR_CANNOT_PARSE_JSON   = 1;
-    const ERR_MISS_REQUIRE_FIELD  = 2;
-    const ERR_INPUT_IS_INVALID    = 3;
-    const ERR_ACCESS_DENIED       = 4;
-    const ERR_NOT_ALLOWED_INSERT  = 5;
-    const ERR_NOT_ALLOWED_UPDATE  = 6;
-    const ERR_NOT_ALLOWED_DELETE  = 7;
-    const ERR_NOT_ALLOWD_METHOD   = 8;
-    const ERR_RECODE_NOT_FOUND    = 9;
-    const ERR_METHOD_NOT_FOUND    = 10;
-    const ERR_SERVICE_UNAVAILABLE = 11;
-    const ERR_RESP_GENRIC         = 12;
     const METHOD_GET    = 'GET';
     const METHOD_POST   = 'POST';
     const METHOD_PUT    = 'PUT';
@@ -52,35 +42,6 @@ abstract class Handler extends Resource
     protected $cmd;
     protected $output;
 
-    public static $ERR_MAPPIG = array(
-        self::ERR_CANNOT_PARSE_JSON   => LOEYE_REST_STATUS_BAD_REQUEST,
-        self::ERR_MISS_REQUIRE_FIELD  => LOEYE_REST_STATUS_BAD_REQUEST,
-        self::ERR_INPUT_IS_INVALID    => LOEYE_REST_STATUS_BAD_REQUEST,
-        self::ERR_ACCESS_DENIED       => LOEYE_REST_STATUS_DENIED,
-        self::ERR_NOT_ALLOWED_INSERT  => LOEYE_REST_STATUS_DENIED,
-        self::ERR_NOT_ALLOWED_UPDATE  => LOEYE_REST_STATUS_DENIED,
-        self::ERR_NOT_ALLOWED_DELETE  => LOEYE_REST_STATUS_DENIED,
-        self::ERR_NOT_ALLOWD_METHOD   => LOEYE_REST_STATUS_BAD_REQUEST,
-        self::ERR_RECODE_NOT_FOUND    => LOEYE_REST_STATUS_NOT_FOUND,
-        self::ERR_METHOD_NOT_FOUND    => LOEYE_REST_STATUS_METHOD_NOT_FOUND,
-        self::ERR_SERVICE_UNAVAILABLE => LOEYE_REST_STATUS_SERVICE_UNAVAILABLE,
-        self::ERR_RESP_GENRIC         => LOEYE_REST_STATUS_SERVICE_UNAVAILABLE,
-    );
-    public static $ERR_MSG    = array(
-        self::ERR_CANNOT_PARSE_JSON   => 'Input data is valid',
-        self::ERR_MISS_REQUIRE_FIELD  => 'Input data is valid',
-        self::ERR_INPUT_IS_INVALID    => 'Input data is valid',
-        self::ERR_ACCESS_DENIED       => 'Access denied',
-        self::ERR_NOT_ALLOWED_INSERT  => 'Access denied',
-        self::ERR_NOT_ALLOWED_UPDATE  => 'Access denied',
-        self::ERR_NOT_ALLOWED_DELETE  => 'Access denied',
-        self::ERR_NOT_ALLOWD_METHOD   => 'Access denied',
-        self::ERR_RECODE_NOT_FOUND    => 'Resource not found',
-        self::ERR_METHOD_NOT_FOUND    => 'HTTP method is not allowed',
-        self::ERR_SERVICE_UNAVAILABLE => 'Internal error',
-        self::ERR_RESP_GENRIC         => 'Internal error',
-    );
-
     /**
      * _processRequest
      *
@@ -91,43 +52,32 @@ abstract class Handler extends Resource
      */
     private function _processRequest(Request $req, Response $resp)
     {
-        try {
-            $this->init($req, $resp);
-            $method = $req->getMethod();
-            switch ($method) {
-                case self::METHOD_POST:
-                    if ($req->getContentLength() == 0) {
-                        throw new \loeye\base\Exception(
-                                self::$ERR_MSG[self::ERR_CANNOT_PARSE_JSON], self::ERR_CANNOT_PARSE_JSON);
-                    }
+        $this->init($req, $resp);
+        $method = $req->getMethod();
+        switch ($method) {
+            case self::METHOD_POST:
+                if ($req->getContentLength() == 0) {
+                    throw new RequestParameterException(RequestParameterException::REQUEST_BODY_EMPTY_MSG, RequestParameterException::REQUEST_BODY_EMPTY_CODE);
+                }
+                $requestData = $this->_getRequestData($req);
+                $data        = $this->process($requestData);
+                break;
+            case self::METHOD_PUT:
+                if ($req->getContentLength() > 1) {
                     $requestData = $this->_getRequestData($req);
                     $data        = $this->process($requestData);
-                    break;
-                case self::METHOD_PUT:
-                    if ($req->getContentLength() > 1) {
-                        $requestData = $this->_getRequestData($req);
-                        $data        = $this->process($requestData);
-                    }
-                    break;
-                default:
-                    $data = $this->process([]);
-                    break;
-            }
-            if ($this->withDefaultRequestHeader) {
-                $this->output['response_data'] = $data;
-            } else {
-                $this->output = $data;
-            }
-            $this->render($resp);
-        } catch (\loeye\base\Exception $exc) {
-            \loeye\base\Utils::errorLog($exc);
-            $code = $exc->getCode();
-            $this->render($resp, $code, $exc->getMessage());
-        } catch (\Exception $exc) {
-            \loeye\base\Utils::errorLog($exc);
-            $code = $exc->getCode();
-            $this->render($resp, $code, 'Server Internal Error');
+                }
+                break;
+            default:
+                $data = $this->process([]);
+                break;
         }
+        if ($this->withDefaultRequestHeader) {
+            $this->output['response_data'] = $data;
+        } else {
+            $this->output = $data;
+        }
+        $this->render($resp);
     }
 
     /**
@@ -143,13 +93,11 @@ abstract class Handler extends Resource
         $data        = $req->getContent();
         $requestData = json_decode($data, true);
         if (!is_array($requestData)) {
-            throw new \loeye\base\Exception(
-                    self::$ERR_MAPPIG[self::ERR_CANNOT_PARSE_JSON], self::ERR_CANNOT_PARSE_JSON);
+            throw new RequestParameterException();
         }
         if ($this->withDefaultRequestHeader) {
             if (!array_key_exists($this->withDefaultRequestKey, $requestData)) {
-                throw new \loeye\base\Exception(
-                        self::$ERR_MSG[self::ERR_INPUT_IS_INVALID], self::ERR_INPUT_IS_INVALID);
+                throw new RequestParameterException();
             }
             $requestData = $requestData[$this->withDefaultRequestKey];
         }
@@ -267,8 +215,7 @@ abstract class Handler extends Resource
         ) {
             return $this->pathParameter[$position];
         } else {
-            throw new \loeye\base\Exception(
-                    'Missing required field: ' . $field, self::ERR_MISS_REQUIRE_FIELD);
+            throw new RequestParameterException(RequestParameterException::$PARAMETER_ERROR_MSG_TEMPLATES[''], RequestParameterException::REQUEST_PARAMETER_ERROR_CODE);
         }
     }
 
@@ -288,7 +235,7 @@ abstract class Handler extends Resource
         if ($default !== null && $value == $default) {
             return $value;
         } else if (empty($value)) {
-            throw new \loeye\base\Exception('Field: ' . $field . 'can not empty', self::ERR_INPUT_IS_INVALID);
+            throw new RequestParameterException('Field: ' . $field . 'can not empty', self::ERR_INPUT_IS_INVALID);
         }
         return $value;
     }
@@ -307,7 +254,7 @@ abstract class Handler extends Resource
         if (is_array($data) && array_key_exists($key, $data)) {
             return $data[$key];
         } else {
-            throw new \loeye\base\Exception('Missing required field: ' . $key, self::ERR_MISS_REQUIRE_FIELD);
+            throw new RequestParameterException('Missing required field: ' . $key, self::ERR_MISS_REQUIRE_FIELD);
         }
     }
 

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Handler.php
+ * BusinessException.php
  *
  * PHP version 7
  *
@@ -11,19 +11,28 @@
  * @category PHP
  * @package  LOEYE
  * @author   Zhang Yi <loeyae@gmail.com>
- * @version  2018-07-23 22:44:28
+ * @version  2019-4-8 14:43:09
  * @link     https://github.com/loeyae/loeye2.git
  */
 
-namespace loeye\std;
+namespace loeye\error;
 
 /**
- * Handler
+ * BusinessException
  *
  * @author   Zhang Yi <loeyae@gmail.com>
  */
-interface Handler
+class BusinessException extends \loeye\base\Exception
 {
 
-    public function handle();
+    /**
+     * default error code
+     */
+    const DEFAULT_ERROR_CODE = 400000;
+
+    /**
+     * default error message
+     */
+    const DEFAULT_ERROR_MSG = "Business Error";
+
 }

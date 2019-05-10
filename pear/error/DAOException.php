@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Handler.php
+ * DAOException.php
  *
  * PHP version 7
  *
@@ -11,19 +11,16 @@
  * @category PHP
  * @package  LOEYE
  * @author   Zhang Yi <loeyae@gmail.com>
- * @version  2018-07-23 22:44:28
+ * @version  2018-04-08 14:30:14
  * @link     https://github.com/loeyae/loeye2.git
  */
-
-namespace loeye\std;
-
+namespace loeye\error;
 /**
- * Handler
+ * DAOException
  *
  * @author   Zhang Yi <loeyae@gmail.com>
  */
-interface Handler
+class DAOException extends \loeye\base\Exception
 {
-
-    public function handle();
+    //put your code here
 }

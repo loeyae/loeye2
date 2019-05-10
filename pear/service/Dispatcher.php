@@ -11,8 +11,8 @@
  * @category PHP
  * @package  LOEYE
  * @author   Zhang Yi <loeyae@gmail.com>
- * @version  GIT: $Id: Zhang Yi $
- * @link     https://github.com/loeyae/loeye.git
+ * @version  2018-07-23 22:44:28
+ * @link     https://github.com/loeyae/loeye2.git
  */
 
 namespace loeye\service;
@@ -73,7 +73,6 @@ class Dispatcher extends \loeye\std\Dispatcher
             \loeye\base\Utils::errorLog($exc);
             $request = ($this->getContext()->getRequest() ?? new Request());
             $response = ($this->getContext()->getResponse() ?? new Response($request));
-
             $format = ($request->getFormatType());
             if (empty($format)) {
                 $response->setFormat('json');
