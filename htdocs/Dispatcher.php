@@ -4,7 +4,7 @@
  * Dispatcher.php
  *
  * @author  Zhang Yi <loeyae@gmail.com>
- * @version GIT: <git_id> $
+ * @version 2018-07-24 09:26:46
  */
 
 mb_internal_encoding('UTF-8');

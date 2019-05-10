@@ -4,7 +4,7 @@
  * service.php
  *
  * @author  Zhang Yi <loeyae@gmail.com>
- * @version SVN: $Id: Zhang Yi $
+ * @version 2019-02-25 14:50:29
  */
 
 mb_internal_encoding('UTF-8');
