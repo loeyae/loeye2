@@ -7,7 +7,7 @@
  * see LICENSE for more details: http://www.apache.org/licenses/LICENSE-2.0.
  *
  * @author  Zhang Yi <loeyae@gmail.com>
- * @version SVN: $Id: Zhang Yi $
+ * @version 2019-02-25 10:21:17
  */
 namespace app\services\handler;
 

@@ -7,9 +7,12 @@
  * see LICENSE for more details: http://www.apache.org/licenses/LICENSE-2.0.
  *
  * @author  Zhang Yi <loeyae@gmail.com>
- * @version SVN: $Id: Zhang Yi $
+ * @version 2019-02-25 14:54:58
  */
 namespace app\services\handler\sample\test;
+
+use \loeye\error\DataException;
+
 /**
  * GetHandler
  *
@@ -45,6 +48,9 @@ class GetHandler extends \app\services\handler\AbstractHandler
     {
         $id = $this->pathParameter[4];
         $user = $this->server->getUser($id);
+        if (empty($user)) {
+            throw new DataException(DataException::DATA_NOT_FOUND_ERROR_MSG, DataException::DATA_NOT_FOUND_ERROR_CODE);
+        }
         return ['id' => $user->getId(), 'name' => $user->getName()];
     }
 
