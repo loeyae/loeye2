@@ -1,6 +1,10 @@
 {
     "name": "loeyae/loeye2",
     "description": "a php framework",
+    "keywords": [
+        "loeyae",
+        "loeye"
+    ],
     "type": "project",
     "require": {
         "smarty/smarty": "^3.1",
