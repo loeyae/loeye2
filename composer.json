@@ -19,7 +19,7 @@
         "twbs/bootstrap": "^4.1",
         "guzzlehttp/guzzle": "^6.3"
     },
-    "license": "Apache License 2.0",
+    "license": "MIT",
     "authors": [
         {
             "name": "Zhang Yi",
