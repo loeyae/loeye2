@@ -5,8 +5,9 @@
         "loeyae",
         "loeye"
     ],
-    "type": "project",
+    "type": "library",
     "require": {
+        "php": ">=7.1.0",
         "smarty/smarty": "^3.1",
         "monolog/monolog": "^1.23",
         "symfony/yaml": "^4.1",
