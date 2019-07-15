@@ -142,8 +142,7 @@ class Dispatcher extends \loeye\std\Dispatcher
             $router = new \loeye\base\UrlManager($this->rewrite);
             $path = $router->match($requestUrl);
             if ($path === false) {
-                throw new \loeye\base\Exception('url not found',
-                    \loeye\base\Exception::FILE_NOT_FOUND_CODE);
+                throw new \loeye\base\Exception('url not found', 404);
             }
         }
         if ($path == null) {
