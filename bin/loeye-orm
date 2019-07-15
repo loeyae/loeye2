@@ -13,9 +13,21 @@ use Symfony\Component\Console\Output\ConsoleOutput;
 mb_internal_encoding('UTF-8');
 
 define('LOEYE_MODE', 'prod');
-define('APP_BASE_DIR', dirname(__DIR__));
+define('APP_BASE_DIR', getcwd());
+define("PROJECT_DIR", realpath(APP_BASE_DIR .'/app'));
 
-require_once APP_BASE_DIR . DIRECTORY_SEPARATOR .'vendor'. DIRECTORY_SEPARATOR .'autoload.php';
+$autoloadFiles = [
+    __DIR__ . '/../vendor/autoload.php',
+    __DIR__ . '/../../../autoload.php'
+];
+
+foreach ($autoloadFiles as $autoloadFile) {
+    if (file_exists($autoloadFile)) {
+        require_once $autoloadFile;
+        break;
+    }
+}
+
 
 $argv = $_SERVER['argv'];
 $property = $argv[1];
