@@ -202,7 +202,7 @@ class Configuration
         if (!$dir) {
             throw new Exception(
                     '无效的配置文件路径:' . $this->_baseDir . '/' . ($this->getBundle()),
-                    Exception::FILE_NOT_FOUND_CODE);
+                    404);
         }
         $fileSystem = new \FilesystemIterator($dir, \FilesystemIterator::KEY_AS_FILENAME);
 
