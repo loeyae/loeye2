@@ -17,6 +17,8 @@
 
 namespace loeye\base;
 
+use loeye\error\{ResourceException, BusinessException};
+
 /**
  * Description of ModuleDefinition
  *
@@ -138,9 +140,9 @@ class ModuleDefinition
             return array();
         }
         if (!isset($this->_views[$renderId])) {
-            throw new Exception(
-                    'render:' . $renderId . '不存在',
-                    Exception::INVALID_PARAMETER_CODE
+            throw new BusinessException(
+                    BusinessException::INVALID_RENDER_SET_MSG,
+                    BusinessException::INVALID_RENDER_SET_CODE
             );
         }
         return $this->_views[$renderId];
@@ -157,9 +159,10 @@ class ModuleDefinition
         $inputs          = array();
         if (!empty($this->_currentModule['inputs'])) {
             if (!is_array($this->_currentModule['inputs'])) {
-                throw new Exception(
-                        "无效的module设置：inputs",
-                        Exception::INVALID_CONFIG_SET_CODE
+                throw new BusinessException(
+                    BusinessException::INVALID_MODULE_SET_MSG,
+                    BusinessException::INVALID_MODULE_SET_CODE,
+                    ["{mode}"=>"inputs"]
                 );
             }
             $inputs = $this->_currentModule['inputs'];
@@ -168,9 +171,10 @@ class ModuleDefinition
         $setting       = array();
         if (!empty($this->_currentModule['setting'])) {
             if (!is_array($this->_currentModule['setting'])) {
-                throw new Exception(
-                        "无效的module设置：setting",
-                        Exception::INVALID_CONFIG_SET_CODE
+                throw new BusinessException(
+                    BusinessException::INVALID_MODULE_SET_MSG,
+                    BusinessException::INVALID_MODULE_SET_CODE,
+                    ["{mode}"=>"setting"]
                 );
             }
             $setting = $this->_currentModule['setting'];
@@ -235,9 +239,9 @@ class ModuleDefinition
                         $i++;
                     }
                 } else {
-                    throw new Exception(
-                            'include module:' . $plugin['include_module'] . '不存在',
-                            Exception::MODULE_NOT_FOUND_CODE
+                    throw new ResourceException(
+                        ResourceException::MODULE_NOT_EXISTS_MSG,
+                        ResourceException::MODULE_NOT_EXISTS_CODE
                     );
                 }
             } else {
@@ -267,7 +271,7 @@ class ModuleDefinition
                 }
             }
         }
-        throw new Exception("Not Found", Exception::MODULE_NOT_FOUND_CODE);
+        throw new ResourceException(ResourceException::MODULE_NOT_FOUND_MSG, ResourceException::MODULE_NOT_FOUND_CODE);
     }
 
     /**

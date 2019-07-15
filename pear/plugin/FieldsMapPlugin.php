@@ -47,7 +47,7 @@ abstract class FieldsMapPlugin extends \loeye\std\Plugin
         if (empty($this->fieldsMap)) {
             $errorMsg = '字段对应关系设置无效';
             \loeye\base\Utils::throwException(
-                    $errorMsg, \loeye\base\Exception::INVALID_PLUGIN_SET_CODE);
+                    $errorMsg, \loeye\error\BusinessException::INVALID_PLUGIN_SET_CODE);
         }
         $data = \loeye\base\Utils::getContextData($context, $inputs, $this->dataKey);
         if (empty($data)) {

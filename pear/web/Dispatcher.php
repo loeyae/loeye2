@@ -296,8 +296,8 @@ class Dispatcher extends \loeye\std\Dispatcher
                 } else if (\loeye\lib\ModuleParse::isParallel($key)) {
                     if ($isParallel === true) {
                         throw new \loeye\base\Exception(
-                                'parallel关键字不能嵌套',
-                                \loeye\base\Exception::INVALID_CONFIG_SET_CODE);
+                                'parallel can not nest',
+                                \loeye\error\BusinessException::INVALID_CONFIG_SET_CODE);
                     }
                     $result       = $this->_excutePlugin(current($plugin), true);
                     $returnStatus = $result[0];
@@ -394,8 +394,8 @@ class Dispatcher extends \loeye\std\Dispatcher
             $pluginObj = \loeye\base\Factory::getPlugin($plugin);
             if (!($pluginObj instanceof \loeye\std\ParallelPlugin)) {
                 throw new \loeye\base\Exception(
-                        '平行处理的plugin必须为ParallelPlugin实例',
-                        \loeye\base\Exception::INVALID_PLUGIN_INSTANCE_CODE
+                        'plugin of parallel must ParallelPlugin instance',
+                        \loeye\error\BusinessException::INVALID_PLUGIN_INSTANCE_CODE
                 );
             }
             $pluginObj->prepare($this->context, $setting);
@@ -492,9 +492,9 @@ class Dispatcher extends \loeye\std\Dispatcher
                         if (!empty($url)) {
                             $this->context->getResponse()->setRedirectUrl($url);
                         } else {
-                            throw new \loeye\base\Exception(
-                                    '无效的跳转链接设置',
-                                    \loeye\base\Exception::INVALID_CONFIG_SET_CODE);
+                            throw new \loeye\error\BusinessException(
+                                    \loeye\error\BusinessException::INVALID_RENDER_SET_MSG,
+                                    \loeye\error\BusinessException::INVALID_RENDER_SET_CODE);
                         }
                         break;
                     case 'json':
@@ -666,7 +666,7 @@ class Dispatcher extends \loeye\std\Dispatcher
         }
         if (empty($moduleId)) {
             $uri = (isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '');
-            throw new \loeye\base\Exception('页面未找到:' . $uri, 404);
+            throw new \loeye\error\ResourceException(\loeye\error\ResourceException::PAGE_NOT_FOUND_MSG, \loeye\error\ResourceException::PAGE_NOT_FOUND_CODE);
         }
         return $moduleId;
     }

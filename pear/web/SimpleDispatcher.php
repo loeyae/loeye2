@@ -125,12 +125,12 @@ class SimpleDispatcher extends \loeye\std\Dispatcher
         $action = ucfirst($this->action) . ucfirst(self::KEY_ACTION);
 
         if (!class_exists($controller)) {
-            throw new \loeye\base\Exception('bad request', 404);
+            throw new \loeye\error\ResourceException(\loeye\error\ResourceException::PAGE_NOT_FOUND_MSG, \loeye\error\ResourceException::PAGE_NOT_FOUND_CODE);
         }
         $ref    = new \ReflectionClass($controller);
         $object = $ref->newInstance($this->context);
         if (!method_exists($object, $action)) {
-            throw new \loeye\base\Exception('bad request', 404);
+            throw new \loeye\error\ResourceException(\loeye\error\ResourceException::PAGE_NOT_FOUND_MSG, \loeye\error\ResourceException::PAGE_NOT_FOUND_CODE);
         }
         $prepare = $object->prepare();
         if ($prepare) {
@@ -177,7 +177,7 @@ class SimpleDispatcher extends \loeye\std\Dispatcher
             $this->context->setUrlManager($router);
             $path   = $router->match($requestUrl);
             if ($path === false) {
-                throw new \loeye\base\Exception('url not found', 404);
+                throw new \loeye\error\ResourceException(\loeye\error\ResourceException::PAGE_NOT_FOUND_MSG, \loeye\error\ResourceException::PAGE_NOT_FOUND_CODE);
             }
         }
         if ($path == null && filter_has_var(INPUT_GET, self::KEY_REQUEST_URI)) {
@@ -207,7 +207,7 @@ class SimpleDispatcher extends \loeye\std\Dispatcher
             }
         }
         if (empty($this->module) || empty($this->controller)) {
-            throw new \loeye\base\Exception('bad request', 404);
+            throw new \loeye\error\ResourceException(\loeye\error\ResourceException::PAGE_NOT_FOUND_MSG, \loeye\error\ResourceException::PAGE_NOT_FOUND_CODE);
         }
         if (empty($this->action)) {
             $this->action = 'index';

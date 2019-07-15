@@ -111,8 +111,8 @@ class TemplatePlugin extends \loeye\std\Plugin
                                 } else if ($count >= 3) {
                                     list($callback, $cacheable, $attr) = $pluginSetting;
                                 } else {
-                                    throw new \loeye\base\Exception('invalid smarty plugin setting',
-                                            \loeye\base\Exception::INVALID_PLUGIN_SET_CODE);
+                                    throw new \loeye\error\BusinessException(\loeye\error\BusinessException::INVALID_PLUGIN_SET_MSG,
+                                            \loeye\error\BusinessException::INVALID_PLUGIN_SET_CODE);
                                 }
                             } else {
                                 $callback = $pluginSetting;
@@ -144,8 +144,8 @@ class TemplatePlugin extends \loeye\std\Plugin
                                 } else if ($count >= 4) {
                                     list($object, $allowed, $args, $block) = $pluginSetting;
                                 } else {
-                                    throw new \loeye\base\Exception('invalid smarty plugin setting',
-                                            \loeye\base\Exception::INVALID_PLUGIN_SET_CODE);
+                                    throw new \loeye\error\BusinessException(\loeye\error\BusinessException::INVALID_PLUGIN_SET_MSG,
+                                            \loeye\error\BusinessException::INVALID_PLUGIN_SET_CODE);
                                 }
                             } else {
                                 $object = $pluginSetting;

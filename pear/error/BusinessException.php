@@ -28,11 +28,47 @@ class BusinessException extends \loeye\base\Exception
     /**
      * default error code
      */
-    const DEFAULT_ERROR_CODE = 400000;
+    const DEFAULT_ERROR_CODE = 500000;
 
     /**
      * default error message
      */
-    const DEFAULT_ERROR_MSG = "Business Error";
+    const DEFAULT_ERROR_MSG = "Business Err5or";
+
+    const INVALID_CONFIG_SET_CODE = 500001;
+    const INVALID_CONFIG_SET_MSG = "Invalid config setting";
+
+    const INVALID_LANGUAGE_SET_CODE = 500002;
+    const INVALID_LANGUAGE_SET_MSG = "Invalid language setting";
+
+    const INVALID_PARAMETER_CODE = 500100;
+    const INVALID_PARAMETER_MSG = "Invalid paramter";
+
+    const INVALID_MODULE_ID_CODE = 500200;
+    const INVALID_MODULE_ID_MSG = "Invalid module id";
+
+    const INVALID_MODULE_SET_CODE = 500200;
+    const INVALID_MODULE_SET_MSG = "Invalid module setting: {mode}";
+
+    const INVALID_FILE_TYPE_CODE = 500301;
+    const INVALID_FILE_TYPE_MSG = "Invalid file type";
+
+    const PDO_GENERIC_ERROR_CODE = 500400;
+    const PDO_GENERIC_ERROR_MSG = "Pdo error";
+
+    const PDO_SQL_SETTING_ERROR_CODE = 500401;
+    const PDO_SQL_SETTING_ERROR_MSG = "Pdo sql setting error";
+
+    const INVALID_PLUGIN_ERROR_CODE = 500500;
+    const INVALID_PLUGIN_ERROR_MSG = "Invalid pluging";
+
+    const INVALID_PLUGIN_SET_CODE = 500501;
+    const INVALID_PLUGIN_SET_MSG = "Invalid pluging setting";
+
+    const INVALID_PLUGIN_INSTANCE_CODE = 500502;
+    const INVALID_PLUGIN_INSTANCE_MSG = "Invalid pluging instance";
+
+    const INVALID_RENDER_SET_CODE = 500501;
+    const INVALID_RENDER_SET_MSG = "Invalid render setting";
 
 }

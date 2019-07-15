@@ -42,9 +42,9 @@ class Resource
     public function __construct($type, $resource)
     {
         if (!is_string($type)) {
-            throw new \loeye\base\Exception(
-                    '无效的资源类型',
-                    \loeye\base\Exception::INVALID_PARAMETER_CODE
+            throw new \loeye\error\BusinessException(
+                    \loeye\error\BusinessException::INVALID_PARAMETER_MSG,
+                    \loeye\error\BusinessException::INVALID_PARAMETER_CODE
             );
         }
         $this->_type = mb_strtolower($type);
@@ -53,17 +53,17 @@ class Resource
         } else if (is_array($resource)) {
             foreach ($resource as $value) {
                 if (!is_string($value)) {
-                    throw new \loeye\base\Exception(
-                            '无效的资源',
-                            \loeye\base\Exception::INVALID_PARAMETER_CODE
+                    throw new \loeye\error\BusinessException(
+                        \loeye\error\BusinessException::INVALID_PARAMETER_MSG,
+                        \loeye\error\BusinessException::INVALID_PARAMETER_CODE
                     );
                 }
                 $this->_resource[] = $value;
             }
         } else {
-            throw new \loeye\base\Exception(
-                    '无效的资源',
-                    \loeye\base\Exception::INVALID_PARAMETER_CODE
+            throw new \loeye\error\BusinessException(
+                \loeye\error\BusinessException::INVALID_PARAMETER_MSG,
+                \loeye\error\BusinessException::INVALID_PARAMETER_CODE
             );
         }
     }

@@ -22,5 +22,14 @@ namespace loeye\error;
  */
 class DAOException extends \loeye\base\Exception
 {
-    //put your code here
+    /**
+     * default error code
+     */
+    const DEFAULT_ERROR_CODE = 510000;
+
+    /**
+     * default error message
+     */
+    const DEFAULT_ERROR_MSG = "DataBase Error";
+
 }

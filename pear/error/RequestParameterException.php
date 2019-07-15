@@ -40,8 +40,10 @@ class RequestParameterException extends \loeye\base\Exception
     const REQUEST_PARAMETER_ERROR_CODE = 410200;
 
     public static $PARAMETER_ERROR_MSG_TEMPLATES = [
-        'path_var_error' => 'Path Variable {field} Not Null',
-        '',
+        'path_var_not_empty' => 'Path Variable {field} Not Emprty',
+        'path_var_required' => 'Path Variable {field} Must Be Required',
+        'parameter_not_empty' => 'Parameter Variable {field} Not Emprty',
+        'parameter_required' => 'Parameter Variable {field} Must Be Required',
     ];
 
 }

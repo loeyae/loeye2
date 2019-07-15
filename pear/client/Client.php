@@ -74,8 +74,8 @@ abstract class Client
         $this->config = $this->propertyConfig(static::BUNDLE, $bundle);
         $config       = $this->config->get('service');
         if (empty($config['server_url']) || !is_string($config['server_url'])) {
-            throw new \loeye\base\Exception("无效的服务端url设置",
-                    \loeye\base\Exception::INVALID_CONFIG_SET_CODE);
+            throw new \loeye\error\BusinessException(\loeye\error\BusinessException::INVALID_CONFIG_SET_MSG,
+                    \loeye\error\BusinessException::INVALID_CONFIG_SET_CODE);
         }
         $this->baseUrl = $config['server_url'];
         if (!empty($config['timeout']) && $config['timeout'] > 0 && $config['timeout'] <= 30) {

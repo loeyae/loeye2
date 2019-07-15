@@ -16,6 +16,7 @@
  */
 
 namespace loeye\plugin;
+use loeye\error\PermissionException;
 
 /**
  * CheckCrumbPlugin
@@ -48,12 +49,12 @@ class CheckCrumbPlugin extends \loeye\std\Plugin
                 if (isset($inputs['output']) && $inputs['output']) {
                     $outputPlugin = new OutputPlugin();
                     $inputsData   = ['format' => $inputs['output'],
-                        'code'   => \loeye\base\Exception::CRUMB_ERROR_CODE,
+                        'code'   => PermissionException::CRUMB_ERROR_CODE,
                         'msg'    => 'crumb验证失败'];
                     $outputPlugin->process($context, $inputsData);
                 } else {
                     \loeye\base\Utils::throwException(
-                            'crumb验证失败', \loeye\base\Exception::CRUMB_ERROR_CODE);
+                            'crumb验证失败', \PermissionException::CRUMB_ERROR_CODE);
                 }
             }
         } else {

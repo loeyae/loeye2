@@ -16,6 +16,7 @@
  */
 
 namespace loeye\base;
+use loeye\error\{LogicExcption, BusinessException};
 
 /**
  * Description of Utils
@@ -74,27 +75,27 @@ class Utils
     {
         if (empty($key)) {
             if ($data !== $value) {
-                self::throwException("${data}不等于${value}", Exception::DEFAULT_LOGIC_ERROR);
+                self::throwException("${data} not equi ${value}", LogicExcption::DEFAULT_ERROR_CODE);
             }
             return $data;
         } else if ($data instanceof Context) {
             self::checkKeyExist($data, $key);
             $origin = $data->get($key);
             if ($origin !== $value) {
-                self::throwException("context的${key}不等于${value}", Exception::DEFAULT_LOGIC_ERROR);
+                self::throwException("${key} of context not equi ${value}", LogicExcption::DEFAULT_ERROR_CODE);
             }
             return $origin;
         } else if (is_array($data)) {
             self::checkKeyExist($data, $key);
             $origin = $data[$key];
             if ($origin !== $value) {
-                self::throwException("数组的${key}不等于${value}", Exception::DEFAULT_LOGIC_ERROR);
+                self::throwException("${key} of array not equi ${value}", LogicExcption::DEFAULT_ERROR_CODE);
             }
             return $origin;
         } else {
             if ($data !== $value) {
                 self::throwException(
-                        print_r($data, true) . '不等于' . $value, Exception::DEFAULT_LOGIC_ERROR);
+                        print_r($data, true) . ' not equi ' . $value, LogicExcption::DEFAULT_ERROR_CODE);
             }
             return $data;
         }
@@ -103,7 +104,7 @@ class Utils
     /**
      * ckeckExist
      *
-     * @param \LOEYE\Context|array $data data
+     * @param \loeye\base\Context|array $data data
      * @param string                    $key  key
      *
      * @return mixed
@@ -112,23 +113,23 @@ class Utils
     {
         if ($data instanceof Context) {
             if (!$data->isExist($key)) {
-                self::throwException("context不存在key:${key}的值", Exception::CONTEXT_KEY_NOT_FOUND);
+                self::throwException("${key} of context not exists", LogicExcption::CONTEXT_KEY_NOT_FOUND);
             }
             return $data->get($key);
         } else if (is_array($data)) {
             if (!isset($data[$key])) {
-                self::throwException("数组不存在key:${key}的值", Exception::DATA_KEY_NOT_FOUND);
+                self::throwException("${key} of array not exists", LogicExcption::DATA_KEY_NOT_FOUND);
             }
             return $data[$key];
         } else {
-            self::throwException("不存在key:${key}的值", Exception::DATA_KEY_NOT_FOUND);
+            self::throwException("${key} not exists", LogicExcption::DATA_KEY_NOT_FOUND);
         }
     }
 
     /**
      * checkKeyExist
      *
-     * @param \LOEYE\Context|array $data data
+     * @param \loeye\base\Context|array $data data
      * @param string                    $key  key
      *
      * @return mixed
@@ -137,23 +138,23 @@ class Utils
     {
         if ($data instanceof Context) {
             if (!$data->isExistKey($key)) {
-                self::throwException("context不存在key:${key}", Exception::CONTEXT_KEY_NOT_FOUND);
+                self::throwException("${key} of context not exists", LogicExcption::CONTEXT_KEY_NOT_FOUND);
             }
             return $data->get($key);
         } else if (is_array($data)) {
             if (!isset($data[$key])) {
-                self::throwException("数组不存在key:${key}", Exception::DATA_KEY_NOT_FOUND);
+                self::throwException("${key} of array not exists", LogicExcption::DATA_KEY_NOT_FOUND);
             }
             return $data[$key];
         } else {
-            self::throwException("不存在key:${key}", Exception::DATA_KEY_NOT_FOUND);
+            self::throwException("${key} not exists", LogicExcption::DATA_KEY_NOT_FOUND);
         }
     }
 
     /**
      * checkNotEmpty
      *
-     * @param \LOEYE\Context|array $data   data
+     * @param \loeye\base\Context|array $data   data
      * @param string                    $key    key
      * @param boolean                   $ignore ingore 0
      *
@@ -163,25 +164,25 @@ class Utils
     {
         if ($data instanceof Context) {
             if ($data->isEmpty($key, $ignore)) {
-                self::throwException("context中key:${key}为空", Exception::CONTEXT_VALUE_IS_EMPTY);
+                self::throwException("${key} of context is empty", LogicExcption::CONTEXT_VALUE_IS_EMPTY);
             }
             return $data->get($key);
         } else if (is_array($data)) {
             if (!isset($data[$key])) {
-                self::throwException("数组中key:${key}为空", Exception::DATA_VALUE_IS_EMPTY);
+                self::throwException("${key} of array is empty", LogicExcption::DATA_VALUE_IS_EMPTY);
             }
             if ($ignore) {
                 if (empty($data[$key]) && !is_numeric($data[$key])) {
-                    self::throwException("数组中key:${key}为空", Exception::DATA_VALUE_IS_EMPTY);
+                    self::throwException("${key} of array is empty", LogicExcption::DATA_VALUE_IS_EMPTY);
                 }
             } else {
                 if (empty($data[$key])) {
-                    self::throwException("数组中key:${key}为空", Exception::DATA_VALUE_IS_EMPTY);
+                    self::throwException("${key} of array is empty", LogicExcption::DATA_VALUE_IS_EMPTY);
                 }
             }
             return $data[$key];
         } else {
-            self::throwException("key:${key}为空", Exception::DATA_VALUE_IS_EMPTY);
+            self::throwException("${key} is empty", LogicExcption::DATA_VALUE_IS_EMPTY);
         }
     }
 
@@ -189,7 +190,7 @@ class Utils
      * addErrors
      *
      * @param mixed               $errors  errors
-     * @param \LOEYE\Context $context context
+     * @param \loeye\base\Context $context context
      * @param array               $setting setting
      * @param string              $default default
      *
@@ -208,7 +209,7 @@ class Utils
         } else if (!empty($default)) {
             $key = $default;
         } else {
-            self::throwException('未设置塞入错误的key', Exception::INVALID_PARAMETER_CODE);
+            self::throwException('error key for set not setting', BusinessException::INVALID_PARAMETER_CODE);
         }
         $context->addErrors($key, $errors);
     }
@@ -216,7 +217,7 @@ class Utils
     /**
      * getErrors
      *
-     * @param \LOEYE\Context $context context
+     * @param \loeye\base\Context $context context
      * @param array               $setting setting
      * @param string              $default default key
      *
@@ -232,7 +233,7 @@ class Utils
         } else if (!empty($default)) {
             $key = $default;
         } else {
-            self::throwException('未设置获取错误的key', Exception::INVALID_PARAMETER_CODE);
+            self::throwException('error key for get not setting', BusinessException::INVALID_PARAMETER_CODE);
         }
         return $context->getErrors($key);
     }
@@ -240,7 +241,7 @@ class Utils
     /**
      * removeErrors
      *
-     * @param \LOEYE\Context $context context
+     * @param \loeye\base\Context $context context
      * @param array               $setting setting
      * @param string              $default default key
      *
@@ -256,7 +257,7 @@ class Utils
         } else if (!empty($default)) {
             $key = $default;
         } else {
-            self::throwException('未设置移除错误的key', Exception::INVALID_PARAMETER_CODE);
+            self::throwException('error key for remove not exists', BusinessException::INVALID_PARAMETER_CODE);
         }
         return $context->removeErrors($key);
     }
@@ -286,7 +287,7 @@ class Utils
         } else if (!empty($default)) {
             $key = $default;
         } else {
-            self::throwException('未设置塞入数据的key', Exception::INVALID_PARAMETER_CODE);
+            self::throwException('data key for set not exists', BusinessException::INVALID_PARAMETER_CODE);
         }
         if (isset($setting['expire'])) {
             $expire = $setting['expire'];
@@ -346,7 +347,7 @@ class Utils
         } else if (!empty($default)) {
             $key = $default;
         } else {
-            self::throwException('未设置获取数据的key', Exception::INVALID_PARAMETER_CODE);
+            self::throwException('data key for unset not exists', BusinessException::INVALID_PARAMETER_CODE);
         }
         return $context->unsetKey($key);
     }
@@ -372,7 +373,7 @@ class Utils
         } else if (!empty($default)) {
             $key = $default;
         } else {
-            self::throwException("未设置获取数据的key", Exception::INVALID_PARAMETER_CODE);
+            self::throwException("data key for get not exists", BusinessException::INVALID_PARAMETER_CODE);
         }
         return $context->get($key);
     }
@@ -399,7 +400,7 @@ class Utils
         } else if (!empty($default)) {
             $key = $default;
         } else {
-            self::throwException('未设置获取数据的key', Exception::INVALID_PARAMETER_CODE);
+            self::throwException('input key not setting', BusinessException::INVALID_PARAMETER_CODE);
         }
         return self::checkNotEmpty($context, $key, $ignore);
     }
@@ -461,8 +462,8 @@ class Utils
             $keyList = array_intersect_key($data, $pattern);
             if (empty($keyList)) {
                 self::throwException(
-                        '数组中应至少包含如下key:' . print_r($least, true) . '中的一个',
-                        Exception::DEFAULT_LOGIC_ERROR
+                        'array data contains one of ' . print_r($least, true),
+                        LogicExcption::DEFAULT_ERROR_CODE
                 );
             }
             foreach ($keyList as $key => $value) {
@@ -642,7 +643,7 @@ class Utils
     /**
      * includeTpl
      *
-     * @param \LOEYE\Context $context context
+     * @param \loeye\base\Context $context context
      * @param string              $file    file name
      *
      * @return string
@@ -790,7 +791,7 @@ class Utils
         } catch (\Exception $e) {
             self::errorLog($e);
             self::throwException(
-                    '无效的参数设定', LOEYE\Exception::INVALID_PARAMETER_CODE);
+                BusinessException::INVALID_PARAMETER_MSG, BusinessException::INVALID_PARAMETER_CODE);
         }
     }
 

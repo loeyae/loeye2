@@ -63,7 +63,7 @@ class Dispatcher extends \loeye\std\Dispatcher
             }
             $handler = $handlerNamespace .'\\'. $this->service .'\\'. $this->handler . mb_convert_case(self::KEY_HANDLER, MB_CASE_TITLE);
             if (!class_exists($handler)) {
-                throw new \loeye\base\Exception('bad request', 404);
+                throw new \loeye\error\ResourceException(\loeye\error\ResourceException::PAGE_NOT_FOUND_MSG, \loeye\error\ResourceException::PAGE_NOT_FOUND_CODE);
             }
             $ref = new \ReflectionClass($handler);
             $handlerObject = $ref->newInstance($this->context);
@@ -142,7 +142,7 @@ class Dispatcher extends \loeye\std\Dispatcher
             $router = new \loeye\base\UrlManager($this->rewrite);
             $path = $router->match($requestUrl);
             if ($path === false) {
-                throw new \loeye\base\Exception('url not found', 404);
+                throw new \loeye\error\ResourceException(\loeye\error\ResourceException::PAGE_NOT_FOUND_MSG, \loeye\error\ResourceException::PAGE_NOT_FOUND_CODE);
             }
         }
         if ($path == null) {
@@ -160,7 +160,7 @@ class Dispatcher extends \loeye\std\Dispatcher
             $this->handler = $parts[0];
         }
         if (empty($this->module)|| empty($this->service) || empty($this->handler)) {
-            throw new \loeye\base\Exception('bad request', 404);
+                throw new \loeye\error\ResourceException(\loeye\error\ResourceException::PAGE_NOT_FOUND_MSG, \loeye\error\ResourceException::PAGE_NOT_FOUND_CODE);
         }
         $handlerArr = explode('_', $this->handler);
         $handlerArr = array_map(function($item) {

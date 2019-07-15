@@ -261,9 +261,9 @@ class Response extends \loeye\std\Response
             header("Location:$redirectUrl");
             exit;
         }
-        throw new \loeye\base\Exception(
-                '无效的跳转链接',
-                \loeye\base\Exception::INVALID_PARAMETER_CODE
+        throw new \loeye\error\BusinessException(
+            \loeye\error\BusinessException::INVALID_PARAMETER_MSG,
+            \loeye\error\BusinessException::INVALID_PARAMETER_CODE
         );
     }
 

@@ -17,6 +17,8 @@
 
 namespace loeye\base;
 
+use \loeye\error\BusinessException;
+
 /**
  * Description of Factory
  *
@@ -36,8 +38,7 @@ class Factory
     public static function getPlugin($pluginSetting)
     {
         if (!isset($pluginSetting['name'])) {
-            throw new Exception(
-                    '无效的plugin设置', Exception::INVALID_CONFIG_SET_CODE);
+            throw new BusinessException(BusinessException::INVALID_PLUGIN_SET_MSG, BusinessException::INVALID_PLUGIN_SET_CODE);
         }
         $class = $pluginSetting['name'];
         if (!isset($pluginSetting['src'])) {
@@ -64,8 +65,7 @@ class Factory
     public static function includeLayout(Context $context, $content, $setting)
     {
         if (!isset($setting['layout'])) {
-            throw new Exception(
-                    '无效的render设置', Exception::INVALID_CONFIG_SET_CODE);
+            throw new BusinessException(BusinessException::INVALID_RENDER_SET_MSG, BusinessException::INVALID_RENDER_SET_CODE);
         }
         $file = AutoLoadRegister::realAliasFile($setting['layout']);
         if (!is_file($file)) {
@@ -88,8 +88,7 @@ class Factory
     public static function includeView(Context $context, $setting)
     {
         if (!isset($setting['src'])) {
-            throw new Exception(
-                    '无效的render设置', Exception::INVALID_CONFIG_SET_CODE);
+            throw new BusinessException(BusinessException::INVALID_RENDER_SET_MSG, BusinessException::INVALID_RENDER_SET_CODE);
         }
         $file = AutoLoadRegister::realAliasFile($setting['src']);
         if (!is_file($file)) {

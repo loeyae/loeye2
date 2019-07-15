@@ -93,7 +93,7 @@ class Exception extends \Exception
     public function __construct(string $errorMessage = self::DEFAULT_ERROR_MSG, int $errorCode = self::DEFAULT_ERROR_CODE, array $parameter = [])
     {
         if ($parameter) {
-            $errorMessage = str_replace(array_keys($parameter), array_values($parameter), $errorMessage);
+            $errorMessage = strtr($errorMessage, $parameter);
         }
         parent::__construct($errorMessage, $errorCode);
     }

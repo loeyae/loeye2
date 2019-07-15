@@ -34,5 +34,15 @@ class PermissionException extends \loeye\base\Exception
      * default error message
      */
     const DEFAULT_ERROR_MSG = "Permission Error";
-    
+
+    const ACCESS_DENIED = 401;
+
+    const LOGIN_FAILED = 401001;
+
+    const ACCESS_UNAPPROVED = 401002;
+
+    const CRUMB_ERROR_CODE = 401003;
+
+    const REPEAT_ERROR_CODE = 401004;
+
 }

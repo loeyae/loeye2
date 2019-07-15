@@ -135,8 +135,7 @@ class AppConfig implements \ArrayAccess
     public function getSetting($key, $default = null)
     {
         if (empty($key)) {
-            throw new Exception(
-                    "无效的参数:" . $key, Exception::INVALID_PARAMETER_CODE);
+            throw new \loeye\error\BusinessException(\loeye\error\BusinessException::INVALID_PARAMETER_MSG, \loeye\error\BusinessException::INVALID_PARAMETER_CODE);
         }
         $keyList = explode(".", $key);
         $config  = $this->_config;

@@ -18,9 +18,10 @@
 namespace loeye\base;
 
 use Symfony\Component\Validator\Validation;
-use \Symfony\Component\Validator\ConstraintViolationList;
+use Symfony\Component\Validator\ConstraintViolationList;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Translation as I18n;
+use loeye\error\BusinessException;
 
 /**
  * Description of Validator
@@ -86,8 +87,8 @@ class Validator
         $rulesets     = $this->config->get('rulesets');
         $validateSets = $this->config->getConfig(null, self::KEYWORD . '=' . $rule);
         if (empty($validateSets[self::KEYWORD]) || empty($validateSets[self::KEYWORD]['fields'])) {
-            throw new Exception(
-                    '无效的验证配置', Exception::INVALID_CONFIG_SET_CODE);
+            throw new BusinessException(
+                BusinessException::INVALID_CONFIG_SET_MSG, BusinessException::INVALID_CONFIG_SET_CODE);
         }
         $schema         = $this->_initSchema($validateSets[self::KEYWORD]['fields'], $data);
         $validator      = Validation::createValidator();
@@ -376,8 +377,8 @@ class Validator
                 $children = $rule['fields'];
                 foreach ($children as $k => $child) {
                     if (empty($child) || !is_array($child)) {
-                        throw new Exception(
-                                '无效的验证配置', Exception::INVALID_CONFIG_SET_CODE);
+                        throw new BusinessException(
+                            BusinessException::INVALID_CONFIG_SET_MSG, BusinessException::INVALID_CONFIG_SET_CODE);
                     }
                     $childrenSchema = array();
                     if ($k == 'i') {

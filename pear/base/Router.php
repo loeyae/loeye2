@@ -16,6 +16,7 @@
  */
 
 namespace loeye\base;
+use loeye\error\BusinessException;
 
 /**
  * Description of Router
@@ -250,9 +251,9 @@ class Router implements \ArrayAccess
         if (isset($router['_params'])) {
             foreach ($router['_params'] as $key) {
                 if (!isset($params[$key])) {
-                    throw new Exception(
-                            "参数：${key} 必须设置",
-                            Exception::INVALID_PARAMETER_CODE
+                    throw new BusinessException(
+                        BusinessException::INVALID_PARAMETER_MSG,
+                        BusinessException::INVALID_PARAMETER_CODE
                     );
                 }
                 $search[]  = '{' . $key . '}';
@@ -296,8 +297,8 @@ class Router implements \ArrayAccess
         if (!empty($config)) {
             foreach ($config as $name => $value) {
                 if (!isset($value['path'])) {
-                    throw new Exception(
-                            '无效的route设置', Exception::INVALID_CONFIG_SET_CODE);
+                    throw new BusinessException(
+                        BusinessException::INVALID_CONFIG_SET_MSG, BusinessException::INVALID_CONFIG_SET_CODE);
                 }
                 $search  = array('#');
                 $replace = array('\#');

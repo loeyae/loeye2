@@ -79,7 +79,7 @@ class FilterDataPlugin extends \loeye\std\Plugin
                 if (isset($inputs['ignore_404']) && $inputs['ignore_404'] == true) {
                     foreach ($errors as $error) {
                         $code = $error->getCode();
-                        if ($code == LOEYE_REST_STATUS_NOT_FOUND || $code == \loeye\base\Exception::RECORD_NOT_FOUND_CODE) {
+                        if ($code == LOEYE_REST_STATUS_NOT_FOUND || $code == \loeye\error\ResourceException::RECORD_NOT_FOUND_CODE) {
                             $context->set('record_not_found', true);
                         } else {
                             \loeye\base\Utils::throwError($error);
@@ -92,7 +92,7 @@ class FilterDataPlugin extends \loeye\std\Plugin
                 if (isset($inputs['ignore_404']) && $inputs['ignore_404'] == true) {
                     foreach ($errors as $error) {
                         $code = $error->getCode();
-                        if ($code == LOEYE_REST_STATUS_NOT_FOUND || $code == \loeye\base\Exception::RECORD_NOT_FOUND_CODE) {
+                        if ($code == LOEYE_REST_STATUS_NOT_FOUND || $code == \loeye\error\ResourceException::RECORD_NOT_FOUND_CODE) {
                             $context->removeErrors($inputs['err']);
                         }
                     }

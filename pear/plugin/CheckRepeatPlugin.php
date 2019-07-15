@@ -16,6 +16,7 @@
  */
 
 namespace loeye\plugin;
+use loeye\error\PermissionException;
 
 /**
  * CheckRepeatPlugin
@@ -47,7 +48,7 @@ class CheckRepeatPlugin extends \loeye\std\Plugin
                 $context->set('repeat_submit', true);
                 if (Utils::getData($inputs, 'throw_error') == true) {
                     $errmsg = '重复请求';
-                    throw new \loeye\base\Exception($errmsg, \loeye\base\Exception::REPEAT_ERROR_CODE);
+                    throw new \loeye\base\Exception($errmsg, PermissionException::REPEAT_ERROR_CODE);
                 }
                 $context->set('page_timeout', true);
                 if (Utils::getData($inputs, 'break') == true) {
@@ -60,7 +61,7 @@ class CheckRepeatPlugin extends \loeye\std\Plugin
                 if (isset($inputs['output']) && $inputs['output']) {
                     $outputPlugin = new OutputPlugin();
                     $inputsData   = ['format' => $inputs['output'],
-                        'code'   => \loeye\base\Exception::REPEAT_ERROR_CODE,
+                        'code'   => PermissionException::REPEAT_ERROR_CODE,
                         'msg'    => '重复请求'];
                     $outputPlugin->process($context, $inputsData);
                 }
