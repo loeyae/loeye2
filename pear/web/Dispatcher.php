@@ -666,8 +666,7 @@ class Dispatcher extends \loeye\std\Dispatcher
         }
         if (empty($moduleId)) {
             $uri = (isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '');
-            throw new \loeye\base\Exception('页面未找到:' . $uri,
-                    \loeye\base\Exception::PAGE_NOT_FOUND_CODE);
+            throw new \loeye\base\Exception('页面未找到:' . $uri, 404);
         }
         return $moduleId;
     }
