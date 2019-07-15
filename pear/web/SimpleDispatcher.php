@@ -177,8 +177,7 @@ class SimpleDispatcher extends \loeye\std\Dispatcher
             $this->context->setUrlManager($router);
             $path   = $router->match($requestUrl);
             if ($path === false) {
-                throw new \loeye\base\Exception('url not found',
-                        \loeye\base\Exception::FILE_NOT_FOUND_CODE);
+                throw new \loeye\base\Exception('url not found', 404);
             }
         }
         if ($path == null && filter_has_var(INPUT_GET, self::KEY_REQUEST_URI)) {
