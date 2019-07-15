@@ -68,7 +68,7 @@ if (!defined("PROJECT_DATA_DIR")) {
 }
 
 if (!defined("RUNTIME_DIR")) {
-    define('RUNTIME_DIR', realpath(LOEYE_DIR . '/../runtime'));
+    define('RUNTIME_DIR', realpath(PROJECT_DIR . '/../runtime'));
 }
 
 if (!defined("RUNTIME_CACHE_DIR")) {

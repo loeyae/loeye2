@@ -31,6 +31,10 @@
             "email": "loeyae@gmail.com"
         }
     ],
+    "bin":[
+        "bin/loeye",
+        "bin/loeye-orm"
+    ],
     "autoload": {
         "files": [
             "pear/base/Constants.php",
@@ -38,8 +42,7 @@
             "pear/service/Constants.php"
         ],
         "psr-4": {
-            "loeye\\": "pear/",
-            "app\\": "app/"
+            "loeye\\": "pear/"
         }
     },
     "minimum-stability": "stable"
