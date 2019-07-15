@@ -33,9 +33,9 @@ $argv = $_SERVER['argv'];
 $property = $argv[1];
 if ($property == 'help') {
     $output = new ConsoleOutput();
-    $output->writeln('build sheme: orm <property> convert:mapping', OutputInterface::VERBOSITY_QUIET);
-    $output->writeln('build sheme: orm <property> generate:entities', OutputInterface::VERBOSITY_QUIET);
-    $output->writeln('build sheme: orm <property> <doctrine command> [doctrine command options[..]]', OutputInterface::VERBOSITY_QUIET);
+    $output->writeln('build sheme: loeye-orm <property> convert:mapping', OutputInterface::VERBOSITY_QUIET);
+    $output->writeln('generate entities: loeye-orm <property> generate:entities', OutputInterface::VERBOSITY_QUIET);
+    $output->writeln('other command: loeye-orm <property> <doctrine command> [doctrine command options[..]]', OutputInterface::VERBOSITY_QUIET);
 } else {
     try {
         unset($_SERVER['argv'][1]);
@@ -48,7 +48,7 @@ if ($property == 'help') {
             array_push($_SERVER['argv'], '-f');
             array_push($_SERVER['argv'], '--namespace=app\\models\\entity\\');
             array_push($_SERVER['argv'], 'yml');
-            array_push($_SERVER['argv'], realpath(dirname(__DIR__). '/app/models/scheme'));
+            array_push($_SERVER['argv'], realpath(PROJECT_DIR. '/models/scheme'));
         } else if ($command == 'generate:entities') {
             $_SERVER['argv'][1] = 'orm:generate-entities';
             array_push($_SERVER['argv'], '--generate-annotations=true');
@@ -56,7 +56,7 @@ if ($property == 'help') {
             array_push($_SERVER['argv'], '--update-entities=true');
             array_push($_SERVER['argv'], '--generate-methods=true');
             array_push($_SERVER['argv'], '--no-backup');
-            array_push($_SERVER['argv'], realpath(dirname(__DIR__)));
+            array_push($_SERVER['argv'], realpath(APP_BASE_DIR));
         }
         $appConfig = new \loeye\base\AppConfig($property);
         $dbKey = $appConfig->getSetting('application.database') ?? 'default';
