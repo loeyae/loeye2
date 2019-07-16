@@ -46,7 +46,7 @@ if ($property == 'help') {
             $_SERVER['argv'][1] = 'orm:convert-mapping';
             array_push($_SERVER['argv'], '--from-database');
             array_push($_SERVER['argv'], '-f');
-            array_push($_SERVER['argv'], '--namespace=app\\models\\'. $property .'\\entity\\');
+            array_push($_SERVER['argv'], '--namespace=app\\models\\entity\\'. $property .'\\');
             array_push($_SERVER['argv'], 'yml');
             array_push($_SERVER['argv'], PROJECT_DIR. '/models/scheme');
         } else if ($command == 'generate:entities') {
