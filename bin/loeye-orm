@@ -46,9 +46,9 @@ if ($property == 'help') {
             $_SERVER['argv'][1] = 'orm:convert-mapping';
             array_push($_SERVER['argv'], '--from-database');
             array_push($_SERVER['argv'], '-f');
-            array_push($_SERVER['argv'], '--namespace=app\\models\\entity\\');
+            array_push($_SERVER['argv'], '--namespace=app\\models\\'. $property .'\\entity\\');
             array_push($_SERVER['argv'], 'yml');
-            array_push($_SERVER['argv'], realpath(PROJECT_DIR. '/models/scheme'));
+            array_push($_SERVER['argv'], PROJECT_DIR. '/models/scheme');
         } else if ($command == 'generate:entities') {
             $_SERVER['argv'][1] = 'orm:generate-entities';
             array_push($_SERVER['argv'], '--generate-annotations=true');
@@ -66,6 +66,11 @@ if ($property == 'help') {
             throw new Exception('Invalid database setting: '. $dbKey .'.');
         }
         $entityManager = \loeye\database\EntityManager::getManager($dbSetting, $fromDB);
+        $platform = $entityManager->getConnection()->getDatabasePlatform();
+        $platform->registerDoctrineTypeMapping("enum", "string");
+        $platform->registerDoctrineTypeMapping("set", "string");
+        $platform->registerDoctrineTypeMapping("varbinary", "string");
+        $platform->registerDoctrineTypeMapping("tinyblob", "text");
         $helperSet = ConsoleRunner::createHelperSet($entityManager);
         $commands = [];
         ConsoleRunner::run($helperSet, $commands);
