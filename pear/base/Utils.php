@@ -998,4 +998,107 @@ class Utils
         self::log($message, Logger::LOEYE_LOGGER_TYPE_CONTEXT_TRACE, ['file' => __FILE__, 'line' => __LINE__]);
     }
 
+    /**
+     * 判断字符串1是否以字符串2开头
+     *
+     * @param string $str1
+     * @param string $str2
+     * @return bool
+     */
+    static public function startwith($str1, $str2) {
+        return strpos($str1, $str2) === 0;
+    }
+
+    /**
+     *
+     * @param type $str1
+     * @param type $str2
+     * @return type
+     */
+    static public function endwith($str1, $str2) {
+        return substr_compare($str1, $str2, -strlen($str2)) === 0;
+    }
+
+    /**
+　　* 下划线转驼峰
+　　* 思路:
+　　* step1.原字符串转小写,原字符串中的分隔符用空格替换,在字符串开头加上分隔符
+　　* step2.将字符串中每个单词的首字母转换为大写,再去空格,去字符串首部附加的分隔符.
+    *
+    * @param string $uncamelizedWords
+    * @param string $separator
+    * @return string
+    */
+    static public function camelize($uncamelizedWords, $separator='_')
+    {
+        $uncamelizedWords = $separator. str_replace($separator, " ", strtolower($uncamelizedWords));
+        return ltrim(str_replace(" ", "", ucwords($uncamelizedWords)), $separator );
+    }
+
+　 /**
+　　* 驼峰命名转下划线命名
+　　* 思路:
+　　* 小写和大写紧挨一起的地方,加上分隔符,然后全部转小写
+   *
+   * @param string $camelCaps
+   * @param string $separator
+   * @return string
+   */
+    static public  function uncamelize($camelCaps, $separator='_')
+    {
+        return strtolower(preg_replace('/([a-z])([A-Z])/', "$1" . $separator . "$2", $camelCaps));
+    }
+
+    /**
+     * copy properties
+     *
+     * @param type $source
+     * @param type $object
+     */
+    static public function copyProperties($source, $object)
+    {
+        if (is_array($source)) {
+            foreach ($source as $key => $value) {
+                $methodName = "set". ucwords(self::camelize($key));
+                if (method_exists($object, $methodName)) {
+                    $refMethod = new \ReflectionMethod($object, $methodName);
+                    $refMethod->invokeArgs($object, [$value]);
+                }
+            }
+        } else {
+            $sourceRefClass = new \ReflectionClass($source);
+            $methodList = $sourceRefClass->getMethods(\ReflectionMethod::IS_PUBLIC);
+            foreach ($methodList as $method) {
+                $methodName = $method->getName();
+                if (self::startwith($methodName, "get")) {
+                    $targetMethodName = "set". substr($methodName, 3);
+                    if (method_exists($object, $targetMethodName)) {
+                        $value = $method->invokeArgs($source, []);
+                        $refMethod = new \ReflectionMethod($object, $targetMethodName);
+                        $refMethod->invokeArgs($object, [$value]);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * copy list properties
+     * 
+     * @param array $source
+     * @param type $target
+     * @return array
+     */
+    static public function copyListProperties($source, $target) {
+        $out = [];
+        if (empty($source)) {
+            return $out;
+        }
+        $tar = new \ReflectionClass($target);
+        foreach ($source as $src) {
+            $out[] = self::copyProperties($src, $tar->newInstanceArgs());
+        }
+        return $out;
+    }
+
 }
