@@ -206,4 +206,29 @@ class DB
         $this->em->flush();
     }
 
+    /**
+     * refresh
+     *
+     * @param object $entity
+     *
+     * @return object
+     */
+    public function refresh($entity)
+    {
+        $this->em->refresh($entity);
+        return $entity;
+    }
+
+    /**
+     * remove
+     *
+     * @param object $entity
+     *
+     * @return object
+     */
+    public function remove($entity)
+    {
+        return $this->em->remove($entity);
+    }
+
 }
