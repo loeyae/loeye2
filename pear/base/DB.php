@@ -207,6 +207,14 @@ class DB
     }
 
     /**
+     * flush
+     */
+    public function flush()
+    {
+        $this->em->flush();
+    }
+
+    /**
      * refresh
      *
      * @param object $entity
