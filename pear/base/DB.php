@@ -149,19 +149,15 @@ class DB
     /**
      * Finds entities by a set of criteria.
      *
-     * @param string     $entityName The class name of the entity to find
-     * @param array      $criteria   criteria
-     * @param array|null $orderBy    order by
-     * @param int|null   $limit      limit
-     * @param int|null   $offset     offset
+     * @param string $entityName The class name of the entity to find
      *
-     * @return array The objects.
+     * @return object.
      */
-    public function repository($entityName, $criteria, $orderBy = null, $limit = null, $offset = null)
+    public function repository($entityName)
     {
-        return $this->em->getRepository($entityName)->findBy($criteria, $orderBy, $limit, $offset);
+        return $this->em->getRepository($entityName);
     }
-
+    
     /**
      * Finds a single entity by a set of criteria.
      *
