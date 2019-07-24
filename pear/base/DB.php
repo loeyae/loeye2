@@ -198,20 +198,24 @@ class DB
      *
      * @param object $entity
      *
-     * @return void
+     * @return bool
      */
     public function save($entity)
     {
         $this->em->persist($entity);
         $this->em->flush();
+        return true;
     }
 
     /**
      * flush
+     *
+     * @return bool
      */
     public function flush()
     {
         $this->em->flush();
+        return true;
     }
 
     /**
@@ -232,11 +236,13 @@ class DB
      *
      * @param object $entity
      *
-     * @return object
+     * @return bool
      */
     public function remove($entity)
     {
-        return $this->em->remove($entity);
+        $this->em->remove($entity);
+        $this->em->flush();
+        return true;
     }
 
 }
