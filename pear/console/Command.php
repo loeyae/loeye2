@@ -45,7 +45,7 @@ abstract class Command extends BaseCommand\Command
         $name = $this->name ?? strtolower(str_replace('\\commands\\', ':', get_class($this)));
         $this->setName($name)
                 ->setDescription($this->desc)
-                ->setHelp('php bin/cli ' . $this->name)
+                ->setHelp('php vender/bin/loeye ' . $name .' property')
                 ->parseArgs()
                 ->parseParams();
     }
@@ -112,6 +112,18 @@ abstract class Command extends BaseCommand\Command
     protected function execute(Input\InputInterface $input, Output\OutputInterface $output)
     {
         $this->process($input, $output);
+    }
+
+    /**
+     * loadAppConfig
+     *
+     * @param string $property
+     *
+     * @return \loeye\base\AppConfig
+     */
+    protected function loadAppConfig($property)
+    {
+        return new \loeye\base\AppConfig($property);
     }
 
     /**

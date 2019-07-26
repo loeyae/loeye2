@@ -37,9 +37,14 @@ class Application extends Base
 
     protected function loadCommand()
     {
-        $commandsDir = realpath(PROJECT_DIR . DIRECTORY_SEPARATOR . self::DN);
-        $ns          = '\\' . PROJECT_NAMESPACE . '\\' . self::DN;
-        $this->loadCommandByDir($commandsDir, $ns);
+        $loeyeCommandsDir = realpath(LOEYE_DIR . DIRECTORY_SEPARATOR . self::DN);
+        $loeyeNS          = '\\loeye\\' . self::DN;
+        $this->loadCommandByDir($loeyeCommandsDir, $loeyeNS);
+        $appCommandsDir   = realpath(PROJECT_DIR . DIRECTORY_SEPARATOR . self::DN);
+        if ($appCommandsDir) {
+            $appNS = '\\' . PROJECT_NAMESPACE . '\\' . self::DN;
+            $this->loadCommandByDir($appCommandsDir, $appNS);
+        }
     }
 
     protected function loadCommandByDir($dir, $ns)
@@ -49,7 +54,7 @@ class Application extends Base
                 $path = $file->getPath();
                 if ($path != $ns) {
                     $_ns = str_replace($dir, $ns, $path);
-                    $cn = $_ns . '\\' . $file->getBasename('.' . $file->getExtension());
+                    $cn  = $_ns . '\\' . $file->getBasename('.' . $file->getExtension());
                 } else {
                     $cn = $ns . '\\' . $file->getBasename('.' . $file->getExtension());
                 }
