@@ -95,28 +95,32 @@ class Secure
         if ($string === false) {
             return $data;
         }
-        $keySize = mcrypt_get_key_size(MCRYPT_CAST_128, MCRYPT_MODE_ECB);
+        $keySize = 64;
         if ($secretkeyLen > $keySize) {
             $mkey = substr($secretkey, 0, $keySize);
         } else {
             $mkey = str_pad($secretkey, $keySize, $key[0], STR_PAD_RIGHT);
         }
 
+        $method = 'AES-256-CBC';
+        $ivLength = openssl_cipher_iv_length($method);
+
         if ($decode == true) {
-            $result = rtrim(mcrypt_decrypt(MCRYPT_CAST_128, $mkey, $string, MCRYPT_MODE_ECB), "\0");
+            $iv = substr($string, 0 - $ivLength);
+            $result = rtrim(openssl_decrypt(substr($string, 0, 0-$ivLength), $method, $mkey, OPENSSL_RAW_DATA, $iv), "\0");
             if (substr($result, -($secretkeyLen)) == $secretkey) {
                 $result = substr($result, 0, -($secretkeyLen));
                 return rawurldecode($result);
             }
             return '';
         }
-
+        $iv = openssl_random_pseudo_bytes($ivLength);
         $strlen = strlen($string);
         $padlen = $strlen % 8;
         if ($padlen != 0) {
             $string = str_pad($string, $strlen + $padlen, "\0", STR_PAD_RIGHT);
         }
-        $mcryptString = base64_encode(mcrypt_encrypt(MCRYPT_CAST_128, $mkey, $string, MCRYPT_MODE_ECB));
+        $mcryptString = base64_encode(openssl_encrypt($string, $method, $mkey, OPENSSL_RAW_DATA, $iv).$iv);
         return trim($mcryptString, '=');
     }
 
