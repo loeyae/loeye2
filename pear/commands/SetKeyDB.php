@@ -25,7 +25,7 @@ use \Symfony\Component\Console\{
 class SetKeyDB extends Command
 {
 
-    protected $name   = 'setkeydb';
+    protected $name   = 'loeye:setkeydb';
     protected $args   = [
         ['property', 'required' => true, 'help' => 'property name', 'default' => null],
         ['keydb', 'required' => true, 'help' => 'keydb name', 'default' => null],

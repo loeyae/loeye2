@@ -26,7 +26,7 @@ use \Symfony\Component\Console\{
 class Lang2mo extends Command
 {
 
-    protected $name   = 'lang2mo';
+    protected $name   = 'loeye:lang2mo';
     protected $args   = [
         ['property', 'required' => true, 'help' => 'property name', 'default' => null]
     ];
