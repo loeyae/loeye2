@@ -36,7 +36,8 @@ if (!defined('PROJECT_NAMESPACE')) {
 }
 
 if (!defined("PROJECT_DIR")) {
-    define('PROJECT_DIR', realpath(LOEYE_DIR . '/../' . PROJECT_NAMESPACE));
+    $projectDir = realpath(LOEYE_DIR . '/../' . PROJECT_NAMESPACE) ? realpath(LOEYE_DIR . '/../' . PROJECT_NAMESPACE) : realpath(LOEYE_DIR . '/../../../../' . PROJECT_NAMESPACE);
+    define('PROJECT_DIR', $projectDir);
 }
 
 if (!defined("PROJECT_CONFIG_DIR")) {
