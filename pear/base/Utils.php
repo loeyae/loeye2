@@ -1035,10 +1035,10 @@ class Utils
         return ltrim(str_replace(" ", "", ucwords($uncamelizedWords)), $separator );
     }
 
-　 /**
-　　* 驼峰命名转下划线命名
-　　* 思路:
-　　* 小写和大写紧挨一起的地方,加上分隔符,然后全部转小写
+   /**
+　 * 驼峰命名转下划线命名
+　 * 思路:
+　 * 小写和大写紧挨一起的地方,加上分隔符,然后全部转小写
    *
    * @param string $camelCaps
    * @param string $separator
@@ -1084,7 +1084,7 @@ class Utils
 
     /**
      * copy list properties
-     * 
+     *
      * @param array $source
      * @param type $target
      * @return array
