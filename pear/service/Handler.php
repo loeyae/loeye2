@@ -72,12 +72,60 @@ abstract class Handler extends Resource
                 $data = $this->process([]);
                 break;
         }
+        if (is_array($data)) {
+            $data = self::entities2array($data);
+        } elseif (is_object($data)) {
+            $data = self::entity2array($data);
+        }
         if ($this->withDefaultRequestHeader) {
             $this->output['response_data'] = $data;
         } else {
             $this->output = $data;
         }
         $this->render($resp);
+    }
+
+    /**
+     * convert entity to array
+     *
+     * @param type $entity
+     * @return type
+     */
+    static public function entity2array($entity)
+    {
+        if (is_object($entity)) {
+            $r = [];
+            $refObject  = new \ReflectionClass($entity);
+            $properties = $refObject->getProperties();
+            foreach ($properties as $property) {
+                $name = $property->getName();
+                $value = null;
+                if ($property->isPublic()) {
+                    $value = $property->getValue();
+                } else {
+                    $method = "get".ucfirst($name);
+                    if (method_exists($entity, $method)) {
+                        $refMethod = new \ReflectionMethod($entity, $method);
+                        $value = $refMethod->invoke($entity);
+                    }
+                }
+                $r[$name] = $value;
+            }
+            return $r;
+        }
+        return $entity;
+    }
+
+    /**
+     * convert entity list to array list
+     *
+     * @param type $entities
+     * @return type
+     */
+    static public function entities2array($entities)
+    {
+        $r = array_map("\loeye\service\Handler::entity2array", $entities);
+        return $r;
     }
 
     /**
