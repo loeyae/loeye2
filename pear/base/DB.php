@@ -151,13 +151,13 @@ class DB
      *
      * @param string $entityName The class name of the entity to find
      *
-     * @return object.
+     * @return \Doctrine\Common\Persistence\ObjectRepository|\Doctrine\ORM\EntityRepository The repository class.
      */
     public function repository($entityName)
     {
         return $this->em->getRepository($entityName);
     }
-    
+
     /**
      * Finds a single entity by a set of criteria.
      *

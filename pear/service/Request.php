@@ -102,7 +102,7 @@ class Request extends \loeye\std\Request
      */
     public function getContentLength()
     {
-        return strlen($this->_content);
+        return strlen($this->getContent());
     }
 
     /**
