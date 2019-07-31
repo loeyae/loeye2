@@ -141,11 +141,11 @@ abstract class Handler extends Resource
         $data        = $req->getContent();
         $requestData = json_decode($data, true);
         if (!is_array($requestData)) {
-            throw new RequestParameterException();
+            throw new RequestParameterException(RequestParameterException::REQUEST_BODY_EMPTY_MSG, RequestParameterException::REQUEST_BODY_EMPTY_CODE);
         }
         if ($this->withDefaultRequestHeader) {
             if (!array_key_exists($this->withDefaultRequestKey, $requestData)) {
-                throw new RequestParameterException();
+                throw new RequestParameterException(RequestParameterException::$PARAMETER_ERROR_MSG_TEMPLATES["parameter_required"], RequestParameterException::REQUEST_PARAMETER_ERROR_CODE, ["{field}" => $this->withDefaultRequestHeader]);
             }
             $requestData = $requestData[$this->withDefaultRequestKey];
         }

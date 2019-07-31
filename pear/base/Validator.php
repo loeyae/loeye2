@@ -132,7 +132,7 @@ class Validator
         foreach ($schema as $key => $rule) {
             $ruleset = $rulesets[$rule['rule']] ?? null;
             if (!$ruleset) {
-                throw new Exception('Invalid rulesets: ' . $rule['rule']);
+                throw new BusinessException(BusinessException::INVALID_CONFIG_SET_MSG, BusinessException::INVALID_CONFIG_SET_CODE);
             }
             $validator = $this->_buildConstraint($ruleset, $rule);
             if ($validator) {
@@ -355,7 +355,7 @@ class Validator
                 $validator->version = $ruleset['version'] ?? Assert\Ip::V4;
             }
         } else if ($type) {
-            throw new Exception('No Support type: ' . $type);
+            throw new BusinessException('No Support type: ' . $type, BusinessException::DEFAULT_ERROR_CODE);
         }
         (!$message && $validator) ?: $validator->message = $message;
         return $validator ? [$validator] : [];

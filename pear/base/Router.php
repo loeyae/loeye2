@@ -231,9 +231,8 @@ class Router implements \ArrayAccess
     public function generate($routerName, $params = array())
     {
         if (!isset($this->_router[$routerName])) {
-            throw new Exception(
-                    "router name: ${routerName} 不存在",
-                    Exception::INVALID_CONFIG_SET_CODE
+            throw new BusinessException(BusinessException::INVALID_CONFIG_SET_MSG,
+                    BusinessException::INVALID_CONFIG_SET_CODE
             );
         }
         $query   = $params;

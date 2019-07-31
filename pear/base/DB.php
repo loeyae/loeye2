@@ -89,11 +89,11 @@ class DB
     {
         $key = $type ?? $this->defaultType;
         if (!$key) {
-            throw new Exception('Invalid database type.');
+            throw new \loeye\error\BusinessException("Invalid database type", \loeye\error\BusinessException::INVALID_CONFIG_SET_CODE);
         }
         $dbSetting = $config->get($key);
         if (!$dbSetting) {
-            throw new Exception('Invalid database setting.');
+            throw new \loeye\error\BusinessException("Invalid db setting", \loeye\error\BusinessException::INVALID_CONFIG_SET_CODE);
         }
         $this->em = \loeye\database\EntityManager::getManager($dbSetting);
     }

@@ -200,9 +200,8 @@ class Configuration
     {
         $dir = realpath($this->_baseDir . '/' . ($this->getBundle()));
         if (!$dir) {
-            throw new Exception(
-                    '无效的配置文件路径:' . $this->_baseDir . '/' . ($this->getBundle()),
-                    404);
+            throw new \loeye\error\ResourceException(\loeye\error\ResourceException::BUMDLE_NOT_FOUND_MSG,
+                    \loeye\error\ResourceException::BUNDLE_NOT_FOUND_CODE, ["Bundle" => $dir]);
         }
         $fileSystem = new \FilesystemIterator($dir, \FilesystemIterator::KEY_AS_FILENAME);
 
