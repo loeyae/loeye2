@@ -1101,4 +1101,45 @@ class Utils
         return $out;
     }
 
+    /**
+     * convert entity to array
+     *
+     * @param \Doctrine\ORM\EntityManager $em
+     * @param object                      $entity
+     * @return type
+     */
+    static public function entity2array(\Doctrine\ORM\EntityManager $em, $entity)
+    {
+        if (is_object($entity)) {
+            $r = [];
+            $refObject  = new \ReflectionClass($entity);
+            $metadata = $em->getMetadataFactory()->getMetadataFor(get_class($entity));
+            foreach ($metadata->fieldMappings as $key => $field) {
+                $name = $field["columnName"];
+                $method = "get".ucfirst($key);
+                $value = null;
+                if (method_exists($entity, $method)) {
+                    $refMethod = new \ReflectionMethod($entity, $method);
+                    $value = $refMethod->invoke($entity);
+                }
+                $r[$name] = $value;
+            }
+            return $r;
+        }
+        return $entity;
+    }
+
+    /**
+     * convert entity list to array list
+     *
+     * @param \Doctrine\ORM\EntityManager $em
+     * @param array                       $entities
+     * @return type
+     */
+    static public function entities2array(\Doctrine\ORM\EntityManager $em, $entities)
+    {
+        $r = array_map("\loeye\service\Handler::entity2array", $entities);
+        return $r;
+    }
+
 }
