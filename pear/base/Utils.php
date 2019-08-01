@@ -1141,7 +1141,7 @@ class Utils
         array_walk($entities, function(&$item, $key, $em) {
             $item = Utils::entity2array($em, $item);
         }, $em);
-        return $r;
+        return $entities;
     }
 
 }
