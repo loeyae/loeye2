@@ -1138,7 +1138,9 @@ class Utils
      */
     static public function entities2array(\Doctrine\ORM\EntityManager $em, $entities)
     {
-        $r = array_map("\loeye\service\Handler::entity2array", $entities);
+        array_walk($entities, function(&$item, $key, $em) {
+            $item = Utils::entity2array($em, $item);
+        }, $em);
         return $r;
     }
 
