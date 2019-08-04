@@ -51,4 +51,9 @@ class ResourceException extends \loeye\base\Exception
     const RECORD_NOT_FOUND_CODE   = 404032;
     const RECORD_NOT_FOUND_MSG   = "Record Not Exists";
 
+    public function __construct(string $errorMessage = self::DEFAULT_ERROR_MSG, int $errorCode = self::DEFAULT_ERROR_CODE, $parameter = array()): void
+    {
+        parent::__construct($errorMessage, $errorCode, $parameter);
+    }
+
 }

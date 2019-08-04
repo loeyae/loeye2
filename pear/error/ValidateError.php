@@ -50,4 +50,6 @@ class ValidateError extends \loeye\error\BusinessException
     {
         return $this->validateMessage;
     }
+
+    
 }

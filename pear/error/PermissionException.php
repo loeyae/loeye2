@@ -45,4 +45,9 @@ class PermissionException extends \loeye\base\Exception
 
     const REPEAT_ERROR_CODE = 401004;
 
+    public function __construct(string $errorMessage = self::DEFAULT_ERROR_MSG, int $errorCode = self::DEFAULT_ERROR_CODE, $parameter = array()): void
+    {
+        parent::__construct($errorMessage, $errorCode, $parameter);
+    }
+
 }
