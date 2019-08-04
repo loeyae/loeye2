@@ -46,7 +46,7 @@ class RequestParameterException extends \loeye\base\Exception
         'parameter_required' => 'Parameter Variable {field} Must Be Required',
     ];
 
-    public function __construct(string $errorMessage = self::DEFAULT_ERROR_MSG, int $errorCode = self::DEFAULT_ERROR_CODE, $parameter = array()): void
+    public function __construct(string $errorMessage = self::DEFAULT_ERROR_MSG, int $errorCode = self::DEFAULT_ERROR_CODE, $parameter = array())
     {
         parent::__construct($errorMessage, $errorCode, $parameter);
     }

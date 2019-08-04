@@ -36,7 +36,7 @@ class DataException extends \loeye\base\Exception
     const DATA_NOT_FOUND_ERROR_CODE = 420404;
     const DATA_NOT_FOUND_ERROR_MSG = "Data Not Found";
 
-    public function __construct(string $errorMessage = self::DEFAULT_ERROR_MSG, int $errorCode = self::DEFAULT_ERROR_CODE, $parameter = array()): void
+    public function __construct(string $errorMessage = self::DEFAULT_ERROR_MSG, int $errorCode = self::DEFAULT_ERROR_CODE, $parameter = array())
     {
         parent::__construct($errorMessage, $errorCode, $parameter);
     }

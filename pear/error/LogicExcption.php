@@ -42,7 +42,7 @@ class LogicExcption extends \loeye\base\Exception
     const DATA_VALUE_IS_EMPTY = 900202;
     const DATA_AT_LEAST_EXIST_ONE_KEY = 900203;
 
-    public function __construct(string $errorMessage = self::DEFAULT_ERROR_MSG, int $errorCode = self::DEFAULT_ERROR_CODE, $parameter = array()): void
+    public function __construct(string $errorMessage = self::DEFAULT_ERROR_MSG, int $errorCode = self::DEFAULT_ERROR_CODE, $parameter = array())
     {
         parent::__construct($errorMessage, $errorCode, $parameter);
     }

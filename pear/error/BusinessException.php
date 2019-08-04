@@ -71,7 +71,7 @@ class BusinessException extends \loeye\base\Exception
     const INVALID_RENDER_SET_CODE = 500501;
     const INVALID_RENDER_SET_MSG = "Invalid render setting";
 
-    public function __construct(string $errorMessage = self::DEFAULT_ERROR_MSG, int $errorCode = self::DEFAULT_ERROR_CODE, $parameter = array()): void
+    public function __construct(string $errorMessage = self::DEFAULT_ERROR_MSG, int $errorCode = self::DEFAULT_ERROR_CODE, $parameter = array())
     {
         parent::__construct($errorMessage, $errorCode, $parameter);
     }

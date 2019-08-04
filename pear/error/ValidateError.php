@@ -35,7 +35,7 @@ class ValidateError extends \loeye\error\BusinessException
      */
     protected $validateMessage;
 
-    public function __construct(array $validateMessage, string $errorMessage = self::DEFAULT_ERROR_MSG, int $errorCode = self::DEFAULT_ERROR_CODE, $parameter = array()): void
+    public function __construct(array $validateMessage, string $errorMessage = self::DEFAULT_ERROR_MSG, int $errorCode = self::DEFAULT_ERROR_CODE, $parameter = array())
     {
         parent::__construct($errorMessage, $errorCode, $parameter);
         $this->validateMessage = $validateMessage;
@@ -51,5 +51,5 @@ class ValidateError extends \loeye\error\BusinessException
         return $this->validateMessage;
     }
 
-    
+
 }
