@@ -19,6 +19,7 @@
         "symfony/intl": "^4.1",
         "php-amqplib/php-amqplib": "^2.7",
         "doctrine/orm": "^2.6",
+        "gedmo/doctrine-extensions": "^2.4",
         "workerman/workerman": "^3.5",
         "jsonrpc/jsonrpc": "^1.0",
         "twbs/bootstrap": "^4.1",
