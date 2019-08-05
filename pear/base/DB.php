@@ -55,7 +55,7 @@ class DB
             $this->defaultType = $settins['default'] ?? null;
             $this->isDevMode   = $settins['is_dev_mode'] ?? false;
         }
-        $this->_getEntityManager($config, $type);
+        $this->_getEntityManager($config, $property, $type);
     }
 
     /**
@@ -85,7 +85,7 @@ class DB
      * @return void
      * @throws Exception
      */
-    private function _getEntityManager(Configuration $config, $type)
+    private function _getEntityManager(Configuration $config, $property, $type)
     {
         $key = $type ?? $this->defaultType;
         if (!$key) {
@@ -95,7 +95,7 @@ class DB
         if (!$dbSetting) {
             throw new \loeye\error\BusinessException("Invalid db setting", \loeye\error\BusinessException::INVALID_CONFIG_SET_CODE);
         }
-        $this->em = \loeye\database\EntityManager::getManager($dbSetting);
+        $this->em = \loeye\database\EntityManager::getManager($dbSetting, $property);
     }
 
     /**

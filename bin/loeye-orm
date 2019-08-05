@@ -41,7 +41,6 @@ if ($property == 'help') {
         unset($_SERVER['argv'][1]);
         $_SERVER['argv'] = array_values($_SERVER['argv']);
         $command = $_SERVER['argv'][1];
-        $fromDB = true;
         if ($command == 'convert:mapping') {
             $_SERVER['argv'][1] = 'orm:convert-mapping';
             array_push($_SERVER['argv'], '--from-database');
@@ -65,7 +64,7 @@ if ($property == 'help') {
         if (!$dbSetting) {
             throw new Exception('Invalid database setting: '. $dbKey .'.');
         }
-        $entityManager = \loeye\database\EntityManager::getManager($dbSetting, $fromDB);
+        $entityManager = \loeye\database\EntityManager::getManager($dbSetting, $property);
         $platform = $entityManager->getConnection()->getDatabasePlatform();
         $platform->registerDoctrineTypeMapping("enum", "string");
         $platform->registerDoctrineTypeMapping("set", "string");
