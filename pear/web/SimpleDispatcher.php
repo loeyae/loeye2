@@ -186,7 +186,7 @@ class SimpleDispatcher extends \loeye\std\Dispatcher
         if (!empty($path)) {
             $parts = explode('/', trim($path, '/'));
             if (isset($parts[2])) {
-                $this->module     = \loeye\base\Utils::camelize($parts[0]);
+                $this->module     = $parts[0];
                 $this->controller = \loeye\base\Utils::camelize($parts[1]);
                 $this->action     = \loeye\base\Utils::camelize($parts[2]);
             } else if (isset($parts[1])) {
@@ -197,7 +197,7 @@ class SimpleDispatcher extends \loeye\std\Dispatcher
             }
         } else {
             if (filter_has_var(INPUT_GET, self::KEY_REQUEST_MODULE)) {
-                $this->module = \loeye\base\Utils::camelize(filter_input(INPUT_GET, self::KEY_REQUEST_MODULE));
+                $this->module = filter_input(INPUT_GET, self::KEY_REQUEST_MODULE);
             }
             if (filter_has_var(INPUT_GET, self::KEY_REQUEST_CONTROLLER)) {
                 $this->controller = \loeye\base\Utils::camelize(filter_input(INPUT_GET, self::KEY_REQUEST_CONTROLLER));

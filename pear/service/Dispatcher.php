@@ -150,11 +150,11 @@ class Dispatcher extends \loeye\std\Dispatcher
         }
         $parts = explode('/', trim($path, '/'));
         if (isset($parts[2])) {
-            $this->module = \loeye\base\Utils::camelize($parts[0]);
-            $this->service = \loeye\base\Utils::camelize($parts[1]);
+            $this->module = $parts[0];
+            $this->service = $parts[1];
             $this->handler = \loeye\base\Utils::camelize($parts[2]);
         } else if (isset($parts[1])) {
-            $this->service = \loeye\base\Utils::camelize($parts[0]);
+            $this->service = $parts[0];
             $this->handler = \loeye\base\Utils::camelize($parts[1]);
         } else {
             $this->handler = \loeye\base\Utils::camelize($parts[0]);
