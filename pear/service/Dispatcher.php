@@ -162,6 +162,10 @@ class Dispatcher extends \loeye\std\Dispatcher
         if (empty($this->module)|| empty($this->service) || empty($this->handler)) {
                 throw new \loeye\error\ResourceException(\loeye\error\ResourceException::PAGE_NOT_FOUND_MSG, \loeye\error\ResourceException::PAGE_NOT_FOUND_CODE);
         }
+        $moduleKey  = \loeye\base\UrlManager::REWRITE_KEY_PREFIX . \loeye\service\Dispatcher::KEY_MODULE;
+        $serviceKey = \loeye\base\UrlManager::REWRITE_KEY_PREFIX . \loeye\service\Dispatcher::KEY_SERVICE;
+        $_GET[$moduleKey] = $this->module;
+        $_GET[$serviceKey] = $this->service;
     }
 
 }
