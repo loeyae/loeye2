@@ -150,23 +150,18 @@ class Dispatcher extends \loeye\std\Dispatcher
         }
         $parts = explode('/', trim($path, '/'));
         if (isset($parts[2])) {
-            $this->module = $parts[0];
-            $this->service = $parts[1];
-            $this->handler = $parts[2];
+            $this->module = \loeye\base\Utils::camelize($parts[0]);
+            $this->service = \loeye\base\Utils::camelize($parts[1]);
+            $this->handler = \loeye\base\Utils::camelize($parts[2]);
         } else if (isset($parts[1])) {
-            $this->service = $parts[0];
-            $this->handler = $parts[1];
+            $this->service = \loeye\base\Utils::camelize($parts[0]);
+            $this->handler = \loeye\base\Utils::camelize($parts[1]);
         } else {
-            $this->handler = $parts[0];
+            $this->handler = \loeye\base\Utils::camelize($parts[0]);
         }
         if (empty($this->module)|| empty($this->service) || empty($this->handler)) {
                 throw new \loeye\error\ResourceException(\loeye\error\ResourceException::PAGE_NOT_FOUND_MSG, \loeye\error\ResourceException::PAGE_NOT_FOUND_CODE);
         }
-        $handlerArr = explode('_', $this->handler);
-        $handlerArr = array_map(function($item) {
-            return mb_convert_case($item, MB_CASE_TITLE);
-        }, $handlerArr);
-        $this->handler = implode('', $handlerArr);
     }
 
 }

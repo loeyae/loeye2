@@ -186,24 +186,24 @@ class SimpleDispatcher extends \loeye\std\Dispatcher
         if (!empty($path)) {
             $parts = explode('/', trim($path, '/'));
             if (isset($parts[2])) {
-                $this->module     = $parts[0];
-                $this->controller = $parts[1];
-                $this->action     = $parts[2];
+                $this->module     = \loeye\base\Utils::camelize($parts[0]);
+                $this->controller = \loeye\base\Utils::camelize($parts[1]);
+                $this->action     = \loeye\base\Utils::camelize($parts[2]);
             } else if (isset($parts[1])) {
-                $this->controller = $parts[0];
-                $this->action     = $parts[1];
+                $this->controller = \loeye\base\Utils::camelize($parts[0]);
+                $this->action     = \loeye\base\Utils::camelize($parts[1]);
             } else {
-                $this->controller = $parts[0];
+                $this->controller = \loeye\base\Utils::camelize($parts[0]);
             }
         } else {
             if (filter_has_var(INPUT_GET, self::KEY_REQUEST_MODULE)) {
-                $this->module = filter_input(INPUT_GET, self::KEY_REQUEST_MODULE);
+                $this->module = \loeye\base\Utils::camelize(filter_input(INPUT_GET, self::KEY_REQUEST_MODULE));
             }
             if (filter_has_var(INPUT_GET, self::KEY_REQUEST_CONTROLLER)) {
-                $this->controller = filter_input(INPUT_GET, self::KEY_REQUEST_CONTROLLER);
+                $this->controller = \loeye\base\Utils::camelize(filter_input(INPUT_GET, self::KEY_REQUEST_CONTROLLER));
             }
             if (filter_has_var(INPUT_GET, self::KEY_REQUEST_ACTION)) {
-                $this->action = filter_input(INPUT_GET, self::KEY_REQUEST_ACTION);
+                $this->action = \loeye\base\Utils::camelize(filter_input(INPUT_GET, self::KEY_REQUEST_ACTION));
             }
         }
         if (empty($this->module) || empty($this->controller)) {
@@ -212,14 +212,6 @@ class SimpleDispatcher extends \loeye\std\Dispatcher
         if (empty($this->action)) {
             $this->action = 'index';
         }
-        $controllerArr = array_map(function($item) {
-            return mb_convert_case($item, MB_CASE_TITLE);
-        }, explode('_', $this->controller));
-        $this->controller = implode('', $controllerArr);
-        $actionArr        = array_map(function($item) {
-            return mb_convert_case($item, MB_CASE_TITLE);
-        }, explode('_', $this->action));
-        $this->action = implode('', $actionArr);
     }
 
     /**
