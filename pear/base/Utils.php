@@ -1050,6 +1050,41 @@ class Utils
     }
 
     /**
+     * setWriteMethodValue
+     *
+     * @param object $entity
+     * @param string $field
+     * @param mixed  $value
+     * @return void
+     */
+    static public function setWriteMethodValue($entity, $field, $value): void
+    {
+        $method = "set". ucfirst($field);
+        if (method_exists($object, $method)) {
+            $refMethod = new \ReflectionMethod($entity, $method);
+            $refMethod->invokeArgs($entity, [$value]);
+        }
+    }
+
+    /**
+     * getReadMethodValue
+     *
+     * @param object $entity
+     * @param string $field
+     * @return mixed
+     */
+    static public function getReadMethodValue($entity, $field)
+    {
+        $method = "get".ucfirst($field);
+        $value = null;
+        if (method_exists($entity, $method)) {
+            $refMethod = new \ReflectionMethod($entity, $method);
+            $value = $refMethod->invoke($entity);
+        }
+        return $value;
+    }
+
+    /**
      * copy properties
      *
      * @param type $source
@@ -1059,11 +1094,7 @@ class Utils
     {
         if (is_array($source)) {
             foreach ($source as $key => $value) {
-                $methodName = "set". ucwords(self::camelize($key));
-                if (method_exists($object, $methodName)) {
-                    $refMethod = new \ReflectionMethod($object, $methodName);
-                    $refMethod->invokeArgs($object, [$value]);
-                }
+                self::setWriteMethodValue($object, self::camelize($key), $value);
             }
         } else {
             $sourceRefClass = new \ReflectionClass($source);
@@ -1071,12 +1102,8 @@ class Utils
             foreach ($methodList as $method) {
                 $methodName = $method->getName();
                 if (self::startwith($methodName, "get")) {
-                    $targetMethodName = "set". substr($methodName, 3);
-                    if (method_exists($object, $targetMethodName)) {
-                        $value = $method->invokeArgs($source, []);
-                        $refMethod = new \ReflectionMethod($object, $targetMethodName);
-                        $refMethod->invokeArgs($object, [$value]);
-                    }
+                    $value = $method->invokeArgs($source, []);
+                    self::setWriteMethodValue($object, substr($methodName, 3), $value);
                 }
             }
         }
@@ -1106,23 +1133,34 @@ class Utils
      *
      * @param \Doctrine\ORM\EntityManager $em
      * @param object                      $entity
+     * @param array                       $ignore
      * @return type
      */
-    static public function entity2array(\Doctrine\ORM\EntityManager $em, $entity)
+    static public function entity2array(\Doctrine\ORM\EntityManager $em, $entity, $ignore=[])
     {
         if (is_object($entity)) {
             $r = [];
-            $refObject  = new \ReflectionClass($entity);
-            $metadata = $em->getMetadataFactory()->getMetadataFor(get_class($entity));
-            foreach ($metadata->fieldMappings as $key => $field) {
-                $name = $field["columnName"];
-                $method = "get".ucfirst($key);
-                $value = null;
-                if (method_exists($entity, $method)) {
-                    $refMethod = new \ReflectionMethod($entity, $method);
-                    $value = $refMethod->invoke($entity);
+            $class = get_class($entity);
+            $ignore[] = $class;
+            $metadata = $em->getClassMetadata($class);
+            foreach ($metadata->fieldNames as $field) {
+                $r[$field] = self::getReadMethodValue($entity, $field);
+            }
+            foreach ($metadata->associationMappings as $key => $association) {
+                $target = $association['targetEntity'];
+                $ignoreClass = $ignore;
+                if (in_array($target, $ignoreClass)) {
+                    continue;
                 }
-                $r[$name] = $value;
+                $rs = null;
+                $ignoreClass[] = $target;
+                $value = self::getReadMethodValue($entity, $key);
+                if (is_array($value)) {
+                   $rs = self::entities2array($em, $value, $ignoreClass);
+                } else {
+                    $rs = self::entity2array($em, $value, $ignoreClass);
+                }
+                $r[$key] = $rs;
             }
             return $r;
         }
@@ -1134,14 +1172,31 @@ class Utils
      *
      * @param \Doctrine\ORM\EntityManager $em
      * @param array                       $entities
+     * @param array                       $ignore
      * @return type
      */
-    static public function entities2array(\Doctrine\ORM\EntityManager $em, $entities)
+    static public function entities2array(\Doctrine\ORM\EntityManager $em, $entities, $ignore = [])
     {
-        array_walk($entities, function(&$item, $key, $em) {
-            $item = Utils::entity2array($em, $item);
-        }, $em);
+        array_walk($entities, function(&$item, $key, $udata) {
+            $item = Utils::entity2array($udata['em'], $item, $udata['ignore']);
+        }, ['em'=>$em,'ignore'=>$ignore]);
         return $entities;
+    }
+
+    /**
+     * paginator2array
+     *
+     * @param \Doctrine\ORM\EntityManager              $em
+     * @param \Doctrine\ORM\Tools\Pagination\Paginator $paginator
+     * 
+     * @return array
+     */
+    static public function paginator2array(\Doctrine\ORM\EntityManager $em, \Doctrine\ORM\Tools\Pagination\Paginator $paginator) {
+        $result = array();
+        foreach ($paginator as $post) {
+            array_push($result, self::entity2array($em, $post));
+        }
+        return ["total" => $paginator->count(), "list" => $result];
     }
 
 }
