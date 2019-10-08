@@ -54,10 +54,10 @@ class Logger
         if (!isset(self::$logger[$key])) {
             $dateFormat         = "Y-m-d H:i:s";
             $output             = "[%datetime%][%level_name%]%channel%: %message%\n";
-            $formatter          = new Monolog\Formatter\LineFormatter($output, $dateFormat);
+            $formatter          = new \Monolog\Formatter\LineFormatter($output, $dateFormat);
             $handler            = new \Monolog\Handler\StreamHandler($logfile, RUNTIME_LOGGER_LEVEL);
             $handler->setFormatter($formatter);
-            $logger             = new Monolog\Logger($name);
+            $logger             = new \Monolog\Logger($name);
             $logger->setTimezone(new \DateTimeZone('Asia/Shanghai'));
             $logger->pushHandler($handler);
             self::$logger[$key] = $logger;

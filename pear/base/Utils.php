@@ -16,7 +16,7 @@
  */
 
 namespace loeye\base;
-use loeye\error\{LogicExcption, BusinessException};
+use loeye\error\{LogicExcption, BusinessException, DataException};
 
 /**
  * Description of Utils
@@ -60,6 +60,19 @@ class Utils
         $calendar = \IntlDateFormatter::GREGORIAN;
         $dfmt     = datefmt_create($locale, $datetype, $timetype, $timezone, $calendar, $pattern);
         return datefmt_format($dfmt, $time);
+    }
+
+    /**
+     * checkNotNull
+     *
+     * @param mixed $var
+     * @throws DataException
+     */
+    static public function checkNotNull($var)
+    {
+        if (is_null($var)) {
+            throw new DataException(DataException::DATA_NOT_FOUND_ERROR_MSG, DataException::DATA_NOT_FOUND_ERROR_CODE);
+        }
     }
 
     /**
@@ -617,7 +630,7 @@ class Utils
             $fileKey .= '?' . http_build_query($params);
         }
         $cache = Cache::getInstance($appConfig, 'templates');
-        $cache->set('source', $page, $expire);
+        $cache->set($fileKey, $page, $expire);
     }
 
     /**
@@ -637,7 +650,7 @@ class Utils
             $fileKey .= '?' . http_build_query($params);
         }
         $cache = Cache::getInstance($appConfig, 'templates');
-        return $cache->get($key);
+        return $cache->get($fileKey);
     }
 
     /**
@@ -1085,10 +1098,25 @@ class Utils
     }
 
     /**
+     *
+     * @param array|object $source
+     * @param string       $class
+     *
+     * @return object
+     */
+    static public function source2entity($source, $class)
+    {
+        $rfc = new \ReflectionClass($class);
+        $object = $rfc->newInstanceArgs();
+        self::copyProperties($source, $object);
+        return $object;
+    }
+
+    /**
      * copy properties
      *
-     * @param type $source
-     * @param type $object
+     * @param array|object  $source
+     * @param object        $object
      */
     static public function copyProperties($source, $object)
     {
@@ -1196,7 +1224,7 @@ class Utils
         foreach ($paginator as $post) {
             array_push($result, self::entity2array($em, $post));
         }
-        return ["total" => $paginator->count(), "list" => $result];
+        return ["total" => $paginator->count(), "start" => $paginator->getQuery()->getFirstResult(), "offset" => $paginator->getQuery()->getMaxResults(), "list" => $result];
     }
 
 }

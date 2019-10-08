@@ -18,7 +18,6 @@
 namespace loeye\database;
 
 use Doctrine\ORM\Tools\Setup;
-
 /**
  * EntityManager
  *
@@ -36,12 +35,12 @@ class EntityManager
     /**
      * getManager
      *
-     * @param array $dbSetting database setting
-     * @param bool  $fromDB    is from database
+     * @param array  $dbSetting database setting
+     * @param string $property  property name
      *
      * @return \Doctrine\ORM\EntityManager
      */
-    static public function getManager($dbSetting, $fromDB = true)
+    static public function getManager($dbSetting, $property)
     {
         // Second configure ORM
         // globally used cache driver, in production use APC or memcached
@@ -72,7 +71,7 @@ class EntityManager
         // general ORM configuration
         $config = Setup::createAnnotationMetadataConfiguration([], static::$isDevMode);
         $config->setProxyDir(self::$proxiesDir);
-        $config->setProxyNamespace('\\'. PROJECT_NAMESPACE .'\\models\\proxy\\'. $property);
+//        $config->setProxyNamespace('\\'. PROJECT_NAMESPACE .'\\models\\proxy\\'. $property);
         $config->setAutoGenerateProxyClasses(false); // this can be based on production config.
         // register metadata driver
         $config->setMetadataDriverImpl($driverChain);
