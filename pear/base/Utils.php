@@ -1060,7 +1060,7 @@ class Utils
     static public function setWriteMethodValue($entity, $field, $value): void
     {
         $method = "set". ucfirst($field);
-        if (method_exists($object, $method)) {
+        if (method_exists($entity, $method)) {
             $refMethod = new \ReflectionMethod($entity, $method);
             $refMethod->invokeArgs($entity, [$value]);
         }
@@ -1188,7 +1188,7 @@ class Utils
      *
      * @param \Doctrine\ORM\EntityManager              $em
      * @param \Doctrine\ORM\Tools\Pagination\Paginator $paginator
-     * 
+     *
      * @return array
      */
     static public function paginator2array(\Doctrine\ORM\EntityManager $em, \Doctrine\ORM\Tools\Pagination\Paginator $paginator) {

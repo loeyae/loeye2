@@ -92,7 +92,7 @@ class Response extends \loeye\std\Response
         $header = $this->_serverProtocol . ' ' . $this->_statusCode . ' ' . $this->_statusMessage;
         header($header);
         parent::setHeaders();
-        if (!in_array('Content-Type', $this->header)) {
+        if (!array_key_exists('Content-Type', $this->header)) {
             header('Content-Type:'. $this->_contentType);
         }
     }
