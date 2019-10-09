@@ -119,11 +119,21 @@ class DB
     }
 
     /**
-     * createQueryBuilder
+     * Create Query Builder
      *
      * @return \Doctrine\ORM\QueryBuilder
      */
     public function createQueryBuilder()
+    {
+        return $this->em->createQueryBuilder();
+    }
+
+    /**
+     * Create Query Builder
+     *
+     * @return \Doctrine\ORM\QueryBuilder
+     */
+    public function qb()
     {
         return $this->em->createQueryBuilder();
     }
