@@ -109,6 +109,16 @@ class DB
     }
 
     /**
+     * em
+     *
+     * @return \Doctrine\ORM\EntityManager
+     */
+    public function em()
+    {
+        return $this->em;
+    }
+
+    /**
      * createQueryBuilder
      *
      * @return \Doctrine\ORM\QueryBuilder
