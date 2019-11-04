@@ -33,6 +33,8 @@ class Configuration
     private $_context;
     private $_config;
 
+    const ENV_TAG = '${';
+
     /**
      * __construct
      *
@@ -245,7 +247,7 @@ class Configuration
                 return json_decode($content, true);
                 break;
             case 'xml':
-                $xmlRender = new XmlRender();
+                $xmlRender = new \loeye\render\XmlRender();
                 return $xmlRender->xml2array($content);
                 break;
             case 'yaml':
@@ -271,12 +273,30 @@ class Configuration
         if ($isList) {
             foreach ($config as $item) {
                 if (array_key_exists($key, $item)) {
-                    return $item[$key];
+                    return $this->_getEnv($item[$key]);
                 }
             }
             return null;
         }
-        return $config[$key] ?? null;
+        return isset($config[$key]) ? $this->_getEnv($config[$key]) : null;
+    }
+
+    /**
+     * 获取环境变量
+     * 
+     * @param type $var
+     * @return type
+     */
+    private function _getEnv($var) {
+        if($var && Utils::startwith($var, self::ENV_TAG)) {
+            $l = mb_strlen(self::ENV_TAG);
+            $envSetting = mb_substr($var, $l, - 1);
+            $envArray = explode(":", $envSetting);
+            $key = $envArray[0];
+            $default = isset($envArray[1]) ? $envArray : null;
+            return isset($_ENV[$key]) ? $_ENV[$key] : $default;
+        }
+        return $var;
     }
 
     /**
