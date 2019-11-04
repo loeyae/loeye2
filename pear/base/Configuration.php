@@ -283,7 +283,7 @@ class Configuration
 
     /**
      * 获取环境变量
-     * 
+     *
      * @param type $var
      * @return type
      */
@@ -294,7 +294,7 @@ class Configuration
             $envArray = explode(":", $envSetting);
             $key = $envArray[0];
             $default = isset($envArray[1]) ? $envArray : null;
-            return isset($_ENV[$key]) ? $_ENV[$key] : $default;
+            return getenv($key) ?: $default;
         }
         return $var;
     }
