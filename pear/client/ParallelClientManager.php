@@ -54,7 +54,7 @@ class ParallelClientManager
     {
         $promises = [];
         $idx      = 0;
-        foreach ($this->_parallelClient as $k => $client) {
+        foreach ($this->_parallelClient as $client) {
             $reqs = $client->getParallelRequest();
             foreach ($reqs as $req) {
                 $promises[$idx] = $req->promise();
@@ -64,13 +64,13 @@ class ParallelClientManager
 
         $results = \GuzzleHttp\Promise\unwrap($promises);
 
-        $idx = 0;
+        $idx1 = 0;
         foreach ($this->_parallelClient as $client) {
             $reqs = $client->getParallelRequest();
             foreach ($reqs as $i => $req) {
-                $req->setResponse($results[$idx]);
+                $req->setResponse($results[$idx1]);
                 $client->onComplete($req, $i);
-                $idx++;
+                $idx1++;
             }
         }
     }
