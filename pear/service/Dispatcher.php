@@ -61,7 +61,7 @@ class Dispatcher extends \loeye\std\Dispatcher
             if (!$handlerNamespace) {
                 $handlerNamespace = PROJECT_NAMESPACE . '\\services\\handler\\' . mb_convert_case($this->context->getAppConfig()->getPropertyName(), MB_CASE_LOWER);
             }
-            $handler = $handlerNamespace .'\\'. $this->service .'\\'. $this->handler . mb_convert_case(self::KEY_HANDLER, MB_CASE_TITLE);
+            $handler = $handlerNamespace .'\\'. $this->service .'\\'. ucfirst($this->handler) . ucfirst(self::KEY_HANDLER);
             if (!class_exists($handler)) {
                 throw new \loeye\error\ResourceException(\loeye\error\ResourceException::PAGE_NOT_FOUND_MSG, \loeye\error\ResourceException::PAGE_NOT_FOUND_CODE);
             }
