@@ -120,7 +120,7 @@ class SimpleDispatcher extends \loeye\std\Dispatcher
         if (!$controllerNamespace) {
             $controllerNamespace = PROJECT_NAMESPACE . '\\controllers\\' . mb_convert_case($this->context->getAppConfig()->getPropertyName(), MB_CASE_LOWER);
         }
-        $controller = $controllerNamespace . '\\' . $this->controller . ucfirst(self::KEY_CONTROLLER);
+        $controller = $controllerNamespace . '\\' . ucfirst($this->controller) . ucfirst(self::KEY_CONTROLLER);
 
         $action = ucfirst($this->action) . ucfirst(self::KEY_ACTION);
 
@@ -187,23 +187,23 @@ class SimpleDispatcher extends \loeye\std\Dispatcher
             $parts = explode('/', trim($path, '/'));
             if (isset($parts[2])) {
                 $this->module     = $parts[0];
-                $this->controller = ucfirst(\loeye\base\Utils::camelize($parts[1]));
-                $this->action     = ucfirst(\loeye\base\Utils::camelize($parts[2]));
+                $this->controller = \loeye\base\Utils::camelize($parts[1]);
+                $this->action     = \loeye\base\Utils::camelize($parts[2]);
             } else if (isset($parts[1])) {
-                $this->controller = ucfirst(\loeye\base\Utils::camelize($parts[0]));
-                $this->action     = ucfirst(\loeye\base\Utils::camelize($parts[1]));
+                $this->controller = \loeye\base\Utils::camelize($parts[0]);
+                $this->action     = \loeye\base\Utils::camelize($parts[1]);
             } else {
-                $this->controller = ucfirst(\loeye\base\Utils::camelize($parts[0]));
+                $this->controller = \loeye\base\Utils::camelize($parts[0]);
             }
         } else {
             if (filter_has_var(INPUT_GET, self::KEY_REQUEST_MODULE)) {
                 $this->module = filter_input(INPUT_GET, self::KEY_REQUEST_MODULE);
             }
             if (filter_has_var(INPUT_GET, self::KEY_REQUEST_CONTROLLER)) {
-                $this->controller = ucfirst(\loeye\base\Utils::camelize(filter_input(INPUT_GET, self::KEY_REQUEST_CONTROLLER)));
+                $this->controller = \loeye\base\Utils::camelize(filter_input(INPUT_GET, self::KEY_REQUEST_CONTROLLER));
             }
             if (filter_has_var(INPUT_GET, self::KEY_REQUEST_ACTION)) {
-                $this->action = ucfirst(\loeye\base\Utils::camelize(filter_input(INPUT_GET, self::KEY_REQUEST_ACTION)));
+                $this->action = \loeye\base\Utils::camelize(filter_input(INPUT_GET, self::KEY_REQUEST_ACTION));
             }
         }
         if (empty($this->module) || empty($this->controller)) {
