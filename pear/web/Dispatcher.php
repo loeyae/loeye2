@@ -653,8 +653,10 @@ class Dispatcher extends \loeye\std\Dispatcher
                 if ($this->context->getUrlManager() instanceof \loeye\base\UrlManager) {
                     $moduleId = $this->context->getUrlManager()->match(filter_input(INPUT_SERVER, 'REQUEST_URI'));
                 } else {
-                    if (filter_has_var(INPUT_SERVER, 'routerDir')) {
-                        $routerDir = filter_input(INPUT_SERVER, 'routerDir', FILTER_SANITIZE_STRING);
+                    if (filter_has_var(INPUT_SERVER, 'REDIRECT_routerDir')) {
+                        $routerDir = filter_input(INPUT_SERVER, 'REDIRECT_routerDir', FILTER_SANITIZE_STRING);
+                    } else if (filter_has_var(INPUT_GET, 'routerDir')) {
+                        $routerDir = filter_input(INPUT_GET, 'routerDir', FILTER_SANITIZE_STRING);
                     } else if (filter_has_var(INPUT_GET, 'routerDir')) {
                         $routerDir = filter_input(INPUT_GET, 'routerDir', FILTER_SANITIZE_STRING);
                     } else {
