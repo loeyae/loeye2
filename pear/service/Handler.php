@@ -102,7 +102,7 @@ abstract class Handler extends Resource
         }
         if ($this->withDefaultRequestHeader) {
             if (!array_key_exists($this->withDefaultRequestKey, $requestData)) {
-                throw new RequestParameterException(RequestParameterException::$PARAMETER_ERROR_MSG_TEMPLATES["parameter_required"], RequestParameterException::REQUEST_PARAMETER_ERROR_CODE, ["{field}" => $this->withDefaultRequestHeader]);
+                throw new RequestParameterException(RequestParameterException::$PARAMETER_ERROR_MSG_TEMPLATES["parameter_required"], RequestParameterException::REQUEST_PARAMETER_ERROR_CODE, ["{field}" => $this->withDefaultRequestKey]);
             }
             $requestData = $requestData[$this->withDefaultRequestKey];
         }

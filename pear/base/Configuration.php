@@ -252,7 +252,11 @@ class Configuration
                 break;
             case 'yaml':
             case 'yml':
-                return yaml_parse($content);
+                if (function_exists("yaml_parse")) {
+                    return yaml_parse($content);
+                } else {
+                    return \Symfony\Component\Yaml\Yaml::parse($content);
+                }
                 break;
             default :
                 return false;
