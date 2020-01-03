@@ -261,9 +261,9 @@ class Validator
     {
         if (isset($ruleset['regex'])) {
             $options   = [
-                'pattern'     => $ruleset['regex'],
-                'htmlPattern' => $ruleset['html_pattern'] ?? null,
-                'match'       => $ruleset['match'] ?? true,
+                'pattern'     => $ruleset['regex']['pattern'],
+                'htmlPattern' => $ruleset['regex']['html_pattern'] ?? null,
+                'match'       => $ruleset['regex']['match'] ?? true,
             ];
             $validator = new Assert\Regex($options);
             return [$validator];
