@@ -52,7 +52,7 @@ class EntityManager
             $cache // and a cache driver
         );
         // create a driver chain for metadata reading
-        $driverChain = new \Doctrine\Common\Persistence\Mapping\Driver\MappingDriverChain();
+        $driverChain = new \Doctrine\Persistence\Mapping\Driver\MappingDriverChain();
         // load superclass metadata mapping only, into driver chain
         // also registers Gedmo annotations.NOTE: you can personalize it
         \Gedmo\DoctrineExtensions::registerAbstractMappingIntoDriverChainORM(
