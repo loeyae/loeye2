@@ -277,12 +277,12 @@ class Configuration
         if ($isList) {
             foreach ($config as $item) {
                 if (array_key_exists($key, $item)) {
-                    return $this->_getEnv($item[$key]);
+                    return $this->getEnv($item[$key]);
                 }
             }
             return null;
         }
-        return isset($config[$key]) ? $this->_getEnv($config[$key]) : null;
+        return isset($config[$key]) ? $this->getEnv($config[$key]) : null;
     }
 
     /**
@@ -291,7 +291,10 @@ class Configuration
      * @param type $var
      * @return type
      */
-    private function _getEnv($var) {
+    private function getEnv($var) {
+        if (is_iterable($var)) {
+            return array_map(array($this, "getEnv"), $var);
+        }
         if($var && Utils::startwith($var, self::ENV_TAG)) {
             $l = mb_strlen(self::ENV_TAG);
             $envSetting = mb_substr($var, $l, - 1);
