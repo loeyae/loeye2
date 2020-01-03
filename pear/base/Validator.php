@@ -382,6 +382,14 @@ class Validator {
         return new Assert\Callback($options);
     }
 
+    /**
+     * _filterData
+     * @param type $rulesets
+     * @param type $schema
+     * @param type $data
+     * @return type
+     * @throws BusinessException
+     */
     private function _filterData($rulesets, $schema, $data) {
         $filtedData = [];
         foreach ($data as $key => $value) {
@@ -390,10 +398,49 @@ class Validator {
                 if (!$ruleset) {
                     throw new BusinessException(BusinessException::INVALID_CONFIG_SET_MSG, BusinessException::INVALID_CONFIG_SET_CODE);
                 }
+                if (!empty($ruleset['filter'])) {
+                    $filtedData[$key] = $this->_filterVar($value, $ruleset);
+                    continue;
+                }
             }
             $filtedData[$key] = filter_var($value, FILTER_SANITIZE_FULL_SPECIAL_CHARS, FILTER_FLAG_NO_ENCODE_QUOTES);
         }
-        return $data;
+        return $filtedData;
+    }
+
+    /**
+     * _filterVar
+     * 
+     * @param type $data
+     * @param type $ruleset
+     * @return type
+     */
+    private function _filterVar($data, $ruleset) {
+        if (is_iterable($data)) {
+            $filted = [];
+            foreach ($data as $key => $value) {
+                $filted[$key] = $this->_filterVar($value, $ruleset);
+            }
+            return $filted;
+        }
+        $filter = $ruleset["filter"]["filter_type"] ? constant($ruleset["filter"]["filter_type"]) : FILTER_SANITIZE_FULL_SPECIAL_CHARS;
+        $ops = [];
+        !$ruleset["filter"]["filter_flag"] ?? $ops['flag'] = constant($options['filter_flag']);
+        !$ruleset["filter"]['filter_options'] ?? $ops['options'] = $options['filter_options'];
+        $validated = filter_var($data, $filter, $ops);
+        if ($validated !== false) {
+            if (!empty($ruleset['fun'])) {
+                foreach ($ruleset['fun'] as $funset) {
+                    $fun = $funset['name'];
+                    if(is_callable($fun)) {
+                        $params = (array )($funset['params'] ?? []);
+                        array_unshift($params, $validated);
+                        $validated = call_user_func_array($fun, $params);
+                    }
+                }
+            }
+        }
+        return $validated;
     }
 
     /**
