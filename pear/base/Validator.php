@@ -34,6 +34,12 @@ class Validator {
     use \loeye\std\ConfigTrait;
 
     private $_report;
+    
+    /**
+     *
+     * @var \loeye\base\AppConfig 
+     */
+    protected $appConfig;
 
     /**
      *
@@ -61,6 +67,7 @@ class Validator {
      */
     public function __construct(AppConfig $appConfig, $bundle = null, $validationConfig = array()
     ) {
+        $this->appConfig = $appConfig;
         $this->config = $this->bundleConfig($appConfig->getPropertyName(), $bundle);
         $this->_report = array('has_error' => false, 'error_message' => []);
         $this->_initTranslater($appConfig);
@@ -368,8 +375,9 @@ class Validator {
      * @return \Symfony\Component\Validator\Constraints\Callback
      */
     private function _buidCallbackValidator(callable $callback, $message) {
-        $f = function($object, ExecutionContext $context, $payload) use ($callback, $message) {
-            if (!call_user_func($callback, $object)) {
+        $appConfig = $this->appConfig;
+        $f = function($object, ExecutionContext $context, $payload) use ($appConfig, $callback, $message) {
+            if (!call_user_func_array($callback, [$object, $appConfig])) {
                 $context->buildViolation($message)
                         ->setParameter('{{ value }}', $object)
                         ->setCode(uniqid())
