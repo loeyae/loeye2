@@ -26,7 +26,7 @@ namespace loeye\plugin;
  * @license  http://www.apache.org/licenses/LICENSE-2.0 Apache License
  * @link     URL description
  */
-class TranslaterPlugin extends \loeye\std\Plugin
+class TranslatorPlugin extends \loeye\std\Plugin
 {
 
     /**
