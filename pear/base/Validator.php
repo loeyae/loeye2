@@ -34,7 +34,7 @@ class Validator {
     use \loeye\std\ConfigTrait;
 
     private $_report;
-    
+
     /**
      *
      * @var \loeye\base\AppConfig 
@@ -433,6 +433,13 @@ class Validator {
         }
         $filter = $ruleset["filter"]["filter_type"] ? constant($ruleset["filter"]["filter_type"]) : FILTER_SANITIZE_FULL_SPECIAL_CHARS;
         $ops = [];
+        if (!empty($ruleset["filter"]["options"])) {
+            if (is_iterable($ruleset["filter"]["options"])) {
+                $ops = $ruleset["filter"]["options"];
+            } else {
+                $ops['flag'] = $ruleset["filter"]["options"];
+            }
+        }
         !$ruleset["filter"]["filter_flag"] ?? $ops['flag'] = constant($options['filter_flag']);
         !$ruleset["filter"]['filter_options'] ?? $ops['options'] = $options['filter_options'];
         $validated = filter_var($data, $filter, $ops);
@@ -440,8 +447,8 @@ class Validator {
             if (!empty($ruleset['fun'])) {
                 foreach ($ruleset['fun'] as $funset) {
                     $fun = $funset['name'];
-                    if(is_callable($fun)) {
-                        $params = (array )($funset['params'] ?? []);
+                    if (is_callable($fun)) {
+                        $params = (array) ($funset['params'] ?? []);
                         array_unshift($params, $validated);
                         $validated = call_user_func_array($fun, $params);
                     }

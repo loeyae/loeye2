@@ -655,8 +655,8 @@ class Dispatcher extends \loeye\std\Dispatcher
                 } else {
                     if (filter_has_var(INPUT_SERVER, 'REDIRECT_routerDir')) {
                         $routerDir = filter_input(INPUT_SERVER, 'REDIRECT_routerDir', FILTER_SANITIZE_STRING);
-                    } else if (filter_has_var(INPUT_GET, 'routerDir')) {
-                        $routerDir = filter_input(INPUT_GET, 'routerDir', FILTER_SANITIZE_STRING);
+                    } else if (filter_has_var(INPUT_SERVER, 'routerDir')) {
+                        $routerDir = filter_input(INPUT_SERVER, 'routerDir', FILTER_SANITIZE_STRING);
                     } else if (filter_has_var(INPUT_GET, 'routerDir')) {
                         $routerDir = filter_input(INPUT_GET, 'routerDir', FILTER_SANITIZE_STRING);
                     } else {

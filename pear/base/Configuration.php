@@ -203,7 +203,8 @@ class Configuration
         $dir = realpath($this->_baseDir . '/' . ($this->getBundle()));
         if (!$dir) {
             throw new \loeye\error\ResourceException(\loeye\error\ResourceException::BUMDLE_NOT_FOUND_MSG,
-                    \loeye\error\ResourceException::BUNDLE_NOT_FOUND_CODE, ["Bundle" => $dir]);
+                    \loeye\error\ResourceException::BUNDLE_NOT_FOUND_CODE, 
+                    ["Property" => $this->property, "Bundle" => $this->getBundle()]);
         }
         $fileSystem = new \FilesystemIterator($dir, \FilesystemIterator::KEY_AS_FILENAME);
 

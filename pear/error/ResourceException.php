@@ -40,7 +40,7 @@ class ResourceException extends \loeye\base\Exception
     const MODULE_NOT_EXISTS_MSG = "Module Not Exists";
 
     const BUNDLE_NOT_FOUND_CODE = 404020;
-    const BUMDLE_NOT_FOUND_MSG = "Bundle Not Exists";
+    const BUMDLE_NOT_FOUND_MSG = "Property Bundle Not Exists";
 
     const FILE_NOT_FOUND_CODE   = 404030;
     const FILE_NOT_FOUND_MSG   = "File Not Exists";
