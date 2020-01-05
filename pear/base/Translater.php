@@ -42,7 +42,8 @@ class Translater
      */
     public function __construct(AppConfig $appConfig)
     {
-        $this->translater = new I18n\Translator($appConfig->getLocale() ?? $this->_locale);
+        $this->_locale = $appConfig->getLocale() ?? $this->_locale;
+        $this->translater = new I18n\Translator( $this->_locale );
         $loader           = new I18n\Loader\YamlFileLoader();
         $resourseDir      = PROJECT_LOCALE_DIR . '/' . $appConfig->getPropertyName();
         foreach (new \FilesystemIterator($resourseDir, \FilesystemIterator::KEY_AS_FILENAME) as $key => $item) {
@@ -55,6 +56,14 @@ class Translater
             $this->translater->addResource('yml', $item->getRealPath(), $lang);
         }
         $this->translater->addLoader('yml', $loader);
+    }
+
+    /**
+     * 
+     * @return type
+     */
+    public function getLocale() {
+        return $this->_locale;
     }
 
     /**

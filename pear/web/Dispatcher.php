@@ -60,8 +60,8 @@ class Dispatcher extends \loeye\std\Dispatcher
             \loeye\base\ExceptionHandler($exc, $this->context);
         }
         if ($this->proccessMode == LOEYE_PROCESS_MODE__TEST) {
-            $this->_setTraceDataIntoContext(array());
-            \loeye\base\Utils::logContextTrace($this->context);
+            $this->setTraceDataIntoContext(array());
+            \loeye\base\Utils::logContextTrace($this->context, null, false);
         }
     }
 
@@ -115,7 +115,7 @@ class Dispatcher extends \loeye\std\Dispatcher
         }
 
         if ($this->proccessMode == LOEYE_PROCESS_MODE__TEST) {
-            $this->_setTraceDataIntoContext(array());
+            $this->setTraceDataIntoContext(array());
         }
         $mockMode = $this->context->getRequest()->getParameterGet('ly_p_m');
         if ($this->proccessMode == LOEYE_PROCESS_MODE__TEST && $mockMode === 'mock') {
@@ -334,7 +334,7 @@ class Dispatcher extends \loeye\std\Dispatcher
                         }
                         $returnStatus = $pluginObj->process($this->context, $setting);
                         if ($this->proccessMode == LOEYE_PROCESS_MODE__TEST) {
-                            $this->_setTraceDataIntoContext($plugin);
+                            $this->setTraceDataIntoContext($plugin);
                         }
                     }
                 }
@@ -423,7 +423,7 @@ class Dispatcher extends \loeye\std\Dispatcher
         }
 
         if ($this->proccessMode == LOEYE_PROCESS_MODE__TEST) {
-            $this->_setTraceDataIntoContext($pluginList);
+            $this->setTraceDataIntoContext($pluginList);
         }
         return $returnStatus;
     }

@@ -45,7 +45,7 @@ class Logger
      *
      * @return \Monolog\Logger
      */
-    private static function getLogger($name, $file = null)
+    private static function getLogger($name, $file = null, $handler = null)
     {
         $logfile = $file ?? RUNTIME_LOG_DIR . DIRECTORY_SEPARATOR
                 . PROJECT_NAMESPACE . DIRECTORY_SEPARATOR
@@ -55,7 +55,9 @@ class Logger
             $dateFormat         = "Y-m-d H:i:s";
             $output             = "[%datetime%][%level_name%]%channel%: %message%\n";
             $formatter          = new \Monolog\Formatter\LineFormatter($output, $dateFormat);
-            $handler            = new \Monolog\Handler\RotatingFileHandler($logfile, RUNTIME_LOGGER_LEVEL);
+            if (!$handler) {
+                $handler        = new \Monolog\Handler\RotatingFileHandler($logfile, RUNTIME_LOGGER_LEVEL);
+            }
             $handler->setFormatter($formatter);
             $logger             = new \Monolog\Logger($name);
             $logger->setTimezone(new \DateTimeZone('Asia/Shanghai'));

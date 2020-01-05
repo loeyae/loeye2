@@ -46,15 +46,15 @@ class CheckRepeatPlugin extends \loeye\std\Plugin
         if ($check == 'true') {
             if (Cookie::getCookie($this->cookieName) == $crumb) {
                 $context->set('repeat_submit', true);
-                if (Utils::getData($inputs, 'throw_error') == true) {
+                if (\loeye\base\Utils::getData($inputs, 'throw_error') == true) {
                     $errmsg = '重复请求';
                     throw new \loeye\base\Exception($errmsg, PermissionException::REPEAT_ERROR_CODE);
                 }
                 $context->set('page_timeout', true);
-                if (Utils::getData($inputs, 'break') == true) {
+                if (\loeye\base\Utils::getData($inputs, 'break') == true) {
                     return false;
                 }
-                if (Utils::getData($inputs, 'redirect') == true) {
+                if (\loeye\base\Utils::getData($inputs, 'redirect') == true) {
                     $redirectPlugin = new RedirectPlugin();
                     $redirectPlugin->process($context, $inputs['redirect']);
                 }
@@ -67,7 +67,7 @@ class CheckRepeatPlugin extends \loeye\std\Plugin
                 }
             }
         }
-        if (Utils::getData($inputs, 'clear') == 'true') {
+        if (\loeye\base\Utils::getData($inputs, 'clear') == 'true') {
             Cookie::destructCookie($this->cookieName);
         } else {
             Cookie::setCookie($this->cookieName, $crumb);

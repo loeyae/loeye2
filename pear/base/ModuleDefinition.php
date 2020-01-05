@@ -60,7 +60,12 @@ class ModuleDefinition
     {
         $this->appConfig = $appConfig;
         $explode         = explode('.', $moduleId);
-        $bundle          = isset($explode[2]) ? $explode[1] : null;
+        $bundle = null;
+        if (count($explode) > 2){
+            array_shift($explode);
+            array_pop($explode);
+            $bundle = implode('/', $explode);
+        }
         $this->config    = $this->bundleConfig($appConfig->getPropertyName(), $bundle);
         $this->_initModule($moduleId);
         $this->_parseModuleDefinition();

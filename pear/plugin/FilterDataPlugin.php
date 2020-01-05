@@ -86,7 +86,7 @@ class FilterDataPlugin extends \loeye\std\Plugin
                         }
                     }
                 } else {
-                    \loeye\base\Utils::throwError($errors[0]);
+                    \loeye\base\Utils::throwError(current($errors));
                 }
             } else if (isset($inputs['check_error']) && $inputs['check_error'] == true) {
                 if (isset($inputs['ignore_404']) && $inputs['ignore_404'] == true) {

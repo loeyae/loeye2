@@ -34,7 +34,7 @@ class Validator {
     use \loeye\std\ConfigTrait;
 
     private $_report;
-
+    
     /**
      *
      * @var \loeye\base\AppConfig 
@@ -202,13 +202,17 @@ class Validator {
         $lengthKeys = ['length', 'min_length', 'max_length'];
         if (array_intersect_key($ruleset, array_fill_keys($lengthKeys, null))) {
             $options = [
-                'min' => $ruleset['min_length'] ?? ($ruleset['length'][0] ?? $ruleset['length']),
-                'max' => $ruleset['max_length'] ?? ($ruleset['length'][1] ?? $ruleset['length']),
+                'min' => (isset($ruleset['min_length']) ? $ruleset['min_length'] : (
+                    isset($ruleset['length'][0]) ? $ruleset['length'][0] : (
+                    isset($ruleset['length']) ? $ruleset['length'] : null))),
+                'max' => (isset($ruleset['max_length']) ? $ruleset['max_length'] : (
+                    isset($ruleset['length'][1]) ? $ruleset['length'][1] : (
+                    isset($ruleset['length']) ? $ruleset['length'] : null))),
             ];
             $validator = new Assert\Length($options);
-            !$ruleset['length_errmsg'] ?: $validator->exactMessage = $ruleset['length_errmsg'];
-            !$ruleset['min_length_errmsg'] ?: $validator->minMessage = $ruleset['min_length_errmsg'];
-            !$ruleset['max_length_errmsg'] ?: $validator->maxMessage = $ruleset['max_length_errmsg'];
+            !isset($ruleset['length_errmsg']) ?: $validator->exactMessage = $ruleset['length_errmsg'];
+            !isset($ruleset['min_length_errmsg']) ?: $validator->minMessage = $ruleset['min_length_errmsg'];
+            !isset($ruleset['max_length_errmsg']) ?: $validator->maxMessage = $ruleset['max_length_errmsg'];
             return [$validator];
         }
         return [];
@@ -218,13 +222,17 @@ class Validator {
         $countKeys = ['count', 'min_count', 'max_count'];
         if (array_intersect_key($ruleset, array_fill_keys($countKeys, null))) {
             $options = [
-                'min' => $ruleset['min_count'] ?? ($ruleset['count'][0] ?? $ruleset['count']),
-                'max' => $ruleset['max_count'] ?? ($ruleset['count'][1] ?? $ruleset['count']),
+                'min' => (isset($ruleset['min_count']) ? $ruleset['min_count'] : (
+                    isset($ruleset['count'][0]) ? $ruleset['count'][0] : (
+                    isset($ruleset['count']) ? $ruleset['count'] : null))),
+                'max' => (isset($ruleset['max_count']) ? $ruleset['max_count'] : (
+                    isset($ruleset['count'][1]) ? $ruleset['count'][1] : (
+                    isset($ruleset['count']) ? $ruleset['count'] : null))),
             ];
             $validator = new Assert\Count($options);
-            !$ruleset['count_errmsg'] ?: $validator->exactMessage = $ruleset['count_errmsg'];
-            !$ruleset['min_count_errmsg'] ?: $validator->minMessage = $ruleset['min_count_errmsg'];
-            !$ruleset['max_count_errmsg'] ?: $validator->maxMessage = $ruleset['max_count_errmsg'];
+            !isset($ruleset['count_errmsg']) ?: $validator->exactMessage = $ruleset['count_errmsg'];
+            !isset($ruleset['min_count_errmsg']) ?: $validator->minMessage = $ruleset['min_count_errmsg'];
+            !isset($ruleset['max_count_errmsg']) ?: $validator->maxMessage = $ruleset['max_count_errmsg'];
             return [$validator];
         }
         return [];
@@ -234,12 +242,18 @@ class Validator {
         $rangeKeys = ['range', 'min', 'max'];
         if (array_intersect_key($ruleset, array_fill_keys($rangeKeys, null))) {
             $options = [
-                'min' => $ruleset['min'] ?? ($ruleset['range'][0] ?? $ruleset['range']),
-                'max' => $ruleset['max'] ?? ($ruleset['range'][1] ?? $ruleset['range']),
+                'min' => (isset($ruleset['min']) ? $ruleset['min'] : (
+                    isset($ruleset['range'][0]) ? $ruleset['range'][0] : (
+                    isset($ruleset['range']) ? $ruleset['range'] : null
+                ))),
+                'max' => (isset($ruleset['max']) ? $ruleset['max'] : (
+                    isset($ruleset['range'][1]) ? $ruleset['range'][1] : (
+                    isset($ruleset['range']) ? $ruleset['range'] : null
+                ))),
             ];
             $validator = new Assert\Range($options);
-            !$ruleset['min_errmsg'] ?: $validator->minMessage = $ruleset['min_errmsg'];
-            !$ruleset['max_errmsg'] ?: $validator->maxMessage = $ruleset['max_errmsg'];
+            !isset($ruleset['min_errmsg']) ?: $validator->minMessage = $ruleset['min_errmsg'];
+            !isset($ruleset['max_errmsg']) ?: $validator->maxMessage = $ruleset['max_errmsg'];
             return [$validator];
         }
         return [];
@@ -248,9 +262,9 @@ class Validator {
     private function _buildRegexConstraint($ruleset) {
         if (isset($ruleset['regex'])) {
             $options = [
-                'pattern' => $ruleset['regex']['pattern'],
-                'htmlPattern' => $ruleset['regex']['html_pattern'] ?? null,
-                'match' => $ruleset['regex']['match'] ?? true,
+                'pattern' => isset($ruleset['regex']['pattern']) ? $ruleset['regex']['pattern'] : null,
+                'htmlPattern' => isset($ruleset['regex']['html_pattern']) ? $ruleset['regex']['html_pattern'] : null,
+                'match' => isset($ruleset['regex']['match']) ? $ruleset['regex']['match'] : true,
             ];
             $validator = new Assert\Regex($options);
             return [$validator];
@@ -262,16 +276,16 @@ class Validator {
         if (isset($ruleset['choice'])) {
             $options = [
                 'choices' => $ruleset['choice'],
-                'callback' => $ruleset['choice_callback'] ?? null,
-                'multiple' => $ruleset['choice_multiple'] ?? false,
-                'min' => $ruleset['choice_min'] ?? null,
-                'max' => $ruleset['choice_max'] ?? null,
+                'callback' => isset($ruleset['choice_callback']) ? $ruleset['choice_callback'] : null,
+                'multiple' => isset($ruleset['choice_multiple']) ? $ruleset['choice_multiple'] : false,
+                'min' => isset($ruleset['choice_min']) ? $ruleset['choice_min'] : null,
+                'max' => isset($ruleset['choice_max']) ? $ruleset['choice_max'] : null,
             ];
             $validator = new Assert\Choice($options);
-            !$ruleset['choice_errmsg'] ?: $validator->message = $ruleset['choice_errmsg'];
-            !$ruleset['choice_multiple_errmsg'] ?: $validator->multipleMessage = $ruleset['choice_multiple_errmsg'];
-            !$ruleset['choice_min_errmsg'] ?: $validator->minMessage = $ruleset['choice_min_errmsg'];
-            !$ruleset['choice_max_errmsg'] ?: $validator->maxMessage = $ruleset['choice_max_errmsg'];
+            !isset($ruleset['choice_errmsg']) ?: $validator->message = $ruleset['choice_errmsg'];
+            !isset($ruleset['choice_multiple_errmsg']) ?: $validator->multipleMessage = $ruleset['choice_multiple_errmsg'];
+            !isset($ruleset['choice_min_errmsg']) ?: $validator->minMessage = $ruleset['choice_min_errmsg'];
+            !isset($ruleset['choice_max_errmsg']) ?: $validator->maxMessage = $ruleset['choice_max_errmsg'];
             return [$validator];
         }
         return [];
@@ -310,33 +324,33 @@ class Validator {
             $rc = new \ReflectionClass('\\Symfony\\Component\\Validator\\Constraints\\' . ucfirst($type));
             $validator = $rc->newInstanceArgs();
             if ($type == 'image') {
-                $validator->mimeTypes = $ruleset['mim-types'] ?? 'image/*';
-                !$ruleset['mim-types_errmsg'] ?: $validator->mimeTypesMessage = $ruleset['mim-types_errmsg'];
-                $validator->minWidth = $ruleset['min_width'] ?? null;
-                !$ruleset['min_width_errmsg'] ?: $validator->minWidthMessage = $ruleset['min_width_errmsg'];
-                $validator->maxWidth = $ruleset['max_width'] ?? null;
-                !$ruleset['max_width_errmsg'] ?: $validator->maxWidthMessage = $ruleset['mmax_width_errmsg'];
-                $validator->maxHeight = $ruleset['max_height'] ?? null;
-                !$ruleset['max_height_errmsg'] ?: $validator->maxHeightMessage = $ruleset['max_height_errmsg'];
-                $validator->minHeight = $ruleset['min_height'] ?? null;
-                !$ruleset['min_height_errmsg'] ?: $validator->minHeightMessage = $ruleset['min_height_errmsg'];
-                $validator->maxRatio = $ruleset['max_ratio'] ?? null;
-                !$ruleset['max_ratio_errmsg'] ?: $validator->maxRatioMessage = $ruleset['max_ratio_errmsg'];
-                $validator->minRatio = $ruleset['min_ratio'] ?? null;
-                !$ruleset['min_ratio_errmsg'] ?: $validator->minRatioMessage = $ruleset['min_ratio_errmsg'];
-                $validator->minPixels = $ruleset['min_pixels'] ?? null;
-                !$ruleset['min_pixels_errmsg'] ?: $validator->minPixelsMessage = $ruleset['min_pixels_errmsg'];
-                $validator->maxPixels = $ruleset['max_pixels'] ?? null;
-                !$ruleset['max_pixels_errmsg'] ?: $validator->maxPixelsMessage = $ruleset['max_pixels_errmsg'];
-                $validator->maxSize = $ruleset['max_size'] ?? null;
-                !$ruleset['max_size_errmsg'] ?: $validator->maxSizeMessage = $ruleset['max_size_errmsg'];
+                $validator->mimeTypes = (isset($ruleset['mim-types']) ? $ruleset['mim-types'] : 'image/*');
+                !isset($ruleset['mim-types_errmsg']) ?: $validator->mimeTypesMessage = $ruleset['mim-types_errmsg'];
+                $validator->minWidth = isset($ruleset['min_width']) ? $ruleset['min_width'] : null;
+                !isset($ruleset['min_width_errmsg']) ?: $validator->minWidthMessage = $ruleset['min_width_errmsg'];
+                $validator->maxWidth = (isset($ruleset['max_width']) ? $ruleset['max_width'] : null);
+                !isset($ruleset['max_width_errmsg']) ?: $validator->maxWidthMessage = $ruleset['mmax_width_errmsg'];
+                $validator->maxHeight = (isset($ruleset['max_height']) ? $ruleset['max_height'] : null);
+                !isset($ruleset['max_height_errmsg']) ?: $validator->maxHeightMessage = $ruleset['max_height_errmsg'];
+                $validator->minHeight = (isset($ruleset['min_height']) ? $ruleset['min_height'] : null);
+                !isset($ruleset['min_height_errmsg']) ?: $validator->minHeightMessage = $ruleset['min_height_errmsg'];
+                $validator->maxRatio = (isset($ruleset['max_ratio']) ? $ruleset['max_ratio'] : null);
+                !isset($ruleset['max_ratio_errmsg']) ?: $validator->maxRatioMessage = $ruleset['max_ratio_errmsg'];
+                $validator->minRatio = (isset($ruleset['min_ratio']) ? $ruleset['min_ratio'] : null);
+                !isset($ruleset['min_ratio_errmsg']) ?: $validator->minRatioMessage = $ruleset['min_ratio_errmsg'];
+                $validator->minPixels = (isset($ruleset['min_pixels']) ? $ruleset['min_pixels'] : null);
+                !isset($ruleset['min_pixels_errmsg']) ?: $validator->minPixelsMessage = $ruleset['min_pixels_errmsg'];
+                $validator->maxPixels = (isset($ruleset['max_pixels']) ? $ruleset['max_pixels'] : null);
+                !isset($ruleset['max_pixels_errmsg']) ?: $validator->maxPixelsMessage = $ruleset['max_pixels_errmsg'];
+                $validator->maxSize = (isset($ruleset['max_size']) ? $ruleset['max_size'] : null);
+                !isset($ruleset['max_size_errmsg']) ?: $validator->maxSizeMessage = $ruleset['max_size_errmsg'];
             } else if ($type == 'file') {
-                $validator->mimeTypes = $ruleset['mim-types'] ?? [];
-                !$ruleset['mim-types_errmsg'] ?: $validator->mimeTypesMessage = $ruleset['mim-types_errmsg'];
-                $validator->maxSize = $ruleset['max_size'] ?? null;
-                !$ruleset['max_size_errmsg'] ?: $validator->maxSizeMessage = $ruleset['max_size_errmsg'];
+                $validator->mimeTypes = (isset($ruleset['mim-types']) ? $ruleset['mim-types'] : []);
+                !isset($ruleset['mim-types_errmsg']) ?: $validator->mimeTypesMessage = $ruleset['mim-types_errmsg'];
+                $validator->maxSize = (isset($ruleset['max_size']) ? $ruleset['max_size'] : null);
+                !isset($ruleset['max_size_errmsg']) ?: $validator->maxSizeMessage = $ruleset['max_size_errmsg'];
             } else if ($type == 'ip') {
-                $validator->version = $ruleset['version'] ?? Assert\Ip::V4;
+                $validator->version = (isset($ruleset['version']) ? $ruleset['version'] : Assert\Ip::V4);
             }
         } else if ($type) {
             throw new BusinessException('No Support type: ' . $type, BusinessException::DEFAULT_ERROR_CODE);
@@ -352,14 +366,14 @@ class Validator {
      * @return array
      */
     private function _buildCallbackConstraint($ruleset) {
-        $fun = $ruleset['callback'] ?? null;
-        $msg = $ruleset['callback_message'] ?? null;
+        $fun = isset($ruleset['callback']) ? $ruleset['callback'] : null;
+        $msg = isset($ruleset['callback_message']) ? $ruleset['callback_message'] : null;
         $validatorList = [];
         if ($fun) {
             if (is_iterable($fun)) {
                 foreach ($fun as $item) {
                     $callback = $item['name'];
-                    $message = $item['message'] ?? $msg;
+                    $message = isset($item['message']) ? $item['message'] : $msg;
                     $validatorList[] = $this->_buidCallbackValidator($callback, $message);
                 }
             }
@@ -431,7 +445,7 @@ class Validator {
             }
             return $filted;
         }
-        $filter = $ruleset["filter"]["filter_type"] ? constant($ruleset["filter"]["filter_type"]) : FILTER_SANITIZE_FULL_SPECIAL_CHARS;
+        $filter = isset($ruleset["filter"]["filter_type"]) ? constant($ruleset["filter"]["filter_type"]) : FILTER_SANITIZE_FULL_SPECIAL_CHARS;
         $ops = [];
         if (!empty($ruleset["filter"]["options"])) {
             if (is_iterable($ruleset["filter"]["options"])) {
@@ -440,15 +454,15 @@ class Validator {
                 $ops['flag'] = $ruleset["filter"]["options"];
             }
         }
-        !$ruleset["filter"]["filter_flag"] ?? $ops['flag'] = constant($options['filter_flag']);
-        !$ruleset["filter"]['filter_options'] ?? $ops['options'] = $options['filter_options'];
+        !isset($ruleset["filter"]["filter_flag"]) ?: $ops['flag'] = constant($options['filter_flag']);
+        !isset($ruleset["filter"]['filter_options']) ?: $ops['options'] = $options['filter_options'];
         $validated = filter_var($data, $filter, $ops);
         if ($validated !== false) {
             if (!empty($ruleset['fun'])) {
                 foreach ($ruleset['fun'] as $funset) {
                     $fun = $funset['name'];
-                    if (is_callable($fun)) {
-                        $params = (array) ($funset['params'] ?? []);
+                    if(is_callable($fun)) {
+                        $params = (array )($funset['params'] ?? []);
                         array_unshift($params, $validated);
                         $validated = call_user_func_array($fun, $params);
                     }

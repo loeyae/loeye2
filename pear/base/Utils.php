@@ -650,6 +650,7 @@ class Utils
             $fileKey .= '?' . http_build_query($params);
         }
         $cache = Cache::getInstance($appConfig, 'templates');
+        var_dump($fileKey);
         return $cache->get($fileKey);
     }
 
@@ -811,9 +812,9 @@ class Utils
     /**
      * log
      *
-     * @param string $message     message
-     * @param int    $messageType message type
-     * @param array  $trace       trace info
+     * @param mixed $message     message
+     * @param int   $messageType message type
+     * @param array $trace       trace info
      *
      * @return void
      */
@@ -827,7 +828,7 @@ class Utils
             $logfile = RUNTIME_LOG_DIR . DIRECTORY_SEPARATOR
                     . PROJECT_NAMESPACE . DIRECTORY_SEPARATOR . "error.log";
         }
-        $message .= PHP_EOL;
+        Logger::log($message, $messageType, $logfile);
         if (empty($trace)) {
             $traceInfo = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
             foreach ($traceInfo as $i => $t) {
@@ -843,17 +844,18 @@ class Utils
                 if (!isset($t['function'])) {
                     $t['function'] = 'unknown';
                 }
-                $message .= "#$i {$t['file']}({$t['line']}): ";
+                $message = "#$i {$t['file']}({$t['line']}): ";
                 if (isset($t['class'])) {
                     $message .= "{$t['class']}->";
                 }
-                $message .= "{$t['function']}()" . '\r\n';
+                $message .= "{$t['function']}()";
+                Logger::log($message, $messageType, $logfile);
             }
             if (isset($_SERVER['REQUEST_URI'])) {
-                $message .= "# REQUEST_URI: ${_SERVER['REQUEST_URI']}" . '\r\n';
+                $message = "# REQUEST_URI: ${_SERVER['REQUEST_URI']}";
+                Logger::log($message, $messageType, $logfile);
             }
         }
-        Logger::log($message, $messageType, $logfile);
     }
 
     /**
@@ -954,18 +956,17 @@ class Utils
             return;
         }
         $startInfo = array_shift($tracInfo);
-        $message   = "context trace info:" . '\r\n';
-        $message   .= "# ${traceKey} init" . '\r\n';
-        $message   .= "#  time: ${startInfo['trace_time']}" . '\r\n';
+        $message   = ["context trace info:"];
+        $message[] = "# ${traceKey} init";
+        $message[] =  "#  time: ${startInfo['trace_time']}";
         if (count($tracInfo) > 1 && empty(current($tracInfo)['plugin_setting'])) {
             $pluginStartInfo = array_shift($tracInfo);
-            $message         .= "# start " . '\r\n';
-            $message         .= "#  time${pluginStartInfo['trace_time']}" . '\r\n';
+            $message[] =  "# start ";
+            $message[] =  "#  time${pluginStartInfo['trace_time']}";
             $t               = $pluginStartInfo['trace_time'] - $startInfo['trace_time'];
-            $message         .= "#  consuming: $t" . '\r\n';
+            $message[] =  "#  consuming: $t";
             if ($ignoreData == false) {
-                $m       = serialize($pluginStartInfo['context_data']);
-                $message .= "#  context data: ${m}" . '\r\n';
+                $message[] =  "#  current context: ". json_encode($pluginStartInfo['context_data']);
             }
             $prevtime = $pluginStartInfo['trace_time'];
         } else {
@@ -979,34 +980,32 @@ class Utils
         foreach ($tracInfo as $trace) {
             if (isset($trace['plugin_setting']) && isset($trace['plugin_setting']['name'])) {
                 $p       = $trace['plugin_setting']['name'];
-                $message .= "# ${p}" . '\r\n';
+                $message[] =  "# ${p}";
             } else {
-                $message .= "# ${traceKey} process " . '\r\n';
+                $message[] =  "# ${traceKey} process ";
             }
-            $message .= "# time: ${trace['trace_time']} " . '\r\n';
+            $message[] =  "# time: ${trace['trace_time']} ";
             $t       = $trace['trace_time'] - $prevtime;
-            $message .= "# consuming: $t" . '\r\n';
+            $message[] =  "# consuming: $t";
             if ($ignoreData == false) {
-                $ps      = serialize($trace['plugin_setting']);
-                $message .= "# input data: ${ps}" . '\r\n';
-                $cd      = serialize($trace['context_data']);
-                $message .= "# context data: ${cd}" . '\r\n';
+                $message[] = "# plugin setting: ". json_encode($trace['plugin_setting']);
+                $message[] = "# current context: ". json_encode($trace['context_data']);
             }
             $prevtime = $trace['trace_time'];
         }
-        $message .= "# ${traceKey} end " . '\r\n';
-        $message .= "# time: ${endInfo['trace_time']}" . '\r\n';
+        $message[] =  "# ${traceKey} end ";
+        $message[] =  "# time: ${endInfo['trace_time']}";
         $et      = $endInfo['trace_time'] - $prevtime;
-        $message .= "# consuming: ${et}";
+        $message[] = "# consuming: ${et}";
         $tt      = $endInfo['trace_time'] - $startInfo['trace_time'];
-        $message .= "# total consuming: $tt" . '\r\n';
+        $message[] =  "# total consuming: $tt";
         if (isset($_SERVER['REQUEST_URI'])) {
-            $message .= "# REQUEST_URI: ${_SERVER['REQUEST_URI']}" . '\r\n';
+            $message[] =  "# REQUEST_URI: ${_SERVER['REQUEST_URI']}";
         } else if (!empty($_SERVER['argv'])) {
             $argv    = implode(' ', $_SERVER['argv']);
-            $message .= "# Argv: ${argv}" . '\r\n';
+            $message[] =  "# Argv: ${argv}";
         } else if (isset($_SERVER['SCRIPT_NAME'])) {
-            $message .= "# SCRIPT_NAME: ${_SERVER['SCRIPT_NAME']}" . '\r\n';
+            $message[] =  "# SCRIPT_NAME: ${_SERVER['SCRIPT_NAME']}";
         }
         self::log($message, Logger::LOEYE_LOGGER_TYPE_CONTEXT_TRACE, ['file' => __FILE__, 'line' => __LINE__]);
     }

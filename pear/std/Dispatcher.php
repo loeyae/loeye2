@@ -72,7 +72,7 @@ abstract class Dispatcher
         $this->context      = new \loeye\base\Context();
         $this->proccessMode = $proccessMode;
         if ($this->proccessMode == LOEYE_PROCESS_MODE__TEST) {
-            $this->_setTraceDataIntoContext(array());
+            $this->setTraceDataIntoContext(array());
         }
         \loeye\base\AutoLoadRegister::initApp();
         set_error_handler(array('\loeye\base\Utils', 'errorHandle'));
@@ -264,7 +264,7 @@ abstract class Dispatcher
 
         if (!empty($redirectUrl)) {
             if ($this->proccessMode == LOEYE_PROCESS_MODE__TEST) {
-                $this->_setTraceDataIntoContext(array());
+                $this->setTraceDataIntoContext(array());
                 \loeye\base\Utils::logContextTrace($this->context);
             }
             $this->context->getResponse()->redirect($redirectUrl);

@@ -122,8 +122,8 @@ class FuncLibraries
             sort($data);
             $fileKey .= '?' . http_build_query($data);
         }
-        $cache   = new SimpleFileCache($context->getAppConfig()->getPropertyName() . '/temp', $fileKey);
-        $content = $cache->get('source');
+        $cache   = new \loeye\base\Cache($context->getAppConfig());
+        $content = $cache->get($fileKey);
         return $content != false;
     }
 

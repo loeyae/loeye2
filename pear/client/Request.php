@@ -197,6 +197,7 @@ class Request
             'Content-Length: ' . strlen($content),
         );
         $this->setHeader($header);
+        $this->_options['body'] = $content;
     }
 
     /**

@@ -32,13 +32,13 @@ class QRCodePlugin extends \loeye\std\Plugin
     /**
      * process
      *
-     * @param \LOEYE\Context $context context
+     * @param \loeye\base\Context $context context
      * @param array               $inputs  inputs
      *
      * @return void
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
-    public function process(\LOEYE\Context $context, array $inputs)
+    public function process(\loeye\base\Context $context, array $inputs)
     {
         $text   = \loeye\base\Utils::checkNotEmptyContextData($context, $inputs);
         $file   = \loeye\base\Utils::getData($context, 'file');

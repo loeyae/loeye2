@@ -45,7 +45,7 @@ class RedirectPlugin extends \loeye\std\Plugin
         } else {
             $url = \loeye\base\Utils::checkNotEmpty($inputs, 'url');
         }
-        if (Utils::getData($inputs, 'done') == true) {
+        if (\loeye\base\Utils::getData($inputs, 'done') == true) {
             if (filter_has_var(INPUT_GET, '_done')) {
                 $url = rawurldecode(filter_input(INPUT_GET, '_done', FILTER_SANITIZE_URL));
             } else if (filter_has_var(INPUT_COOKIE, '_done')) {

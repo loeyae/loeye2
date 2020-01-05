@@ -96,6 +96,7 @@ class Exception extends \Exception
             $errorMessage = strtr($errorMessage, $parameter);
         }
         parent::__construct($errorMessage, $errorCode);
+        Logger::trace($errorMessage, $errorCode, __FILE__, __LINE__, Logger::LOEYE_LOGGER_TYPE_ERROR);
     }
 
 }

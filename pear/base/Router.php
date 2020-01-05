@@ -247,8 +247,8 @@ class Router implements \ArrayAccess
             '',
             '',
         );
-        if (isset($router['_params'])) {
-            foreach ($router['_params'] as $key) {
+        if (isset($router['format'])) {
+            foreach ($router['format'] as $key) {
                 if (!isset($params[$key])) {
                     throw new BusinessException(
                         BusinessException::INVALID_PARAMETER_MSG,

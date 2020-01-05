@@ -98,7 +98,7 @@ class ModuleParse
                 $func      = isset($matches[1]) ? $matches[1] : null;
                 $argList   = isset($matches[2]) ? $matches[2] : '';
                 $parameter = explode(',', $argList);
-                if (!empty($func) && method_exists(\loeye\lib\FuncLibraries, $func)) {
+                if (!empty($func) && method_exists(FuncLibraries::class, $func)) {
                     $input = \loeye\lib\FuncLibraries::$func($context, $parameter);
                 }
             }
@@ -143,7 +143,7 @@ class ModuleParse
      *
      * @return boolean
      */
-    static public function groupConditionResult($condition, \loeye\base\Contextt $context)
+    static public function groupConditionResult($condition, \loeye\base\Context $context)
     {
         $condition = trim($condition);
         $matches   = \loeye\lib\Operator::match('/^if\s?\(?([^\)]+)\)?\s?$/', $condition);
