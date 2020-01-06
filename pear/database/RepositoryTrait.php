@@ -99,6 +99,11 @@ trait RepositoryTrait
             $expr = ExpressionFactory::createExpr($query);
             $qb->where($expr)->orderBy($orderBy)->groupBy($groupBy)->having($having);
             $query = $qb->getQuery();
+        } else if (is_null($query)) {
+            $qb = $this->db->repository($this->entityClass)->createQueryBuilder(static::$alias);
+            $qb->addSelect(static::$alias)->setFirstResult($offset)->setMaxResults($limit);
+            $qb->orderBy($orderBy)->groupBy($groupBy)->having($having);
+            $query = $qb->getQuery();
         } else {
             throw new \loeye\error\BusinessException(\loeye\error\BusinessException::INVALID_PARAMETER_MSG, \loeye\error\BusinessException::INVALID_PARAMETER_CODE);
         }
