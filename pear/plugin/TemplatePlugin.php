@@ -64,7 +64,7 @@ class TemplatePlugin extends \loeye\std\Plugin
         $caching = $this->setCache($template, $inputs, $view);
         if ($caching == Smarty::CACHING_OFF) {
             $context->setTemplate($template);
-            return PROJECT_SUCCESS;
+            return \loeye\base\PROJECT_SUCCESS;
         }
         $this->setCacheId($template, $context, $inputs);
         $context->setTemplate($template);

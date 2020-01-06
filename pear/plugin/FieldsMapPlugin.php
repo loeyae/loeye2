@@ -52,7 +52,7 @@ abstract class FieldsMapPlugin extends \loeye\std\Plugin
         $data = \loeye\base\Utils::getContextData($context, $inputs, $this->dataKey);
         if (empty($data)) {
             \loeye\base\Utils::setContextData($data, $context, $inputs, $this->outKey);
-            return PROJECT_SUCCESS;
+            return \loeye\base\PROJECT_SUCCESS;
         }
         if ($flip) {
             $fields = array_flip($this->fieldsMap);

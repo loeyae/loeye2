@@ -454,8 +454,8 @@ class Validator {
                 $ops['flag'] = $ruleset["filter"]["options"];
             }
         }
-        !isset($ruleset["filter"]["filter_flag"]) ?: $ops['flag'] = constant($options['filter_flag']);
-        !isset($ruleset["filter"]['filter_options']) ?: $ops['options'] = $options['filter_options'];
+        !isset($ruleset["filter"]["filter_flag"]) ?: $ops['flag'] = constant($ruleset["filter"]['filter_flag']);
+        !isset($ruleset["filter"]['filter_options']) ?: $ops['options'] = $ruleset["filter"]['filter_options'];
         $validated = filter_var($data, $filter, $ops);
         if ($validated !== false) {
             if (!empty($ruleset['fun'])) {

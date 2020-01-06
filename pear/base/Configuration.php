@@ -256,7 +256,7 @@ class Configuration
                 if (function_exists("yaml_parse")) {
                     return yaml_parse($content);
                 } else {
-                    return \Symfony\Component\Yaml\Yaml::parse($content);
+                    return \Symfony\Component\Yaml\Yaml::parse($content, \Symfony\Component\Yaml\Yaml::PARSE_CUSTOM_TAGS);
                 }
                 break;
             default :

@@ -45,7 +45,7 @@ class FilterDataPlugin extends \loeye\std\Plugin
         $this->_setFilterKey($context, $inputs, $result);
         $this->_setPagination($context, $inputs);
         if ($this->_excuteError($context, $inputs) === false || $this->_checkRequestKey($context, $inputs) === false) {
-            return PROJECT_SUCCESS;
+            return \loeye\base\PROJECT_SUCCESS;
         }
         $required = \loeye\base\Utils::getData($inputs, $this->requiredKey, array());
         $options  = \loeye\base\Utils::getData($inputs, $this->optionsKey, array());
