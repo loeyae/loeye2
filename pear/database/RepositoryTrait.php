@@ -86,13 +86,10 @@ trait RepositoryTrait
         if ($query instanceof \Doctrine\ORM\Query) {
             $query->setFirstResult($offset)->setMaxResults($limit);
         } else if ($query instanceof \Doctrine\Common\Collections\Criteria) {
-            $qb = $this->db->repository($this->entityClass)->createQueryBuilder('t');
-            $query->setFirstResult($offset)->setMaxResults($limit);
-            if ($orderBy) {
-                $query->orderBy($orderBy);
-            }
-            $qb->addCriteria($query);
-            $qb->addSelect(t);
+            $qb = $this->db->repository($this->entityClass)->createQueryBuilder(static::$alias);
+            $qb->setFirstResult($offset)->setMaxResults($limit)
+                    ->orderBy($orderBy)->groupBy($groupBy)->having($having);
+            $qb->addCriteria($query)->addSelect(static::$alias);
             $query = $qb->getQuery();
         } else if (is_array($query)) {
             $qb = $this->db->repository($this->entityClass)->createQueryBuilder(static::$alias);
