@@ -38,7 +38,7 @@ class SetRouterPlugin extends \loeye\std\Plugin
     {
         $router = $context->getRouter();
         if ($router instanceof Router) {
-            return PROJECT_SUCCESS;
+            return \loeye\base\PROJECT_SUCCESS;
         }
         $router = new Router(
             PROJECT_ROUTER_DIR, $context->getAppConfig()->getPropertyName());

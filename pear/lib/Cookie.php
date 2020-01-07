@@ -97,7 +97,7 @@ class Cookie
         static $userMessageInfo;
         static $cryptFields;
         if (empty($userMessageInfo)) {
-            $userMessageInfo = self::getCookie();
+            $userMessageInfo = self::getLoeyeCookie(null, $decode=false);
             if (!empty($userMessageInfo[self::CRYPT_COOKIE_FIELDS])) {
                 $cryptFields = $userMessageInfo[self::CRYPT_COOKIE_FIELDS];
             } else {
@@ -123,12 +123,12 @@ class Cookie
      *
      * @return mixed
      */
-    static public function getLoeyeCookie($name = null)
+    static public function getLoeyeCookie($name = null, $decode = true)
     {
         if (filter_has_var(INPUT_COOKIE, self::USRE_MESSAGE_INFO)) {
             $userMessageInfo = json_decode(filter_input(INPUT_COOKIE, self::USRE_MESSAGE_INFO), true);
             $cryptFields     = json_decode(self::crypt($userMessageInfo[self::CRYPT_COOKIE_FIELDS], true), true);
-            if (!empty($cryptFields)) {
+            if (!empty($cryptFields) && $decode) {
                 foreach ($userMessageInfo as $key => $value) {
                     if (in_array($key, $cryptFields)) {
                         $userMessageInfo[$key] = self::crypt($value, true);
