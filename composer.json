@@ -34,8 +34,7 @@
     ],
     "bin":[
         "bin/loeye",
-        "bin/loeye-orm",
-        "bin/cli-config.php"
+        "bin/loeye-orm"
     ],
     "autoload": {
         "files": [
