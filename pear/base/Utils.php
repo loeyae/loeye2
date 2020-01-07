@@ -820,13 +820,14 @@ class Utils
      */
     static public function log($message, $messageType = Logger::LOEYE_LOGGER_TYPE_NOTICE, $trace = [])
     {
+        $name = defined('PROJECT_PROPERTY') ? PROJECT_PROPERTY : PROJECT_NAMESPACE;
         if ($messageType == Logger::LOEYE_LOGGER_TYPE_CONTEXT_TRACE) {
             $logfile     = RUNTIME_LOG_DIR . DIRECTORY_SEPARATOR
-                    . PROJECT_NAMESPACE . DIRECTORY_SEPARATOR . "trace.log";
+                    . PROJECT_NAMESPACE . DIRECTORY_SEPARATOR . 'trace_'.$name .'.log';
             $messageType = Logger::LOEYE_LOGGER_TYPE_DEBUG;
         } else {
             $logfile = RUNTIME_LOG_DIR . DIRECTORY_SEPARATOR
-                    . PROJECT_NAMESPACE . DIRECTORY_SEPARATOR . "error.log";
+                    . PROJECT_NAMESPACE . DIRECTORY_SEPARATOR . 'error_'. $name .'.log';
         }
         Logger::log($message, $messageType, $logfile);
         if (empty($trace)) {

@@ -49,7 +49,7 @@ class Logger
     {
         $logfile = $file ?? RUNTIME_LOG_DIR . DIRECTORY_SEPARATOR
                 . PROJECT_NAMESPACE . DIRECTORY_SEPARATOR
-                . 'error.log';
+                . 'error-'.$name.'.log';
         $key     = md5($logfile);
         if (!isset(self::$logger[$key])) {
             $dateFormat         = "Y-m-d H:i:s";
@@ -164,7 +164,12 @@ class Logger
      */
     static public function log($message, $type = self::LOEYE_LOGGER_TYPE_ERROR, $file = null)
     {
-        $logger = self::getLogger(PROJECT_NAMESPACE, $file);
+        if (defined('PROJECT_PROPERTY')) {
+            $name = PROJECT_PROPERTY;
+        } else {
+            $name = PROJECT_NAMESPACE;
+        }
+        $logger = self::getLogger($name, $file);
         if (is_array($message)) {
             foreach ($message as $msg) {
                 $logger->log($type, $msg);
@@ -172,6 +177,75 @@ class Logger
         } else {
             $logger->log($type, $message);
         }
+    }
+
+    /**
+     * critical
+     * 
+     * @param string|array $message
+     */
+    static public function critical($message)
+    {
+        static::log($message, static::LOEYE_LOGGER_TYPE_CRITICAL);
+    }
+
+    /**
+     * error
+     *
+     * @param string|array $message
+     */
+    static public function error($message)
+    {
+        static::log($message, static::LOEYE_LOGGER_TYPE_ERROR);
+    }
+
+    /**
+     * warning
+     *
+     * @param string|array $message
+     */
+    static public function warning($message)
+    {
+        static::warn($message);
+    }
+
+    /**
+     * warn
+     * @param string|array $message
+     */
+    static public function warn($message)
+    {
+        static::log($message, static::LOEYE_LOGGER_TYPE_WARNING);
+    }
+
+    /**
+     * debug
+     *
+     * @param string|array $message
+     */
+    static public function debug($message)
+    {
+        static::log($message, static::LOEYE_LOGGER_TYPE_DEBUG);
+    }
+
+    /**
+     * info
+     *
+     * @param string|array $message
+     */
+    static public function info($message)
+    {
+        static::log($message, static::LOEYE_LOGGER_TYPE_INFO);
+    }
+
+    /**
+     * notice
+     *
+     * @param string|array $message
+     */
+    static public function notice($message)
+    {
+        static::log($message, static::LOEYE_LOGGER_TYPE_NOTICE);
     }
 
     /**
