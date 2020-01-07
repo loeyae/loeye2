@@ -165,14 +165,14 @@ class Dispatcher extends \loeye\std\Dispatcher
     private function _excuteRouter($routerDir)
     {
         $moduleId = null;
-
-        if ($routerDir) {
-            $router     = new \loeye\base\Router($routerDir);
-            $this->context->setRouter($router);
+        $router     = new \loeye\base\Router($routerDir);
+        $this->context->setRouter($router);
+        if (filter_has_var(INPUT_GET, 'm_id')) {
+            $moduleId = filter_input(INPUT_GET, 'm_id', FILTER_SANITIZE_STRING);
+        } else {
             $requestUrl = filter_input(INPUT_SERVER, 'REQUEST_URI');
             $moduleId   = $router->match($requestUrl);
         }
-        !$moduleId ?: $_GET['m_id'] = $moduleId;
         return $moduleId;
     }
 
@@ -647,23 +647,19 @@ class Dispatcher extends \loeye\std\Dispatcher
     protected function parseUrl($moduleId = null)
     {
         if (empty($moduleId)) {
-            if (filter_has_var(INPUT_GET, 'm_id')) {
-                $moduleId = filter_input(INPUT_GET, 'm_id', FILTER_SANITIZE_STRING);
+            if ($this->context->getUrlManager() instanceof \loeye\base\UrlManager) {
+                $moduleId = $this->context->getUrlManager()->match(filter_input(INPUT_SERVER, 'REQUEST_URI'));
             } else {
-                if ($this->context->getUrlManager() instanceof \loeye\base\UrlManager) {
-                    $moduleId = $this->context->getUrlManager()->match(filter_input(INPUT_SERVER, 'REQUEST_URI'));
+                if (filter_has_var(INPUT_SERVER, 'REDIRECT_routerDir')) {
+                    $routerDir = filter_input(INPUT_SERVER, 'REDIRECT_routerDir', FILTER_SANITIZE_STRING);
+                } else if (filter_has_var(INPUT_SERVER, 'routerDir')) {
+                    $routerDir = filter_input(INPUT_SERVER, 'routerDir', FILTER_SANITIZE_STRING);
+                } else if (filter_has_var(INPUT_GET, 'routerDir')) {
+                    $routerDir = filter_input(INPUT_GET, 'routerDir', FILTER_SANITIZE_STRING);
                 } else {
-                    if (filter_has_var(INPUT_SERVER, 'REDIRECT_routerDir')) {
-                        $routerDir = filter_input(INPUT_SERVER, 'REDIRECT_routerDir', FILTER_SANITIZE_STRING);
-                    } else if (filter_has_var(INPUT_SERVER, 'routerDir')) {
-                        $routerDir = filter_input(INPUT_SERVER, 'routerDir', FILTER_SANITIZE_STRING);
-                    } else if (filter_has_var(INPUT_GET, 'routerDir')) {
-                        $routerDir = filter_input(INPUT_GET, 'routerDir', FILTER_SANITIZE_STRING);
-                    } else {
-                        $routerDir = PROJECT_NAMESPACE;
-                    }
-                    $moduleId = $this->_excuteRouter($routerDir);
+                    $routerDir = defined('PROJECT_PROPERTY') ? PROJECT_PROPERTY : PROJECT_NAMESPACE;
                 }
+                $moduleId = $this->_excuteRouter($routerDir);
             }
         }
         if (empty($moduleId)) {
