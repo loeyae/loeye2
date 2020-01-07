@@ -17,6 +17,8 @@
 
 namespace loeye\config;
 
+use Symfony\Component\Config\Exception\FileLocatorFileNotFoundException;
+
 /**
  * FileLocator
  *
@@ -60,11 +62,11 @@ class FileLocator implements \Symfony\Component\Config\FileLocatorInterface
         foreach ($paths as $path) {
             if (@file_exists($file = $path.\DIRECTORY_SEPARATOR.$name)) {
                 if (true === $first) {
-                    return $file;
+                    return realpath($file);
                 }
-                $filepaths[] = $file;
+                $filepaths[] = realpath($file);
             } else {
-                $notfound[] = $file;
+                $notfound[] = realpath($file);
             }
         }
 

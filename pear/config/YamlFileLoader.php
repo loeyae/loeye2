@@ -34,7 +34,7 @@ class YamlFileLoader extends \Symfony\Component\Config\Loader\FileLoader
         if ($this->parser == null) {
             $this->parser = new \Symfony\Component\Yaml\Parser();
         }
-        return $this->parser->parse($resource, Yaml::PARSE_CONSTANT | Yaml::PARSE_CUSTOM_TAGS);
+        return $this->parser->parseFile($resource, Yaml::PARSE_CONSTANT | Yaml::PARSE_CUSTOM_TAGS);
     }
 
     public function supports($resource, $type = null): bool
