@@ -11,10 +11,10 @@ class YamlFileLoaderTest extends \loeye\unit\TestCase {
      * @var \loeye\config\YamlFileLoader
      */
     protected $object;
-    
+
     /**
-     * 
-     * @var \loeye\config\FileLocator 
+     *
+     * @var \loeye\config\FileLocator
      */
     protected $locator;
 
@@ -33,7 +33,7 @@ class YamlFileLoaderTest extends \loeye\unit\TestCase {
      * This method is called after a test is executed.
      */
     protected function tearDown() {
-        
+
     }
 
     /**
@@ -41,7 +41,8 @@ class YamlFileLoaderTest extends \loeye\unit\TestCase {
      * @todo   Implement testLoad().
      */
     public function testLoad() {
-        $resource = $this->locator->locate('master.yml', 'unit/app', true);
+        $this->object->setCurrentDir('unit/app');
+        $resource = $this->object->import('*');
         $this->assertTrue(true);
     }
 
