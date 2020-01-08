@@ -34,15 +34,16 @@ class YamlFileLoader extends \Symfony\Component\Config\Loader\FileLoader
         if ($this->parser == null) {
             $this->parser = new \Symfony\Component\Yaml\Parser();
         }
-        return $this->parser->parseFile($resource, Yaml::PARSE_CONSTANT | Yaml::PARSE_CUSTOM_TAGS);
+        $path = $this->locator->locate($resource);
+        return $this->parser->parseFile($path, Yaml::PARSE_CONSTANT | Yaml::PARSE_CUSTOM_TAGS);
     }
 
     public function supports($resource, $type = null): bool
     {
-        return is_string($resource) && 'yml' === pathinfo(
+        return is_string($resource) && in_array(pathinfo(
                         $resource,
                         PATHINFO_EXTENSION
-        );
+        ), ['yml', 'yaml']);
     }
 
 }

@@ -1,0 +1,22 @@
+# test.yml
+#
+#Licensed under the Apache License, Version 2.0 (the "License"),
+#see LICENSE for more details: http://www.apache.org/licenses/LICENSE-2.0.
+#
+# @author   Zhang Yi <loeyae@gmail.com>
+# @version  2020年1月8日 下午9:25:54
+#
+# group name:
+#     property: value
+#
+- settings: [master]
+  constants:
+      BASE_SERVER_URL: http://localhost:8080
+  application:
+      cache: redis
+  configuration:
+      property_name: unit
+      timezone: Asia/ChongQing
+  local:
+      basename: lang
+      supported_languages: [en_EN]

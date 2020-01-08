@@ -34,6 +34,17 @@ class FileLocator implements \Symfony\Component\Config\FileLocatorInterface
         $this->paths = (array)$paths;
     }
 
+    /**
+     * locate
+     * 
+     * @param string  $name        name
+     * @param string  $currentPath current path
+     * @param boolean $first       first
+     * @return array|string
+     * 
+     * @throws \InvalidArgumentException
+     * @throws FileLocatorFileNotFoundException
+     */
     public function locate($name, $currentPath = null, $first = true)
     {
         if ('' == $name) {

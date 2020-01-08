@@ -41,9 +41,20 @@ class YamlFileLoaderTest extends \loeye\unit\TestCase {
      * @todo   Implement testLoad().
      */
     public function testLoad() {
+        $masterYml = 'unit/app/master.yml';
+        $resource = $this->object->load($masterYml);
+        $this->assertCount(1, $resource);
+        $this->assertArrayHasKey("settings", $resource[0]);
+    }
+
+    /**
+     * @covers loeye\config\YamlFileLoader::import
+     * @todo   Implement testLoad().
+     */
+    public function testImport() {
         $this->object->setCurrentDir('unit/app');
-        $resource = $this->object->import('*');
-        $this->assertTrue(true);
+        $resource = $this->object->import('*.yml');
+        $this->assertCount(2, $resource);
     }
 
     /**
@@ -51,7 +62,9 @@ class YamlFileLoaderTest extends \loeye\unit\TestCase {
      * @todo   Implement testSupports().
      */
     public function testSupports() {
-        $this->assertTrue(true);
+        $this->assertTrue($this->object->supports('master.yml'));
+        $this->assertTrue($this->object->supports('master.yaml'));
+        $this->assertFalse($this->object->supports('master.php'));
     }
 
 }
