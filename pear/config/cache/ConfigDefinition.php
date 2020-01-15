@@ -17,7 +17,7 @@
 
 namespace loeye\config\cache;
 
-use \Symfony\Component\Config\Definition\Builder\TreeBuilder;
+use \loeye\config\TreeBuilder;
 
 /**
  * ConfigDefinition
@@ -34,12 +34,12 @@ class ConfigDefinition implements \Symfony\Component\Config\Definition\Configura
      */
     public function getConfigTreeBuilder(): TreeBuilder
     {
-        $treeBuilder = new TreeBuilder(0);
+        $treeBuilder = new TreeBuilder('-');
         $treeBuilder->getRootNode()
                  ->children()
                      ->arrayNode('settings')
                          ->children()
-                             ->scalarNode(0)->isRequired()->end()
+                             ->scalarNode(0)->isRequired()->defaultValue('master')->end()
                          ->end()
                      ->end()
                      ->arrayNode(\loeye\base\Cache::CACHE_TYPE_APC)->canBeUnset()
@@ -50,6 +50,7 @@ class ConfigDefinition implements \Symfony\Component\Config\Definition\Configura
                      ->arrayNode(\loeye\base\Cache::CACHE_TYPE_MEMCACHED)->canBeUnset()
                          ->children()
                              ->scalarNode('persistent_id')->cannotBeEmpty()->end()
+                             ->integerNode('lifetime')->end()
                              ->arrayNode('servers')->isRequired()->cannotBeEmpty()
                                  ->arrayPrototype()
                                     ->children()
@@ -59,6 +60,34 @@ class ConfigDefinition implements \Symfony\Component\Config\Definition\Configura
                                     ->end()
                                  ->end()
                              ->end()
+                         ->end()
+                     ->end()
+                     ->arrayNode(\loeye\base\Cache::CACHE_TYPE_REDIS)->canBeUnset()
+                         ->children()
+                             ->scalarNode('persistent')->cannotBeEmpty()->end()
+                             ->scalarNode('host')->cannotBeEmpty()->end()
+                             ->integerNode('port')->isRequired()->end()
+                             ->scalarNode('password')->cannotBeEmpty()->end()
+                             ->integerNode('timeout')->end()
+                             ->integerNode('lifetime')->end()
+                         ->end()
+                     ->end()
+                     ->arrayNode(\loeye\base\Cache::CACHE_TYPE_PHP_ARRAY)->canBeUnset()
+                         ->children()
+                             ->scalarNode('file')->cannotBeEmpty()->end()
+                             ->integerNode('lifetime')->end()
+                         ->end()
+                     ->end()
+                     ->arrayNode(\loeye\base\Cache::CACHE_TYPE_PHP_FILE)->canBeUnset()
+                         ->children()
+                             ->scalarNode('directory')->cannotBeEmpty()->end()
+                             ->integerNode('lifetime')->end()
+                         ->end()
+                     ->end()
+                     ->arrayNode(\loeye\base\Cache::CACHE_TYPE_FILE)->canBeUnset()
+                         ->children()
+                             ->scalarNode('directory')->cannotBeEmpty()->end()
+                             ->integerNode('lifetime')->end()
                          ->end()
                      ->end()
                  ->end();

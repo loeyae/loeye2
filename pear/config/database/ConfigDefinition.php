@@ -17,7 +17,7 @@
 
 namespace loeye\config\database;
 
-use \Symfony\Component\Config\Definition\Builder\TreeBuilder;
+use \loeye\config\TreeBuilder;
 
 /**
  * ConfigDefinition
@@ -34,19 +34,23 @@ class ConfigDefinition implements \Symfony\Component\Config\Definition\Configura
      */
     public function getConfigTreeBuilder(): TreeBuilder
     {
-        $treeBuilder = new TreeBuilder(0);
+        $treeBuilder = new TreeBuilder('-');
         $treeBuilder->getRootNode()
                  ->children()
                      ->arrayNode('settings')
                          ->children()
-                             ->scalarNode(0)->isRequired()->end()
+                             ->scalarNode('0')->isRequired()->defaultValue('master')->end()
                          ->end()
                      ->end()
-                     ->arrayPrototype()->canBeUnset()
+                     ->regexNode('\w+')->canBeUnset()
                          ->children()
-                            ->scalarNode('')->isRequired()->end()
-                            ->integerNode(1)->isRequired()->end()
-                            ->integerNode(2)->isRequired()->end()
+                            ->scalarNode('driver')->isRequired()->end()
+                            ->scalarNode('user')->isRequired()->end()
+                            ->scalarNode('password')->isRequired()->end()
+                            ->scalarNode('host')->isRequired()->end()
+                            ->integerNode('port')->end()
+                            ->scalarNode('dbname')->isRequired()->end()
+                            ->scalarNode('charset')->end()
                          ->end()
                      ->end()
                  ->end();

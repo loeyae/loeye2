@@ -12,6 +12,7 @@
 - settings: [master]
   constants:
       BASE_SERVER_URL: http://localhost
+      BASE_VALUE: aaa
   application:
       cache: file
       setting:

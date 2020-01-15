@@ -1,0 +1,72 @@
+- settings: [master]
+  module:
+    module_id: loeyae.login
+    plugin:
+      -
+        name: \app\plugins\loeyae\common\DefaultSetPlugin
+      -
+        include_module: loeyae.include.conten_list_category
+      -  
+        name: \loeye\plugin\ValidatePlugin
+        out: filter_result
+        error: filter_error
+        validate_rule: member_login
+        bundle: member
+      -
+        name: \loeye\plugin\FilterDataPlugin
+        in: filter_result
+        err: filter_error
+        out: member_get_data
+        throw_error: 'true'
+        filter_key:
+          member_get_ids: user
+          member_check_password_data: pass
+      -
+        name: \app\plugins\loeyae\member\MemberGetUidPlugin
+        key_list: [id, nickname, gender, figureurl, res, isAdmin]
+        out: member_get_result
+        error: member_get_error
+      -
+        name: \loeye\plugin\DaoOperatePlugin
+        config_base_dir: $_CONST[PROJECT_CONFIG_DIR]
+        bundle: loeyae/db
+        dao: LoeyaeBaseDao
+        db_r: sqlite_loeyae_base
+        db_w: sqlite_loeyae_base
+        operate:
+            get:
+                in: ['*']
+                out: contact_list_result
+                error: contact_list_error
+      - 
+        if ($_CONTEXT[member_not_found]):
+          - 
+            name: \loeye\plugin\RedirectPlugin
+            router_key: login_page
+      -
+        parallel:
+          -
+            name: \app\plugins\loeyae\content\ContentListPlugin
+            out: content_list_result_1
+            error: content_list_error_1
+            if: $_CONTEXT[content_list_cate_id_1]
+            inputs:
+                content_list_offset: 5
+                content_list_catId: $_CONTEXT[content_list_cate_id_1]
+      -
+        name: \app\plugins\loeyae\member\MemberGetResultParsePlugin
+        in_key: member_check_result
+        in_error_key: member_check_error
+        only_one: 'true'
+        out: member_check_result
+      -
+        if ($_CONTEXT[member_check_result]):
+          -
+            name: \app\plugins\loeyae\login\LoginSetCookiePlugin
+            in: member_get_result
+      - 
+        name: \loeye\plugin\RedirectPlugin
+        router_key: login_page
+    view:
+      default:
+        src: loeyae/login/login.phtml

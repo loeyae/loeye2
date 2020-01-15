@@ -58,6 +58,7 @@ class ConfigDefinitionTest extends \loeye\unit\TestCase
         $settins = $processor->processConfiguration($this->object, $configs);
         $this->assertIsArray($settins);
         $this->assertArrayHasKey("settings", $settins);
+        $this->assertArrayHasKey("apc", $settins);
     }
 
     /**
@@ -72,6 +73,52 @@ class ConfigDefinitionTest extends \loeye\unit\TestCase
         $settins = $processor->processConfiguration($this->object, $configs);
         $this->assertIsArray($settins);
         $this->assertArrayHasKey("settings", $settins);
+        $this->assertArrayHasKey("memcached", $settins);
+    }
+    
+    /**
+     * @covers loeye\config\cache\ConfigDefinition::getConfigTreeBuilder
+     * @todo   Implement testGetConfigTreeBuilder().
+     */
+    public function testGetConfigTreeBuilderRedis()
+    {
+        $processor = new \Symfony\Component\Config\Definition\Processor();
+        $parser = new \Symfony\Component\Yaml\Parser();
+        $configs = $parser->parseFile(PROJECT_UNIT_DIR.DIRECTORY_SEPARATOR.'config/unit/cache/redis.yml');
+        $settins = $processor->processConfiguration($this->object, $configs);
+        $this->assertIsArray($settins);
+        $this->assertArrayHasKey("settings", $settins);
+        $this->assertArrayHasKey("redis", $settins);
+    }
+    
+    /**
+     * @covers loeye\config\cache\ConfigDefinition::getConfigTreeBuilder
+     * @todo   Implement testGetConfigTreeBuilder().
+     */
+    public function testGetConfigTreeBuilderPfile()
+    {
+        $processor = new \Symfony\Component\Config\Definition\Processor();
+        $parser = new \Symfony\Component\Yaml\Parser();
+        $configs = $parser->parseFile(PROJECT_UNIT_DIR.DIRECTORY_SEPARATOR.'config/unit/cache/pfile.yml');
+        $settins = $processor->processConfiguration($this->object, $configs);
+        $this->assertIsArray($settins);
+        $this->assertArrayHasKey("settings", $settins);
+        $this->assertArrayHasKey("pfile", $settins);
+    }
+    
+    /**
+     * @covers loeye\config\cache\ConfigDefinition::getConfigTreeBuilder
+     * @todo   Implement testGetConfigTreeBuilder().
+     */
+    public function testGetConfigTreeBuilderFile()
+    {
+        $processor = new \Symfony\Component\Config\Definition\Processor();
+        $parser = new \Symfony\Component\Yaml\Parser();
+        $configs = $parser->parseFile(PROJECT_UNIT_DIR.DIRECTORY_SEPARATOR.'config/unit/cache/file.yml');
+        $settins = $processor->processConfiguration($this->object, $configs);
+        $this->assertIsArray($settins);
+        $this->assertArrayHasKey("settings", $settins);
+        $this->assertArrayHasKey("file", $settins);
     }
 
 }
