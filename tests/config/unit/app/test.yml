@@ -14,9 +14,24 @@
       BASE_SERVER_URL: http://localhost:8080
   application:
       cache: redis
+      database: default
   configuration:
       property_name: unit
       timezone: Asia/ChongQing
   local:
       basename: lang
       supported_languages: [en_EN]
+- settings: [master]
+  constants:
+      BASE_SERVER_URL: http://localhost:8081
+  application:
+      cache: pfile
+      database:
+        default: mysql
+        is_dev_mode: false
+  configuration:
+      property_name: test
+      timezone: Asia/BeiJing
+  local:
+      basename: lang
+      supported_languages: [en_UN]

@@ -1,0 +1,23 @@
+# mem.yml
+#
+#Licensed under the Apache License, Version 2.0 (the "License"),
+#see LICENSE for more details: http://www.apache.org/licenses/LICENSE-2.0.
+#
+# @author   Zhang Yi <loeyae@gmail.com>
+# @version  2020年1月15日 下午6:00:55
+#
+# group name:
+#     property: value
+#
+- settings: [master]
+  memcached:
+      persistent_id: unit
+      servers:
+          -
+            - 127.0.0.1
+            - 1121
+            - 100
+          -
+            - 127.0.0.1
+            - 1122
+            - 80

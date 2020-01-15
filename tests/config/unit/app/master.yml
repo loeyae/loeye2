@@ -14,6 +14,10 @@
       BASE_SERVER_URL: http://localhost
   application:
       cache: file
+      setting:
+        test: test1
+        text:
+            aaa: bbb
   configuration:
       property_name: loeyae
       timezone: Asia/Shanghai
