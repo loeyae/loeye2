@@ -1,0 +1,4 @@
+- settings: [master]
+  service:
+    server_url: http://121.40.98.27:8081
+    timeout: 15
