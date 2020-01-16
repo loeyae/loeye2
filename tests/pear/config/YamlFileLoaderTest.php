@@ -54,7 +54,7 @@ class YamlFileLoaderTest extends \loeye\unit\TestCase {
     public function testImport() {
         $this->object->setCurrentDir('unit/app');
         $resource = $this->object->import('*.yml');
-        $this->assertCount(2, $resource);
+        $this->assertCount(3, $resource);
     }
 
     /**

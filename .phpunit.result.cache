@@ -1,1 +1,0 @@
-C:30:"PHPUnit\Runner\TestResultCache":305:{a:2:{s:7:"defects";a:0:{}s:5:"times";a:3:{s:68:"loeye\unit\config\app\ConfigDefinitionTest::testGetConfigTreeBuilder";d:0.105;s:72:"loeye\unit\config\app\ConfigDefinitionTest::testGetConfigTreeBuilderTest";d:0.006;s:73:"loeye\unit\config\app\ConfigDefinitionTest::testGetConfigTreeBuilderMulti";d:0.002;}}}
