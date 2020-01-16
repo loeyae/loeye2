@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:noNamespaceSchemaLocation="phpunit.xsd"
-         bootstrap="tests/bootstrap.php"
+         bootstrap="bootstrap.php"
          cacheResult="true"
          colors="true"
          verbose="true">
     <testsuites>
         <testsuite name="unit">
-            <directory suffix="Test.php">tests/unit</directory>
+            <directory suffix="Test.php">pear</directory>
         </testsuite>
 
         <testsuite name="end-to-end">
@@ -18,7 +18,7 @@
 
     <filter>
         <whitelist processUncoveredFilesFromWhitelist="true">
-            <directory suffix=".php">src</directory>
+            <directory suffix=".php">../pear</directory>
             <exclude>
                 <file>src/Framework/Assert/Functions.php</file>
                 <file>src/Util/PHP/eval-stdin.php</file>
