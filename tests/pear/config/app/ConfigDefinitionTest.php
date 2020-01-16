@@ -46,7 +46,7 @@ class ConfigDefinitionTest extends \loeye\unit\TestCase {
         $this->assertStringContainsString("application", $definition);
         $this->assertStringContainsString("configuration", $definition);
         $this->assertStringContainsString("0", $dumper->dumpAtPath($this->object, "settings"));
-        $processor = new \Symfony\Component\Config\Definition\Processor();
+        $processor = new \loeye\config\Processor();
         $parser = new \Symfony\Component\Yaml\Parser();
         $configs = $parser->parseFile(PROJECT_UNIT_DIR.DIRECTORY_SEPARATOR.'config/unit/app/master.yml');
         $settins = $processor->processConfiguration($this->object, $configs);
@@ -56,7 +56,7 @@ class ConfigDefinitionTest extends \loeye\unit\TestCase {
 
     public function testGetConfigTreeBuilderTest()
     {
-        $processor = new \Symfony\Component\Config\Definition\Processor();
+        $processor = new \loeye\config\Processor();
         $parser = new \Symfony\Component\Yaml\Parser();
         $configs = $parser->parseFile(PROJECT_UNIT_DIR.DIRECTORY_SEPARATOR.'config/unit/app/test.yml');
         $settins = $processor->processConfiguration($this->object, $configs);
@@ -66,7 +66,7 @@ class ConfigDefinitionTest extends \loeye\unit\TestCase {
 
     public function testGetConfigTreeBuilderMulti()
     {
-        $processor = new \Symfony\Component\Config\Definition\Processor();
+        $processor = new \loeye\config\Processor();
         $parser = new \Symfony\Component\Yaml\Parser();
         $configs = $parser->parseFile(PROJECT_UNIT_DIR.DIRECTORY_SEPARATOR.'config/unit/app/multi.yml');
         $settins = $processor->processConfiguration($this->object, $configs);

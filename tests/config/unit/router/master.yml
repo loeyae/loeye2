@@ -1,0 +1,81 @@
+# master.yml
+#
+#Licensed under the Apache License, Version 2.0 (the "License"),
+#see LICENSE for more details: http://www.apache.org/licenses/LICENSE-2.0.
+#
+# @author   Zhang Yi <loeyae@gmail.com>
+# @version  2019-02-25 17:39:00
+#
+#    rout name:
+#        path: ^(regexp)$
+#        module_id: module id
+#        regex:
+#            reg name: regexp
+#
+#        regex item ex: id: \d{2}
+
+- settings: [master]
+  routes:
+      home:
+          module_id: loeyae.homepage
+          path: ^/$
+      admin_home:
+          module_id: loeyae.admin.homepage
+          path: ^/admin/$
+      admin:
+          module_id: 'loeyae.admin.{prop}.{mod}'
+          path: ^/admin/{prop}/{mod}.html$
+          regex:
+              prop: \w+
+              fun: \w+
+              mod: \w+
+      detail:
+          module_id: loeyae.frontend.detail
+          path: ^/content/{id}/$
+          regex:
+              id: \d+
+      index_category:
+          module_id: loeyae.frontend.{prop}
+          path: ^/{prop}/{cid}/$
+          regex:
+              prop: \w+
+              cid: \d+
+      login_page:
+          module_id: loeyae.login_page
+          path: ^/login.html$
+      login:
+          module_id: loeyae.login
+          path: ^/login/$
+      logout:
+          path: ^/logout/$
+          module_id: loeyae.logout
+      qq_login_page:
+          path: ^/login/qq_login.html$
+          module_id: loeyae.qq_login_page
+      qq_login_callback:
+          path: ^/login/qq_callback.html$
+          module_id: loeyae.qq_login
+      rewrite_point:
+          module_id: loeyae.{prop}
+          path: ^/{prop}.html$
+          regex:
+              prop: \w+
+      index:
+          module_id: loeyae.frontend.{prop}
+          path: ^/{prop}/$
+          regex:
+              prop: \w+
+      rewrite:
+          module_id: '{module}.{prop}.{idx}'
+          path: ^/{module}/{prop}/{idx}.html$
+          regex:
+              module: \w+
+              prop: \w+
+              idx: \w+
+      sample:
+          module_id: '{module}.{prop}'
+          path: ^/{module}/{prop}.html$
+          regex:
+              module: \w+
+              prop: \w+
+              idx: \w+

@@ -46,6 +46,7 @@ class ArrayNode extends \Symfony\Component\Config\Definition\ArrayNode {
         $value = $this->remapXml($value);
 
         $normalized = [];
+        $regexNode = $this->getRegexNode();
         foreach ($value as $name => $val) {
             if (isset($this->children[$name])) {
                 try {
@@ -55,7 +56,7 @@ class ArrayNode extends \Symfony\Component\Config\Definition\ArrayNode {
                 }
                 unset($value[$name]);
             } else {
-                foreach ($this->children as $key => $node) {
+                foreach ($regexNode as $node) {
                     if (is_array($val) && $node instanceof PrototypedRegexNode) {
                         try {
                             $normalized[$name] = $node->normalize($val);
@@ -124,6 +125,22 @@ class ArrayNode extends \Symfony\Component\Config\Definition\ArrayNode {
         }
 
         return $normalized;
+    }
+
+    /**
+     * getRegexNode
+     * 
+     * @return array
+     */
+    private function getRegexNode()
+    {
+        return array_filter($this->children, function($item){
+            if ($item instanceof RegexNode || $item instanceof PrototypedRegexNode) {
+                return $item;
+            }
+            return null;
+        });
+
     }
 
 }

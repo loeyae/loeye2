@@ -1,0 +1,106 @@
+# delta.yml
+#
+#Licensed under the Apache License, Version 2.0 (the "License"),
+#see LICENSE for more details: http://www.apache.org/licenses/LICENSE-2.0.
+#
+# @author   Zhang Yi <loeyae@gmail.com>
+# @version  2019-02-25 17:39:00
+# - settings: [validate: validate_rule]
+#   validate
+#       fields:
+#           field name:
+#               rule: rule name
+#
+- settings: [validate: category_keyword_create]
+  validate:
+    fields:
+        cid:
+            rule: category_id
+            required_value: true
+        kid:
+            rule: keyword_id
+            required_value: true
+- settings: [validate: content_keyword_create]
+  validate:
+    fields:
+        cid:
+            rule: content_id
+            required_value: true
+        kid:
+            rule: keyword_id
+            required_value: true
+- settings: [validate: keyword_create]
+  validate:
+    fields:
+        keyword:
+            rule: keyword
+            required_value: true
+- settings: [validate: category_tag_create]
+  validate:
+    fields:
+        cid:
+            rule: category_id
+            required_value: true
+        tid:
+            rule: tag_id
+            required_value: true
+- settings: [validate: content_tag_create]
+  validate:
+    fields:
+        cid:
+            rule: content_id
+            required_value: true
+        tid:
+            rule: tag_id
+            required_value: true
+- settings: [validate: tag_create]
+  validate:
+    fields:
+        tag:
+            rule: tag
+            required_value: true
+- settings: [validate: category_create]
+  validate:
+    fields:
+        name:
+            rule: category
+            required_value: true
+- settings: [validate: comment_create]
+  validate:
+    fields:
+        cid:
+            rule: content_id
+            required_value: true
+        author:
+            rule: author
+            required_value: true
+        comment:
+            rule: comment
+            required_value: true
+- settings: [validate: content_create]
+  validate:
+    fields:
+        category:
+            rule: id
+            required_value: true
+        title:
+            rule: title
+            required_value: true
+        description:
+            rule: content
+            required_value: true
+        parent:
+            rule: parent
+        author:
+            rule: author
+            required_value: true
+        origin:
+            rule: origin
+        refer_author:
+            rule: refer_author
+        refer_addr:
+            rule: refer_addr
+        summary:
+            rule: summary
+        images:
+            rule: images

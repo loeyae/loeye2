@@ -44,7 +44,7 @@ class ConfigDefinitionTest extends \loeye\unit\TestCase {
         $this->assertStringContainsString("settings", $definition);
         $this->assertStringContainsString("module", $definition);
         $this->assertStringContainsString("0", $dumper->dumpAtPath($this->object, "settings"));
-        $processor  = new \Symfony\Component\Config\Definition\Processor();
+        $processor  = new \loeye\config\Processor();
         $parser     = new \Symfony\Component\Yaml\Parser();
         $configs    = $parser->parseFile(PROJECT_UNIT_DIR . DIRECTORY_SEPARATOR . 'config/unit/modules/login.yml');
         $settins    = $processor->processConfiguration($this->object, $configs);

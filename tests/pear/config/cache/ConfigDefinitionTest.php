@@ -52,7 +52,7 @@ class ConfigDefinitionTest extends \loeye\unit\TestCase
      */
     public function testGetConfigTreeBuilderApc()
     {
-        $processor = new \Symfony\Component\Config\Definition\Processor();
+        $processor = new \loeye\config\Processor();
         $parser = new \Symfony\Component\Yaml\Parser();
         $configs = $parser->parseFile(PROJECT_UNIT_DIR.DIRECTORY_SEPARATOR.'config/unit/cache/apc.yml');
         $settins = $processor->processConfiguration($this->object, $configs);
@@ -67,7 +67,7 @@ class ConfigDefinitionTest extends \loeye\unit\TestCase
      */
     public function testGetConfigTreeBuilderMecached()
     {
-        $processor = new \Symfony\Component\Config\Definition\Processor();
+        $processor = new \loeye\config\Processor();
         $parser = new \Symfony\Component\Yaml\Parser();
         $configs = $parser->parseFile(PROJECT_UNIT_DIR.DIRECTORY_SEPARATOR.'config/unit/cache/mem.yml');
         $settins = $processor->processConfiguration($this->object, $configs);
@@ -82,7 +82,7 @@ class ConfigDefinitionTest extends \loeye\unit\TestCase
      */
     public function testGetConfigTreeBuilderRedis()
     {
-        $processor = new \Symfony\Component\Config\Definition\Processor();
+        $processor = new \loeye\config\Processor();
         $parser = new \Symfony\Component\Yaml\Parser();
         $configs = $parser->parseFile(PROJECT_UNIT_DIR.DIRECTORY_SEPARATOR.'config/unit/cache/redis.yml');
         $settins = $processor->processConfiguration($this->object, $configs);
@@ -97,7 +97,7 @@ class ConfigDefinitionTest extends \loeye\unit\TestCase
      */
     public function testGetConfigTreeBuilderPfile()
     {
-        $processor = new \Symfony\Component\Config\Definition\Processor();
+        $processor = new \loeye\config\Processor();
         $parser = new \Symfony\Component\Yaml\Parser();
         $configs = $parser->parseFile(PROJECT_UNIT_DIR.DIRECTORY_SEPARATOR.'config/unit/cache/pfile.yml');
         $settins = $processor->processConfiguration($this->object, $configs);
@@ -112,7 +112,7 @@ class ConfigDefinitionTest extends \loeye\unit\TestCase
      */
     public function testGetConfigTreeBuilderFile()
     {
-        $processor = new \Symfony\Component\Config\Definition\Processor();
+        $processor = new \loeye\config\Processor();
         $parser = new \Symfony\Component\Yaml\Parser();
         $configs = $parser->parseFile(PROJECT_UNIT_DIR.DIRECTORY_SEPARATOR.'config/unit/cache/file.yml');
         $settins = $processor->processConfiguration($this->object, $configs);

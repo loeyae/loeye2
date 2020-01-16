@@ -1,0 +1,208 @@
+# ruleset.yml
+#
+#Licensed under the Apache License, Version 2.0 (the "License"),
+#see LICENSE for more details: http://www.apache.org/licenses/LICENSE-2.0.
+#
+# @author   Zhang Yi <loeyae@gmail.com>
+# @version  2019-02-25 17:39:00
+#
+#    rulename:
+#        type: type name
+#        type_errmsg: 'type error'
+#        filter:
+#            filter_type: filter name
+#        filter_errmsg: 'filter error'
+#        required_value_errmsg: 'required error'
+#
+- settings: [master]
+  rulesets:
+    id:
+        type: numeric
+        type_errmsg: 'type error'
+        filter:
+            filter_type: FILTER_VALIDATE_INT
+        filter_errmsg: 'filter error'
+        required_value_errmsg: 'required error'
+        min: 1
+        min_errmsg: 'min number error'
+    password:
+        type: string
+        type_errmsg: 'type error'
+        length: [6, 32]
+        regex:
+            pattern: /[a-zA-Z0-9]+/
+        required_value_errmsg: 'required error'
+    category:
+        type: string
+        type_errmsg: 'type error'
+        filter:
+            filter_type: FILTER_SANITIZE_STRING
+            filter_flag: FILTER_FLAG_NO_ENCODE_QUOTES
+        filter_errmsg: 'filter error'
+        required_value_errmsg: 'required error'
+        length: [2, 36]
+    title:
+        type: string
+        type_errmsg: 'type error'
+        filter:
+            filter_type: FILTER_SANITIZE_STRING
+            filter_flag: FILTER_FLAG_NO_ENCODE_QUOTES
+        filter_errmsg: 'filter error'
+        required_value_errmsg: 'required error'
+        length: [1, 128]
+    parent:
+        type: numeric
+        type_errmsg: 'type error'
+        filter:
+            filter_type: FILTER_VALIDATE_INT
+        filter_errmsg: 'filter error'
+        required_value_errmsg: 'required error'
+        min: 0
+        min_errmsg: 'min number error'
+    status:
+        type: numeric
+        type_errmsg: 'type error'
+        filter:
+            filter_type: FILTER_VALIDATE_INT
+        filter_errmsg: 'filter error'
+        required_value_errmsg: 'required error'
+        min: 1
+        min_errmsg: 'min number error'
+        max: 5
+        max_errmsg: 'max number error'
+    author:
+        type: string
+        type_errmsg: 'type error'
+        filter:
+            filter_type: FILTER_SANITIZE_STRING
+            filter_flag: FILTER_FLAG_NO_ENCODE_QUOTES
+        filter_errmsg: 'filter error'
+        required_value_errmsg: 'required error'
+        max_length: 32
+        max_length_errmsg: 'word max length error'
+    origin:
+        type: numeric
+        type_errmsg: 'type error'
+        filter:
+            filter_type: FILTER_VALIDATE_INT
+        filter_errmsg: 'filter error'
+        required_value_errmsg: 'required error'
+        required_value_if_match_errmsg: 'required value if match error'
+        min: 1
+        min_errmsg: 'min number error'
+        max: 2
+        max_errmsg: 'max number error'
+    refer_author:
+        type: string
+        type_errmsg: 'type error'
+        filter:
+            filter_type: FILTER_SANITIZE_STRING
+            filter_flag: FILTER_FLAG_NO_ENCODE_QUOTES
+        filter_errmsg: 'filter error'
+        required_value_errmsg: 'required error'
+        max_length: 64
+        max_length_errmsg: 'word max length error'
+    refer_addr:
+        type: string
+        type_errmsg: 'type error'
+        filter:
+            filter_type: FILTER_SANITIZE_STRING
+            filter_flag: FILTER_FLAG_NO_ENCODE_QUOTES
+        filter_errmsg: 'filter error'
+        required_value_errmsg: 'required error'
+        max_length: 256
+        max_length_errmsg: 'word max length error'
+    tag:
+        type: string
+        type_errmsg: 'type error'
+        filter:
+            filter_type: FILTER_SANITIZE_STRING
+            filter_flag: FILTER_FLAG_NO_ENCODE_QUOTES
+        filter_errmsg: 'filter error'
+        required_value_errmsg: 'required error'
+        max_length: 256
+        max_length_errmsg: 'word max length error'
+    keyword:
+        type: string
+        type_errmsg: 'type error'
+        filter:
+            filter_type: FILTER_SANITIZE_STRING
+            options: FILTER_FLAG_NO_ENCODE_QUOTES
+        filter_errmsg: 'filter error'
+        required_value_errmsg: 'required error'
+        max_length: 256
+        max_length_errmsg: 'word max length error'
+    summary:
+        type: string
+        type_errmsg: 'type error'
+        filter:
+            filter_type: FILTER_SANITIZE_SPECIAL_CHARS
+            filter_flag: FILTER_FLAG_STRIP_LOW
+        filter_errmsg: 'filter error'
+        required_value_errmsg: 'required error'
+        max_length: 128
+        max_length_errmsg: 'word max length error'
+    images:
+        type: array
+        type_errmsg: 'type error'
+        required_value_errmsg: 'required error'
+        max_count: 10
+        max_count_errmsg: 'element max count error'
+    images_element:
+        type: string
+        type_errmsg: 'type error'
+        filter:
+            filter_type: FILTER_VALIDATE_URL
+        filter_errmsg: 'filter error'
+        required_value_errmsg: 'required error'
+    content:
+        type: string
+        type_errmsg: 'type error'
+        filter:
+            filter_type: FILTER_UNSAFE_RAW
+        filter_errmsg: 'filter error'
+        required_value_errmsg: 'required error'
+        max_length: 50000
+        max_length_errmsg: 'word max length error'
+        fun:
+            -
+                name: strip_tags
+                params: ['<p><strong><span><ul><ol><li><u><sup><h1><h2><h3><h4><h5><h6><br><img><embed><pre><table><thead><tbody><tr><th><td>']
+    comment:
+        type: string
+        type_errmsg: 'type error'
+        filter:
+            filter_type: FILTER_SANITIZE_STRING
+            filter_flag: FILTER_FLAG_NO_ENCODE_QUOTES
+        filter_errmsg: 'filter error'
+        required_value_errmsg: 'required error'
+        max_length: 50000
+        max_length_errmsg: 'word max length error'
+    content_id:
+        type: int
+        type_errmsg: type error
+        callback:
+            -:
+                name: ['app\models\repository\cms\ContentRepository', 'one']
+                message: content not exists
+    category_id:
+        type: int
+        type_errmsg: type error
+        callback:
+            -:
+                name: ['app\models\repository\cms\CategoryRepository', 'one']
+                message: category not exists
+    keyword_id:
+        type: int
+        type_errmsg: type error
+        callback:
+            -:
+                name: ['app\models\repository\cms\KeywordsRepository', 'one']
+                message: keywords not exists
+    tag_id:
+        type: int
+        type_errmsg: type error
+        callback:
+            -:
+                name: ['app\models\repository\cms\TagRepository', 'one']
+                message: tag not exists
