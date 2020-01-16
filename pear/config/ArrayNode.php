@@ -4,10 +4,10 @@
  * ArrayNode.php
  *
  * PHP version 7
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"),
  * see LICENSE for more details: http://www.apache.org/licenses/LICENSE-2.0.
- * 
+ *
  * @category PHP
  * @package  LOEYE
  * @author   Zhang Yi <loeyae@gmail.com>
@@ -51,7 +51,7 @@ class ArrayNode extends \Symfony\Component\Config\Definition\ArrayNode {
                 try {
                     $normalized[$name] = $this->children[$name]->normalize($val);
                 } catch (UnsetKeyException $e) {
-                    
+
                 }
                 unset($value[$name]);
             } else {
@@ -60,7 +60,7 @@ class ArrayNode extends \Symfony\Component\Config\Definition\ArrayNode {
                         try {
                             $normalized[$name] = $node->normalize($val);
                         } catch (UnsetKeyException $e) {
-                            
+
                         } catch (\Exception $e) {
                             continue;
                         }
@@ -72,7 +72,7 @@ class ArrayNode extends \Symfony\Component\Config\Definition\ArrayNode {
                                 try {
                                     $normalized[$name] = $node->normalize($val);
                                 } catch (UnsetKeyException $e) {
-                                    
+
                                 } catch (\Exception $e) {
                                     continue;
                                 }

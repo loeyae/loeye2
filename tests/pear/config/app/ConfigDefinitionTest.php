@@ -54,11 +54,21 @@ class ConfigDefinitionTest extends \loeye\unit\TestCase {
         $this->assertArrayHasKey("settings", $settins);
     }
 
-    public function testGetConfigTreeBuilderMuilte()
+    public function testGetConfigTreeBuilderTest()
     {
         $processor = new \Symfony\Component\Config\Definition\Processor();
         $parser = new \Symfony\Component\Yaml\Parser();
         $configs = $parser->parseFile(PROJECT_UNIT_DIR.DIRECTORY_SEPARATOR.'config/unit/app/test.yml');
+        $settins = $processor->processConfiguration($this->object, $configs);
+        $this->assertIsArray($settins);
+        $this->assertArrayHasKey("settings", $settins);
+    }
+
+    public function testGetConfigTreeBuilderMulti()
+    {
+        $processor = new \Symfony\Component\Config\Definition\Processor();
+        $parser = new \Symfony\Component\Yaml\Parser();
+        $configs = $parser->parseFile(PROJECT_UNIT_DIR.DIRECTORY_SEPARATOR.'config/unit/app/multi.yml');
         $settins = $processor->processConfiguration($this->object, $configs);
         $this->assertIsArray($settins);
         $this->assertArrayHasKey("settings", $settins);

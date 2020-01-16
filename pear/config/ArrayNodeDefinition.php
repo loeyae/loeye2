@@ -4,10 +4,10 @@
  * ArrayNodeDefinition.php
  *
  * PHP version 7
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"),
  * see LICENSE for more details: http://www.apache.org/licenses/LICENSE-2.0.
- * 
+ *
  * @category PHP
  * @package  LOEYE
  * @author   Zhang Yi <loeyae@gmail.com>
@@ -24,7 +24,7 @@ namespace loeye\config;
  */
 class ArrayNodeDefinition extends \Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition {
 
-    
+
     /**
      * @return RegexNodeDefinition
      */
@@ -32,8 +32,16 @@ class ArrayNodeDefinition extends \Symfony\Component\Config\Definition\Builder\A
     {
         return $this->prototype('regex');
     }
-    
-    
+
+    /**
+     * @return ConstantNodeDefinition
+     */
+    public function constantPrototype()
+    {
+        return $this->prototype('constant');
+    }
+
+
     /**
      * {@inheritdoc}
      */

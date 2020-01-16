@@ -4,10 +4,10 @@
  * RegexNode.php
  *
  * PHP version 7
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"),
  * see LICENSE for more details: http://www.apache.org/licenses/LICENSE-2.0.
- * 
+ *
  * @category PHP
  * @package  LOEYE
  * @author   Zhang Yi <loeyae@gmail.com>
@@ -25,12 +25,23 @@ namespace loeye\config;
 class RegexNode extends ArrayNode {
 
 
+    /**
+     * match
+     *
+     * @param type $value
+     * @return type
+     */
     public function match($value)
     {
         return preg_match($this->getPattern(), $value);
     }
 
 
+    /**
+     * getPattern
+     *
+     * @return string
+     */
     protected function getPattern()
     {
         if ($this->name == '*') {

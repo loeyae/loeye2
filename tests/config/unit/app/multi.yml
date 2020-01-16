@@ -1,0 +1,17 @@
+# multi.yml
+#
+#Licensed under the Apache License, Version 2.0 (the "License"),
+#see LICENSE for more details: http://www.apache.org/licenses/LICENSE-2.0.
+#
+# @author   Zhang Yi <loeyae@gmail.com>
+# @version  2020年1月16日 下午3:34:59
+#
+# group name:
+#     property: value
+#
+- settings: [master]
+  constants:
+      BASE_SERVER_URL: http://localhost:8080
+- settings: [master]
+  constants:
+      BASE_SERVER_URL: http://localhost:8081

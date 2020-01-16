@@ -43,7 +43,7 @@ class ConfigDefinition implements \Symfony\Component\Config\Definition\Configura
                          ->end()
                      ->end()
                      ->arrayNode('constants')->canBeUnset()
-                         ->scalarPrototype()->end()
+                         ->constantPrototype()->end()
                      ->end()
                      ->arrayNode('application')->canBeUnset()
                          ->children()

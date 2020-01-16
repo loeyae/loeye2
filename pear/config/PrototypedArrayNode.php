@@ -4,10 +4,10 @@
  * PrototypedArrayNode.php
  *
  * PHP version 7
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"),
  * see LICENSE for more details: http://www.apache.org/licenses/LICENSE-2.0.
- * 
+ *
  * @category PHP
  * @package  LOEYE
  * @author   Zhang Yi <loeyae@gmail.com>
@@ -26,7 +26,7 @@ use \Symfony\Component\Config\Definition\Exception\UnsetKeyException;
  */
 class PrototypedArrayNode extends \Symfony\Component\Config\Definition\PrototypedArrayNode {
 
-    
+
     /**
      * Normalizes the value.
      *
@@ -44,7 +44,6 @@ class PrototypedArrayNode extends \Symfony\Component\Config\Definition\Prototype
         }
 
         $value = $this->remapXml($value);
-
         $isAssoc = array_keys($value) !== range(0, \count($value) - 1);
         $normalized = [];
         foreach ($value as $k => $v) {
@@ -141,5 +140,55 @@ class PrototypedArrayNode extends \Symfony\Component\Config\Definition\Prototype
         $prototype->setName($key);
 
         return $prototype;
+    }
+
+    /**
+     * Merges values together.
+     *
+     * @param mixed $leftSide  The left side to merge
+     * @param mixed $rightSide The right side to merge
+     *
+     * @return mixed The merged values
+     *
+     * @throws InvalidConfigurationException
+     * @throws \RuntimeException
+     */
+    protected function mergeValues($leftSide, $rightSide)
+    {
+        if (false === $rightSide) {
+            // if this is still false after the last config has been merged the
+            // finalization pass will take care of removing this key entirely
+            return false;
+        }
+
+        if (false === $leftSide || !$this->performDeepMerging) {
+            return $rightSide;
+        }
+
+        foreach ($rightSide as $k => $v) {
+            $prototype = $this->getPrototypeForChild($k);
+            // prototype, and key is irrelevant, append the element
+            if (!($prototype instanceof ConstantNode) && null === $this->keyAttribute) {
+                $leftSide[] = $v;
+                continue;
+            }
+
+            // no conflict
+            if (!\array_key_exists($k, $leftSide)) {
+                if (!$this->allowNewKeys) {
+                    $ex = new InvalidConfigurationException(sprintf('You are not allowed to define new elements for path "%s". Please define all elements for this path in one config file.', $this->getPath()));
+                    $ex->setPath($this->getPath());
+
+                    throw $ex;
+                }
+
+                $leftSide[$k] = $v;
+                continue;
+            }
+
+            $leftSide[$k] = $prototype->merge($leftSide[$k], $v);
+        }
+
+        return $leftSide;
     }
 }
