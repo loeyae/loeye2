@@ -143,4 +143,57 @@ class ArrayNode extends \Symfony\Component\Config\Definition\ArrayNode {
 
     }
 
+    /**
+     * Merges values together.
+     *
+     * @param mixed $leftSide  The left side to merge
+     * @param mixed $rightSide The right side to merge
+     *
+     * @return mixed The merged values
+     *
+     * @throws InvalidConfigurationException
+     * @throws \RuntimeException
+     */
+    protected function mergeValues($leftSide, $rightSide)
+    {
+        if (false === $rightSide) {
+            // if this is still false after the last config has been merged the
+            // finalization pass will take care of removing this key entirely
+            return false;
+        }
+
+        if (false === $leftSide || !$this->performDeepMerging) {
+            return $rightSide;
+        }
+
+        foreach ($rightSide as $k => $v) {
+            // no conflict
+            if (!\array_key_exists($k, $leftSide)) {
+                if (!$this->allowNewKeys) {
+                    $ex = new InvalidConfigurationException(sprintf('You are not allowed to define new elements for path "%s". Please define all elements for this path in one config file. If you are trying to overwrite an element, make sure you redefine it with the same name.', $this->getPath()));
+                    $ex->setPath($this->getPath());
+
+                    throw $ex;
+                }
+
+                $leftSide[$k] = $v;
+                continue;
+            }
+
+            if (!isset($this->children[$k])) {
+                $node = current($this->children);
+                if (!($node instanceof RegexNode) && (!$this->ignoreExtraKeys || $this->removeExtraKeys)) {
+                    throw new \RuntimeException('merge() expects a normalized config array.');
+                }
+
+                $leftSide[$k] = $v;
+                continue;
+            }
+
+            $leftSide[$k] = $this->children[$k]->merge($leftSide[$k], $v);
+        }
+
+        return $leftSide;
+    }
+
 }

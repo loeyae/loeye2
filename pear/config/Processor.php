@@ -17,6 +17,9 @@
 
 namespace loeye\config;
 
+use \Symfony\Component\Config\Definition\ConfigurationInterface;
+use \Symfony\Component\Config\Definition\NodeInterface;
+
 /**
  * Processor
  *
@@ -24,5 +27,34 @@ namespace loeye\config;
  */
 class Processor extends \Symfony\Component\Config\Definition\Processor
 {
-    //put your code here
+        /**
+     * Processes an array of configurations.
+     *
+     * @param array $configs An array of configuration items to process
+     *
+     * @return array The processed configuration
+     */
+    public function process(NodeInterface $configTree, array $configs)
+    {
+        $currentConfig = [];
+        foreach ($configs as $config) {
+            $config = $configTree->normalize($config);
+            $currentConfig = $configTree->merge($currentConfig, $config);
+        }
+
+        return $configTree->finalize($currentConfig);
+    }
+    
+    
+    /**
+     * Processes an array of configurations.
+     *
+     * @param array $configs An array of configuration items to process
+     *
+     * @return array The processed configuration
+     */
+    public function processConfiguration(ConfigurationInterface $configuration, array $configs)
+    {
+        return $this->process($configuration->getConfigTreeBuilder()->buildTree(), $configs);
+    }
 }
