@@ -1,0 +1,191 @@
+<?php
+
+/**
+ * ConfigurationLoader.php
+ *
+ * PHP version 7
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"),
+ * see LICENSE for more details: http://www.apache.org/licenses/LICENSE-2.0.
+ * 
+ * @category PHP
+ * @package  LOEYE
+ * @author   Zhang Yi <loeyae@gmail.com>
+ * @version  2020年1月17日 下午8:51:43
+ * @link     https://github.com/loeyae/loeye.git
+ */
+
+namespace loeye\config;
+
+use \Symfony\Component\Config\Definition\ConfigurationInterface;
+
+/**
+ * ConfigurationLoader
+ *
+ * @author   Zhang Yi <loeyae@gmail.com>
+ */
+class ConfigurationLoader {
+
+    /**
+     *
+     * @var string 
+     */
+    protected $directory;
+
+    /**
+     * 
+     * @var string 
+     */
+    protected $namespace;
+
+    /**
+     *
+     * @var boolean 
+     */
+    protected $cacheable;
+
+    /**
+     *
+     * @var ConfigurationInterface 
+     */
+    protected $definition;
+    protected $cachDirectory;
+
+    /**
+     *
+     * @var ConfigCache
+     */
+    protected $configCache;
+
+
+    /**
+     * 
+     * @param string                            $directory
+     * @param string                            $namespace
+     * @param array|ConfigurationInterface|null $definition
+     * @param boolean                           $cacheable
+     */
+    public function __construct($directory, $namespace, $definition = null, $cacheable = true)
+    {
+        $this->directory = $directory;
+        $this->namespace = $namespace;
+        if (null === $definition) {
+            $definition = new general\RulesetConfigDefinition();
+        }
+        $this->definition = $definition;
+        $this->cacheable  = $cacheable;
+        if ($this->cacheable) {
+            $this->cachDirectory = RUNTIME_CACHE_DIR . DIRECTORY_SEPARATOR . PROJECT_NAMESPACE . 'config';
+            !defined('PROJECT_PROPERTY') ?? $this->cachDirectory . DIRECTORY_SEPARATOR . PROJECT_PROPERTY;
+            $this->configCache   = new ConfigCache($directory, $this->cachDirectory, $namespace);
+        }
+    }
+
+
+    /**
+     * getDirectory
+     * 
+     * @return string
+     */
+    public function getDirectory()
+    {
+        return $this->directory;
+    }
+
+
+    public function load($context = null)
+    {
+        if (null === $context) {
+            $context = Processor::DEFAULT_SETTINGS;
+        }
+        if ($this->cacheable && !$this->configCache->isFresh()) {
+            return $this->getCache($context);
+        }
+        $locator = new FileLocator($this->directory);
+        $loader  = new YamlFileLoader($locator);
+        $loader->setCurrentDir($this->nsToPath($this->namespace));
+        $configs = $loader->import('*.yml');
+        $configs = array_reduce($configs, function($carry, $item){
+            if ($carry) {
+                $carry = array_merge($carry, $item);
+            } else {
+                $carry = $item;
+            }
+            return $carry;
+        });
+        $process = new Processor();
+        $definition = $this->definition;
+        if (!is_array($definition)) {
+            $definition = [$definition];
+        }
+        $configs = $process->processConfigurations($definition, $configs);
+        if ($this->cacheable) {
+            $this->setCache($configs);
+        }
+        if (is_string($context)) {
+            return isset($configs[$context]) ? $configs[$context] : null;
+        }
+        if (is_array($context)) {
+            $current = each($context);
+            $config = isset($configs[$current['key']]) ? $configs[$current['key']] : array();
+            return isset($config[$current['value']]) ? $config[$current['value']] : null;
+        }
+    }
+
+
+    /**
+     * nsToPath
+     * 
+     * @param string $namespace
+     * 
+     * @return string
+     */
+    private function nsToPath(string $namespace): string
+    {
+        return strtr($namespace, '.', '/');
+    }
+
+
+    /**
+     * getCache
+     * 
+     * @param string|null $key
+     * 
+     * @return mixed
+     */
+    public function getCache($key = null)
+    {
+        if (is_string($key)) {
+            $item = $this->configCache->cacheAdapter()->getItem($key);
+            return $item->get();
+        }
+        if (is_array($key)) {
+            $current = each($key);
+            $item = $this->configCache->cacheAdapter()->getItem($current['key']);
+            $config = $item->get();
+            return isset($config[$current['value']]) ? $config[$current['value']] : null;
+        }
+        $items   = $this->configCache->cacheAdapter()->getItems();
+        $current = [];
+        foreach ($items as $item) {
+            $key           = $item->getKey();
+            $current[$key] = $item->get();
+        }
+        return $current;
+    }
+
+
+    /**
+     * setCache
+     * 
+     * @param array $data data
+     */
+    protected function setCache(array $data)
+    {
+        foreach ($data as $key => $value) {
+            $this->configCache->save($key, $value);
+        }
+        $this->configCache->commit();
+    }
+
+}

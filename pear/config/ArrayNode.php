@@ -181,8 +181,8 @@ class ArrayNode extends \Symfony\Component\Config\Definition\ArrayNode {
             }
 
             if (!isset($this->children[$k])) {
-                $node = current($this->children);
-                if (!($node instanceof RegexNode) && (!$this->ignoreExtraKeys || $this->removeExtraKeys)) {
+                $node = $this->getRegexNode();
+                if (!$node && (!$this->ignoreExtraKeys || $this->removeExtraKeys)) {
                     throw new \RuntimeException('merge() expects a normalized config array.');
                 }
 

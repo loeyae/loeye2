@@ -63,7 +63,6 @@ class YamlFileLoaderTest extends \loeye\unit\TestCase {
      */
     public function testSupports() {
         $this->assertTrue($this->object->supports('master.yml'));
-        $this->assertTrue($this->object->supports('master.yaml'));
         $this->assertFalse($this->object->supports('master.php'));
     }
 

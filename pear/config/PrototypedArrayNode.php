@@ -166,12 +166,11 @@ class PrototypedArrayNode extends \Symfony\Component\Config\Definition\Prototype
         }
 
         foreach ($rightSide as $k => $v) {
-            $prototype = $this->getPrototypeForChild($k);
             // prototype, and key is irrelevant, append the element
-            if (!($prototype instanceof ConstantNode) && null === $this->keyAttribute) {
-                $leftSide[] = $v;
-                continue;
-            }
+//            if (!($prototype instanceof ConstantNode) && null === $this->keyAttribute) {
+//                $leftSide[] = $v;
+//                continue;
+//            }
 
             // no conflict
             if (!\array_key_exists($k, $leftSide)) {
@@ -186,6 +185,7 @@ class PrototypedArrayNode extends \Symfony\Component\Config\Definition\Prototype
                 continue;
             }
 
+            $prototype = $this->getPrototypeForChild($k);
             $leftSide[$k] = $prototype->merge($leftSide[$k], $v);
         }
 
