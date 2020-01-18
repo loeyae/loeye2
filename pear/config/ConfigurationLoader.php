@@ -49,7 +49,7 @@ class ConfigurationLoader {
      * @var ConfigurationInterface 
      */
     protected $definition;
-    protected $cachDirectory;
+    protected $cacheDirectory;
 
     /**
      *
@@ -60,12 +60,13 @@ class ConfigurationLoader {
 
     /**
      * 
-     * @param string                            $directory
-     * @param string                            $namespace
-     * @param array|ConfigurationInterface|null $definition
-     * @param boolean                           $cacheable
+     * @param string                            $directory      配置文件基础目录
+     * @param string                            $namespace      配置文件名称空间
+     * @param array|ConfigurationInterface|null $definition     配置文件规则实例
+     * @param boolean                           $cacheable      是否缓存
+     * @param string                            $cacheDirectory 缓存目录
      */
-    public function __construct($directory, $namespace, $definition = null, $cacheable = true)
+    public function __construct($directory, $namespace, $definition = null, $cacheable = true, $cacheDirectory = null)
     {
         $this->directory = $directory;
         $this->namespace = $namespace;
@@ -75,9 +76,13 @@ class ConfigurationLoader {
         $this->definition = $definition;
         $this->cacheable  = $cacheable;
         if ($this->cacheable) {
-            $this->cachDirectory = RUNTIME_CACHE_DIR . DIRECTORY_SEPARATOR . PROJECT_NAMESPACE . 'config';
-            !defined('PROJECT_PROPERTY') ?? $this->cachDirectory . DIRECTORY_SEPARATOR . PROJECT_PROPERTY;
-            $this->configCache   = new ConfigCache($directory, $this->cachDirectory, $namespace);
+            if (null === $cacheDirectory) {
+                $this->cacheDirectory = RUNTIME_CACHE_DIR . DIRECTORY_SEPARATOR . PROJECT_NAMESPACE . 'config';
+                !defined('PROJECT_PROPERTY') ?? $this->cacheDirectory . DIRECTORY_SEPARATOR . PROJECT_PROPERTY;
+            } else {
+                $this->cacheDirectory = $cacheDirectory;
+            }
+            $this->configCache = new ConfigCache($directory, $this->cacheDirectory, $namespace);
         }
     }
 
@@ -105,7 +110,7 @@ class ConfigurationLoader {
         $loader  = new YamlFileLoader($locator);
         $loader->setCurrentDir($this->nsToPath($this->namespace));
         $configs = $loader->import('*.yml');
-        $configs = array_reduce($configs, function($carry, $item){
+        $configs = array_reduce($configs, function($carry, $item) {
             if ($carry) {
                 $carry = array_merge($carry, $item);
             } else {
@@ -113,7 +118,7 @@ class ConfigurationLoader {
             }
             return $carry;
         });
-        $process = new Processor();
+        $process    = new Processor();
         $definition = $this->definition;
         if (!is_array($definition)) {
             $definition = [$definition];
@@ -127,7 +132,7 @@ class ConfigurationLoader {
         }
         if (is_array($context)) {
             $current = each($context);
-            $config = isset($configs[$current['key']]) ? $configs[$current['key']] : array();
+            $config  = isset($configs[$current['key']]) ? $configs[$current['key']] : array();
             return isset($config[$current['value']]) ? $config[$current['value']] : null;
         }
     }
@@ -142,7 +147,7 @@ class ConfigurationLoader {
      */
     private function nsToPath(string $namespace): string
     {
-        return strtr($namespace, '.', '/');
+        return strtr($namespace, ['.' => '/', '-' => '/', '_' => '/']);
     }
 
 
@@ -161,8 +166,8 @@ class ConfigurationLoader {
         }
         if (is_array($key)) {
             $current = each($key);
-            $item = $this->configCache->cacheAdapter()->getItem($current['key']);
-            $config = $item->get();
+            $item    = $this->configCache->cacheAdapter()->getItem($current['key']);
+            $config  = $item->get();
             return isset($config[$current['value']]) ? $config[$current['value']] : null;
         }
         $items   = $this->configCache->cacheAdapter()->getItems();

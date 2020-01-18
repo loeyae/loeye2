@@ -22,8 +22,7 @@ namespace loeye\base;
  *
  * @author   Zhang Yi <loeyae@gmail.com>
  */
-class Configuration
-{
+class Configuration {
 
     protected $property;
     private $_baseDir;
@@ -32,25 +31,44 @@ class Configuration
     private $_bundle;
     private $_context;
     private $_config;
+    private $_definition;
+    private $_cacheDir;
 
     const ENV_TAG = '${';
+
 
     /**
      * __construct
      *
-     * @param string $bundle        bundle
-     * @param string $context       context
+     * @param string $property property
+     * @param string $bundle   bundle
+     * @param string $context  context
      *
      * @return void
      */
-    public function __construct($property, $bundle, $context = null)
+    public function __construct($property, $bundle, $definition = null, $context = null, $baseDir = null, $cacheDir = null)
     {
-        $this->property     = $property;
-        $this->_baseDir     = PROJECT_CONFIG_DIR . DIRECTORY_SEPARATOR . $property;
+        $this->property = $property;
+        if (null === $baseDir) {
+            $baseDir = PROJECT_CONFIG_DIR;
+        }
+        $this->_baseDir = $baseDir . DIRECTORY_SEPARATOR . $property;
+        if (null === $cacheDir) {
+            $cacheDir = RUNTIME_CACHE_DIR;
+        }
+        $this->_cacheDir = $cacheDir . DIRECTORY_SEPARATOR . 'config' .DIRECTORY_SEPARATOR. $property;
         $this->_baseBundle  = $bundle;
         $this->_baseContext = $context;
+        if (null === $definition) {
+            $ruseltDefinition  = new \loeye\config\general\RulesetConfigDefinition();
+            $deltaDefinition   = new \loeye\config\general\DeltaConfigDefinition();
+            $this->_definition = [$ruseltDefinition, $deltaDefinition];
+        } else {
+            $this->setDefinition($definition);
+        }
         $this->bundle($bundle, $context);
     }
+
 
     /**
      * getBaseDir
@@ -62,6 +80,7 @@ class Configuration
         return $this->_baseDir;
     }
 
+
     /**
      * getCurrentBundle
      *
@@ -72,6 +91,7 @@ class Configuration
         return $this->_bundle ?? $this->_baseBundle;
     }
 
+
     /**
      * getContext
      *
@@ -81,6 +101,39 @@ class Configuration
     {
         return $this->_context ?? $this->_baseContext;
     }
+
+
+    /**
+     * setDefinition
+     * 
+     * @param mixed $definition
+     */
+    public function setDefinition($definition)
+    {
+        if (is_array($definition)) {
+            foreach ($definition as $value) {
+                if (!($value instanceof \Symfony\Component\Config\ConfigCacheInterface)) {
+                    throw \InvalidArgumentException('definition must be instance of \Symfony\Component\Config\ConfigCacheInterface');
+                }
+            }
+            $this->_definition = $definition;
+        } elseif (!($definition instanceof \Symfony\Component\Config\ConfigCacheInterface)) {
+            $this->_definition = [$definition];
+        } else {
+            throw \InvalidArgumentException('definition must be instance of \Symfony\Component\Config\ConfigCacheInterface');
+        }
+    }
+
+
+    /**
+     * 
+     * @return array of \Symfony\Component\Config\ConfigCacheInterface's instance
+     */
+    public function getDefinition()
+    {
+        return $this->_definition;
+    }
+
 
     /**
      * bundle
@@ -96,6 +149,7 @@ class Configuration
         $this->context($context);
     }
 
+
     /**
      * context
      *
@@ -108,6 +162,7 @@ class Configuration
         $this->_context = $context;
         $this->_loadConfig();
     }
+
 
     /**
      * get
@@ -122,9 +177,8 @@ class Configuration
         $keyList = explode(".", $key);
 
         $config = $this->_config;
-        $isList = true;
         foreach ($keyList as $k) {
-            $config = $this->_getConfig($k, $config, $isList);
+            $config = $this->_getConfig($k, $config);
             if (null === $config) {
                 return $default;
             }
@@ -132,6 +186,7 @@ class Configuration
         }
         return $config;
     }
+
 
     /**
      * getConfig
@@ -150,6 +205,7 @@ class Configuration
         }
         return $this->_config;
     }
+
 
     /**
      * getSettings
@@ -172,97 +228,18 @@ class Configuration
         return $this->_config;
     }
 
+    /**
+     * _loadConfig
+     */
     private function _loadConfig()
     {
-        $cache  = \loeye\lib\ConfigCache::getInstance($this->property);
-        $bundle = $this->getBundle() ?? '%2F';
-        if (!$cache->has($bundle)) {
-            $config = $this->_initConfig();
-            $cache->set($bundle, $config);
-        } else {
-            $config = $cache->get($bundle);
-        }
-        $config  = $this->_initConfig();
-        $context = $this->getContext() ?? 'master';
-        if ($context == 'master') {
-            $this->_config = $config['master'] ?? [];
-        } else {
-            list($k, $v) = preg_split('[=]', $context);
-            $this->_config = $config[$k][$v] ?? [];
-        }
+        $bundle    = $this->getBundle();
+        $context   = $this->getContext();
+        $namespace = strtr($bundle, ['/' => '.', '\\' => '.']);
+        $loader    = new \loeye\config\ConfigurationLoader($this->_baseDir, $namespace, $this->getDefinition(), true, $this->_cacheDir);
+        $this->_config = $loader->load($context);
     }
 
-    /**
-     * _initConfig
-     *
-     * @return void
-     * @throws Exception
-     */
-    private function _initConfig()
-    {
-        $dir = realpath($this->_baseDir . '/' . ($this->getBundle()));
-        if (!$dir) {
-            throw new \loeye\error\ResourceException(\loeye\error\ResourceException::BUMDLE_NOT_FOUND_MSG,
-                    \loeye\error\ResourceException::BUNDLE_NOT_FOUND_CODE, 
-                    ["Property" => $this->property, "Bundle" => $this->getBundle()]);
-        }
-        $fileSystem = new \FilesystemIterator($dir, \FilesystemIterator::KEY_AS_FILENAME);
-
-        $config = [];
-        foreach ($fileSystem as $file) {
-            if ($file->isFile()) {
-                $data    = $this->_parseFile(new \SplFileObject($file->getRealPath()));
-                $iniData = $this->_initData($data);
-                if (isset($iniData['master'])) {
-                    $config['master'] = isset($config['master']) ? array_merge($config['master'], $iniData['master']) : $iniData['master'];
-                    unset($iniData['master']);
-                }
-                if ($iniData) {
-                    $config = array_replace_recursive($config, $iniData);
-                }
-            }
-        }
-        return $config;
-    }
-
-    /**
-     * _parseFile
-     *
-     * @param \SplFileObject $fileObj SplFileObject
-     *
-     * @return array
-     */
-    private function _parseFile(\SplFileObject $fileObj)
-    {
-        $fileType = $fileObj->getExtension();
-        if ($fileType == 'php') {
-            return include $fileObj->getRealPath();
-        }
-        $fileObj->rewind();
-        $content = '';
-        ob_start();
-        $fileObj->fpassthru();
-        $content = ob_get_clean();
-        switch ($fileType) {
-            case 'json':
-                return json_decode($content, true);
-                break;
-            case 'xml':
-                $xmlRender = new \loeye\render\XmlRender();
-                return $xmlRender->xml2array($content);
-                break;
-            case 'yaml':
-            case 'yml':
-                if (function_exists("yaml_parse")) {
-                    return yaml_parse($content);
-                } else {
-                    return \Symfony\Component\Yaml\Yaml::parse($content, \Symfony\Component\Yaml\Yaml::PARSE_CUSTOM_TAGS);
-                }
-                break;
-            default :
-                return false;
-        }
-    }
 
     /**
      * _getConfig
@@ -275,16 +252,9 @@ class Configuration
      */
     private function _getConfig($key, $config, $isList = false)
     {
-        if ($isList) {
-            foreach ($config as $item) {
-                if (array_key_exists($key, $item)) {
-                    return $this->getEnv($item[$key]);
-                }
-            }
-            return null;
-        }
         return isset($config[$key]) ? $this->getEnv($config[$key]) : null;
     }
+
 
     /**
      * 获取环境变量
@@ -292,54 +262,20 @@ class Configuration
      * @param type $var
      * @return type
      */
-    private function getEnv($var) {
+    private function getEnv($var)
+    {
         if (is_iterable($var)) {
             return array_map(array($this, "getEnv"), $var);
         }
-        if($var && Utils::startwith($var, self::ENV_TAG)) {
-            $l = mb_strlen(self::ENV_TAG);
+        if ($var && Utils::startwith($var, self::ENV_TAG)) {
+            $l          = mb_strlen(self::ENV_TAG);
             $envSetting = mb_substr($var, $l, - 1);
-            $envArray = explode(":", $envSetting);
-            $key = $envArray[0];
-            $default = isset($envArray[1]) ? $envArray : null;
+            $envArray   = explode(":", $envSetting);
+            $key        = $envArray[0];
+            $default    = isset($envArray[1]) ? $envArray : null;
             return getenv($key) ?: $default;
         }
         return $var;
-    }
-
-    /**
-     * _initData
-     *
-     * @param array  data
-     *
-     * @return array
-     */
-    private function _initData($data)
-    {
-        $settins = [];
-        foreach ($data as $item) {
-            $rule  = $item['settings'] ?? [];
-            unset($item['settings']);
-            $title = $rule[0] ?? null;
-            if (!$title) {
-                continue;
-            }
-            if ($title == 'master') {
-                $settins['master'] = isset($settins['master']) ? array_merge($settins['master'], [$item]) : [$item];
-            } else if (is_array($title)) {
-                $k = array_keys($title)[0] ?? null;
-                $v = array_values($title)[0] ?? null;
-                if (!$k || !$v) {
-                    continue;
-                }
-                if (isset($settins[$k])) {
-                    $settins[$k] = array_replace_recursive($settins[$k], [$v => $item]);
-                } else {
-                    $settins[$k] = [$v => $item];
-                }
-            }
-        }
-        return $settins;
     }
 
 }
