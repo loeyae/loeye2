@@ -17,6 +17,8 @@
 
 namespace loeye\std;
 
+use \Symfony\Component\Config\Definition\ConfigurationInterface;
+
 /**
  * ConfigTrait
  *
@@ -25,7 +27,6 @@ namespace loeye\std;
 trait ConfigTrait
 {
 
-    use \Symfony\Component\Config\Definition\ConfigurationInterface;
     
     /**
      * bundleConfig
