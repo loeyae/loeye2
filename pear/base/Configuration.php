@@ -235,6 +235,10 @@ class Configuration {
     {
         $bundle    = $this->getBundle();
         $context   = $this->getContext();
+        if ($context) {
+            $array = explode('=', $context);
+            $context = array_combine([$array[0]], [$array[1]]);
+        }
         $namespace = strtr($bundle, ['/' => '.', '\\' => '.']);
         $loader    = new \loeye\config\ConfigurationLoader($this->_baseDir, $namespace, $this->getDefinition(), true, $this->_cacheDir);
         $this->_config = $loader->load($context);

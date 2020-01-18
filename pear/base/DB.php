@@ -48,7 +48,8 @@ class DB
     {
         $property = $appConfig->getPropertyName();
         $settins  = $appConfig->getSetting('application.database');
-        $config   = $this->propertyConfig($property, static::BUNDLE);
+        $definition = new \loeye\config\database\ConfigDefinition();
+        $config   = $this->propertyConfig($property, static::BUNDLE, $definition);
         if (is_string($settins)) {
             $this->defaultType = $settins;
         } else {

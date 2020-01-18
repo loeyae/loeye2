@@ -40,7 +40,8 @@ class Router implements \ArrayAccess
      */
     public function __construct($property)
     {
-        $this->config = $this->bundleConfig($property);
+        $definition = new \loeye\config\router\ConfigDefinition();
+        $this->config = $this->bundleConfig($property, null, $definition);
         $this->_initRouter();
     }
 

@@ -25,18 +25,22 @@ namespace loeye\std;
 trait ConfigTrait
 {
 
+    use \Symfony\Component\Config\Definition\ConfigurationInterface;
+    
     /**
      * bundleConfig
      *
      * @param string $property property
      * @param string $bundle   bundle
+     * @param 
      *
      * @return \loeye\base\Configuration
      */
-    protected function bundleConfig($property, $bundle = null)
+    protected function bundleConfig($property, $bundle = null, ConfigurationInterface $definition = null)
     {
         $bundle = $property . ($bundle ? '/' . $bundle : '');
-        return new \loeye\base\Configuration(static::BUNDLE, $bundle);
+        $definition ?? $definition = (property_exists($this, 'definition') ? $this->definition : null);
+        return new \loeye\base\Configuration(static::BUNDLE, $bundle, $definition);
     }
 
     /**
@@ -47,9 +51,10 @@ trait ConfigTrait
      *
      * @return \loeye\base\Configuration
      */
-    protected function propertyConfig($property, $bundle = null)
+    protected function propertyConfig($property, $bundle = null, ConfigurationInterface $definition = null)
     {
-        return new \loeye\base\Configuration($property, $bundle);
+        $definition ?? ($definition = property_exists($this, 'definition') ? $this->definition : null);
+        return new \loeye\base\Configuration($property, $bundle, $definition);
     }
 
 }

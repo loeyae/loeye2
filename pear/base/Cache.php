@@ -34,6 +34,8 @@ use Symfony\Component\Cache\Adapter\{
  */
 class Cache
 {
+    
+    use \loeye\std\ConfigTrait;
 
     const BUNDLE               = 'cache';
     const CACHE_TYPE_APC       = 'apc';
@@ -71,7 +73,8 @@ class Cache
             $this->defaultType     = $settins['default'] ?? self::CACHE_TYPE_FILE;
             $this->defaultLifetime = $settins['lifetime'] ?? 0;
         }
-        $config = new Configuration($property, self::BUNDLE);
+        $definition = new \loeye\config\cache\ConfigDefinition();
+        $config = $this->propertyConfig($property, self::BUNDLE, $definition);
         $this->_buildInstance($property, $type, $config);
     }
 

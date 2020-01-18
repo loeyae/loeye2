@@ -68,7 +68,8 @@ class Validator {
     public function __construct(AppConfig $appConfig, $bundle = null, $validationConfig = array()
     ) {
         $this->appConfig = $appConfig;
-        $this->config = $this->bundleConfig($appConfig->getPropertyName(), $bundle);
+        $definition  = [new \loeye\config\validate\RulesetConfigDefinition(), new \loeye\config\validate\DeltaConfigDefinition()];
+        $this->config = $this->bundleConfig($appConfig->getPropertyName(), $bundle, $definition);
         $this->_report = array('has_error' => false, 'error_message' => []);
         $this->_initTranslater($appConfig);
     }

@@ -66,7 +66,8 @@ class ModuleDefinition
             array_pop($explode);
             $bundle = implode('/', $explode);
         }
-        $this->config    = $this->bundleConfig($appConfig->getPropertyName(), $bundle);
+        $definition = new \loeye\config\module\ConfigDefinition();
+        $this->config    = $this->bundleConfig($appConfig->getPropertyName(), $bundle, $definition);
         $this->_initModule($moduleId);
         $this->_parseModuleDefinition();
     }
