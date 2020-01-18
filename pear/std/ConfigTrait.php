@@ -31,13 +31,13 @@ trait ConfigTrait
     /**
      * bundleConfig
      *
-     * @param string $property property
-     * @param string $bundle   bundle
-     * @param 
+     * @param string                            $property   property
+     * @param string                            $bundle     bundle
+     * @param array|ConfigurationInterface|null $definition definition
      *
      * @return \loeye\base\Configuration
      */
-    protected function bundleConfig($property, $bundle = null, ConfigurationInterface $definition = null)
+    protected function bundleConfig($property, $bundle = null, $definition = null)
     {
         $bundle = $property . ($bundle ? '/' . $bundle : '');
         $definition ?? $definition = (property_exists($this, 'definition') ? $this->definition : null);

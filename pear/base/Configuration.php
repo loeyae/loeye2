@@ -112,12 +112,12 @@ class Configuration {
     {
         if (is_array($definition)) {
             foreach ($definition as $value) {
-                if (!($value instanceof \Symfony\Component\Config\ConfigCacheInterface)) {
+                if (!($value instanceof \Symfony\Component\Config\Definition\ConfigurationInterface)) {
                     throw \InvalidArgumentException('definition must be instance of \Symfony\Component\Config\ConfigCacheInterface');
                 }
             }
             $this->_definition = $definition;
-        } elseif (!($definition instanceof \Symfony\Component\Config\ConfigCacheInterface)) {
+        } elseif ($definition instanceof \Symfony\Component\Config\Definition\ConfigurationInterface) {
             $this->_definition = [$definition];
         } else {
             throw \InvalidArgumentException('definition must be instance of \Symfony\Component\Config\ConfigCacheInterface');
