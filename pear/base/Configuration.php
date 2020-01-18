@@ -56,7 +56,7 @@ class Configuration {
         if (null === $cacheDir) {
             $cacheDir = RUNTIME_CACHE_DIR;
         }
-        $this->_cacheDir = $cacheDir . DIRECTORY_SEPARATOR . 'config' .DIRECTORY_SEPARATOR. $property;
+        $this->_cacheDir    = $cacheDir . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . $property;
         $this->_baseBundle  = $bundle;
         $this->_baseContext = $context;
         if (null === $definition) {
@@ -220,28 +220,28 @@ class Configuration {
         if (!empty($bundle)) {
             $this->bundle($bundle, null);
         }
-        if ($reduce) {
-            return array_reduce($this->_config, function($carry, $item) {
-                return array_replace_recursive($carry, $item);
-            }, []);
-        }
         return $this->_config;
     }
+
 
     /**
      * _loadConfig
      */
     private function _loadConfig()
     {
-        $bundle    = $this->getBundle();
-        $context   = $this->getContext();
+        $bundle  = $this->getBundle();
+        $context = $this->getContext();
         if ($context) {
-            $array = explode('=', $context);
+            $array   = explode('=', $context);
             $context = array_combine([$array[0]], [$array[1]]);
         }
         $namespace = strtr($bundle, ['/' => '.', '\\' => '.']);
         $loader    = new \loeye\config\ConfigurationLoader($this->_baseDir, $namespace, $this->getDefinition(), true, $this->_cacheDir);
-        $this->_config = $loader->load($context);
+        if (current($this->_definition) instanceof \loeye\config\module\ConfigDefinition) {
+            $this->_config = $loader->loadModules();
+        } else {
+            $this->_config = $loader->load($context);
+        }
     }
 
 

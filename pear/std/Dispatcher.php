@@ -159,7 +159,6 @@ abstract class Dispatcher
         $appConfig->setPropertyName($property);
         $appConfig->setLocale($this->context->getRequest()->getLanguage());
         $this->context->setAppConfig($appConfig);
-        $this->context->setConfig(new \loeye\base\Configuration($property, null));
     }
 
     /**

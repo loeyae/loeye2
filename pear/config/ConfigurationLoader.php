@@ -98,6 +98,13 @@ class ConfigurationLoader {
     }
 
 
+    /**
+     * load
+     * 
+     * @param array|string|null $context
+     * 
+     * @return array
+     */
     public function load($context = null)
     {
         if (null === $context) {
@@ -110,20 +117,71 @@ class ConfigurationLoader {
         $loader  = new YamlFileLoader($locator);
         $loader->setCurrentDir($this->nsToPath($this->namespace));
         $configs = $loader->import('*.yml');
-        $configs = array_reduce($configs, function($carry, $item) {
-            if ($carry) {
-                $carry = array_merge($carry, $item);
-            } else {
-                $carry = $item;
-            }
-            return $carry;
-        });
+        if (count($configs) > 1) {
+            $configs = array_reduce($configs, function($carry, $item) {
+                if ($carry) {
+                    $carry = array_merge($carry, $item);
+                } else {
+                    $carry = $item;
+                }
+                return $carry;
+            });
+        }
         $process    = new Processor();
         $definition = $this->definition;
         if (!is_array($definition)) {
             $definition = [$definition];
         }
         $configs = $process->processConfigurations($definition, $configs);
+        if ($this->cacheable) {
+            $this->setCache($configs);
+        }
+        if (is_string($context)) {
+            return isset($configs[$context]) ? $configs[$context] : null;
+        }
+        if (is_array($context)) {
+            $current = each($context);
+            $config  = isset($configs[$current['key']]) ? $configs[$current['key']] : array();
+            return isset($config[$current['value']]) ? $config[$current['value']] : null;
+        }
+    }
+
+
+    /**
+     * loadModules
+     * 
+     * @param array|string|null $context
+     * 
+     * @return array
+     */
+    public function loadModules($context = null)
+    {
+        if (null === $context) {
+            $context = Processor::DEFAULT_SETTINGS;
+        }
+        if ($this->cacheable && !$this->configCache->isFresh()) {
+            return $this->getCache($context);
+        }
+        $locator = new FileLocator($this->directory);
+        $loader  = new YamlFileLoader($locator);
+        $loader->setCurrentDir($this->nsToPath($this->namespace));
+        $configs = $loader->import('*.yml');
+        if (count($configs) > 1){
+            $configs = array_reduce($configs, function($carry, $item) {
+                if ($carry) {
+                    $carry = array_merge($carry, $item);
+                } else {
+                    $carry = $item;
+                }
+                return $carry;
+            });
+        }
+        $process    = new Processor();
+        $definition = $this->definition;
+        if (is_array($definition)) {
+            $definition = current($definition);
+        }
+        $configs = $process->processModules($definition, $configs);
         if ($this->cacheable) {
             $this->setCache($configs);
         }

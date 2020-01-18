@@ -31,7 +31,6 @@ class Context implements \ArrayAccess
     private $_cdata;
     private $_errors;
     private $_appConfig;
-    private $_config;
     private $_request;
     private $_response;
     private $_parallelClientManager;
@@ -443,28 +442,6 @@ class Context implements \ArrayAccess
     public function getAppConfig()
     {
         return $this->_appConfig;
-    }
-
-    /**
-     *  setConfig
-     *
-     * @param \loeye\base\Configuration $config
-     *
-     * @return void
-     */
-    public function setConfig(Configuration $config)
-    {
-        $this->_config = $config;
-    }
-
-    /**
-     * getConfig
-     *
-     * @return \loeye\base\Configuration $config
-     */
-    public function getConfig()
-    {
-        return $this->_config;
     }
 
     /**

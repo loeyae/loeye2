@@ -67,6 +67,28 @@ class Processor extends \Symfony\Component\Config\Definition\Processor {
     /**
      * processConfigurations
      * 
+     * @param ConfigurationInterface $configuration
+     * @param array                  $configs
+     * 
+     * @return type
+     */
+    public function processModules(ConfigurationInterface $configuration, array $configs)
+    {
+        $currentConfig        = [];
+        $tree = $configuration->getConfigTreeBuilder()->buildTree();
+        foreach ($configs as $config) {
+            $config = $tree->normalize($config);
+            $moduleId = $config['module']['module_id'];
+            unset($config['settings']);
+            $currentConfig[$moduleId] = $config;
+        }
+        return [static::DEFAULT_SETTINGS => $currentConfig];
+    }
+
+
+    /**
+     * processConfigurations
+     * 
      * @param array $configurations
      * @param array $configs
      * 
@@ -105,6 +127,16 @@ class Processor extends \Symfony\Component\Config\Definition\Processor {
     }
 
 
+    /**
+     * processConfig
+     * 
+     * @param array $configurations
+     * @param array $config
+     * @param array $currentConfig
+     * @param array $currentConfiguration
+     * @return array
+     * @throws \Exception
+     */
     protected function processConfig($configurations, $config, $currentConfig, &$currentConfiguration)
     {
         $ex = null;
