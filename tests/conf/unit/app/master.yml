@@ -10,6 +10,7 @@
 #     property: value
 #
 - settings: [master]
+  profile: ${LOEYE_PROFILE_ACTIVE}
   constants:
       BASE_SERVER_URL: http://localhost
       BASE_VALUE: aaa
@@ -22,6 +23,6 @@
   configuration:
       property_name: loeyae
       timezone: Asia/Shanghai
-  local:
+  locale:
       basename: lang
       supported_languages: [zh_CN]

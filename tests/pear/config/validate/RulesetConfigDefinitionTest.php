@@ -43,7 +43,7 @@ class RulesetConfigDefinitionTest extends \loeye\unit\TestCase
         $this->assertStringContainsString("rulesets", $definition);
         $processor = new \loeye\config\Processor();
         $parser = new \Symfony\Component\Yaml\Parser();
-        $configs = $parser->parseFile(PROJECT_UNIT_DIR.DIRECTORY_SEPARATOR.'config/unit/validate/ruleset.yml');
+        $configs = $parser->parseFile(PROJECT_CONFIG_DIR.DIRECTORY_SEPARATOR.'validate/unit/ruleset.yml');
         $settins = $processor->processConfiguration($this->object, $configs);
         $this->assertIsArray($settins);
         $this->assertArrayHasKey("settings", $settins);

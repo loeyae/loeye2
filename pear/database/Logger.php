@@ -33,18 +33,18 @@ class Logger implements BaseLogger
     public function startQuery($sql, ?array $params = null, ?array $types = null)
     {
         $this->starttime = microtime(true);
-        $message         = 'Sart Query @' . date('Y-m-d H:i:s u') . '\r\n';
-        $message         .= 'sql: ' . $sql . '\r\n';
-        $message         .= 'params: ' . print_r($params, true) . '\r\n';
-        $message         .= 'types: ' . print_r($types, true) . '\r\n';
+        $message         = ['Sart Query @' . date('Y-m-d H:i:s u')];
+        $message[]         = 'sql: ' . $sql;
+        $message[]         = 'params: ' . print_r($params, true);
+        $message[]         = 'types: ' . print_r($types, true);
         \loeye\base\Logger::log($message, \loeye\base\Logger::LOEYE_LOGGER_TYPE_DEBUG);
     }
 
     public function stopQuery()
     {
         $endtime = microtime(true);
-        $message = 'End Query @' . date('Y-m-d H:i:s u') . '\r\n';
-        $message .= 'time over: ' . ($endtime - $this->starttime);
+        $message = ['End Query @' . date('Y-m-d H:i:s u')];
+        $message = ['time over: ' . ($endtime - $this->starttime)];
         \loeye\base\Logger::log($message, \loeye\base\Logger::LOEYE_LOGGER_TYPE_DEBUG);
     }
 

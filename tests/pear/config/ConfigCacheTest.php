@@ -11,11 +11,11 @@ class ConfigCacheTest extends \loeye\unit\TestCase {
      * @var ConfigCache
      */
     protected $object;
-    
+
     protected $cacheDir;
-    
+
     protected $namespace;
-    
+
     protected $path;
 
 
@@ -25,13 +25,13 @@ class ConfigCacheTest extends \loeye\unit\TestCase {
      */
     protected function setUp()
     {
-        $this->path = PROJECT_UNIT_DIR . DIRECTORY_SEPARATOR . 'config';
-        $this->cacheDir = PROJECT_UNIT_RUNTIME_DIR . DIRECTORY_SEPARATOR .'unit';
+        $this->path = PROJECT_CONFIG_DIR;
+        $this->cacheDir = RUNTIME_CACHE_DIR;
         $fileSystem = new \Symfony\Component\Filesystem\Filesystem();
         if ($fileSystem->exists($this->cacheDir)){
             $fileSystem->remove($this->cacheDir);
         }
-        
+
         $this->namespace = 'unit.app';
         $this->object = new \loeye\config\ConfigCache($this->path, $this->cacheDir, $this->namespace);
     }
@@ -67,7 +67,7 @@ class ConfigCacheTest extends \loeye\unit\TestCase {
     public function testGetMetaFile()
     {
         $actual = $this->object->getMetaFile();
-        $expected = PROJECT_UNIT_RUNTIME_DIR .DIRECTORY_SEPARATOR .'unit'. DIRECTORY_SEPARATOR.$this->namespace.DIRECTORY_SEPARATOR. md5(serialize([$this->path, 'unit/app'])).'.meta';
+        $expected = PROJECT_UNIT_RUNTIME_DIR .DIRECTORY_SEPARATOR .'cache'. DIRECTORY_SEPARATOR.$this->namespace.DIRECTORY_SEPARATOR. md5(serialize([$this->path, 'unit/app'])).'.meta';
         $this->assertEquals($expected, $actual);
     }
 
@@ -101,14 +101,14 @@ class ConfigCacheTest extends \loeye\unit\TestCase {
         $this->assertInstanceOf(\Symfony\Component\Cache\Adapter\PhpFilesAdapter::class, $this->object->cacheAdapter());
     }
 
-    
+
     /**
      * @covers loeye\config\ConfigCache::write
      * @todo   Implement testWrite().
      */
     public function testWriteList()
     {
-        $locator = new \loeye\config\FileLocator(PROJECT_UNIT_DIR . DIRECTORY_SEPARATOR . 'config');
+        $locator = new \loeye\config\FileLocator(PROJECT_UNIT_DIR . DIRECTORY_SEPARATOR . 'conf');
         $ymlLoader = new \loeye\config\YamlFileLoader($locator);
         $ymlLoader->setCurrentDir('unit/app');
         $configes = $ymlLoader->import('*.yml');

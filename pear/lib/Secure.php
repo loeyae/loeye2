@@ -137,7 +137,7 @@ class Secure
     static public function getKeyDb($property, $key, $group = null, $read = false)
     {
         static $keyDbSetting = [];
-        $cache               = ConfigCache::getInstance($property, 'keydb');
+        $cache               = SimpleCache::getInstance($property, 'keydb');
         $keyDbSetting        = $cache->get('keydb');
         if (empty($keyDbSetting)) {
             $baseDir      = PROJECT_KEYDB_DIR . '/' . $property;
@@ -167,9 +167,9 @@ class Secure
                     $time   = $child[$key]['timestamp'];
                     $expiry = $child[$key]['expiry'];
                     if ($time == $expiry) {
-                        return self::crypt($key, $child[$key]['value'], 'decode');
+                        return self::crypt($key, $child[$key]['value'], true);
                     } else if (time() < $expiry) {
-                        return self::crypt($key, $child[$key]['value'], 'decode');
+                        return self::crypt($key, $child[$key]['value'], true);
                     }
                 }
             } else {
@@ -177,9 +177,9 @@ class Secure
                     $time   = $child[$key]['timestamp'];
                     $expiry = $child[$key]['expiry'];
                     if ($time == $expiry) {
-                        return self::crypt($key, $child[$key]['value'], 'decode');
+                        return self::crypt($key, $child[$key]['value'], true);
                     } else if (time() < $expiry) {
-                        return self::crypt($key, $child[$key]['value'], 'decode');
+                        return self::crypt($key, $child[$key]['value'], true);
                     }
                 }
             }

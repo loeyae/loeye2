@@ -17,7 +17,7 @@ class PhpFileLoaderTest extends \loeye\unit\TestCase {
      * This method is called before a test is executed.
      */
     protected function setUp() {
-        $paths = PROJECT_UNIT_DIR.DIRECTORY_SEPARATOR.'config';
+        $paths = PROJECT_CONFIG_DIR;
         $locator = new \loeye\config\FileLocator($paths);
         $this->object = new \loeye\config\PhpFileLoader($locator);
     }
@@ -27,7 +27,7 @@ class PhpFileLoaderTest extends \loeye\unit\TestCase {
      * This method is called after a test is executed.
      */
     protected function tearDown() {
-        
+
     }
 
     /**

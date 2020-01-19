@@ -22,7 +22,8 @@ namespace loeye\base;
  *
  * @author   Zhang Yi <loeyae@gmail.com>
  */
-class Configuration {
+class Configuration
+{
 
     protected $property;
     private $_baseDir;
@@ -33,9 +34,9 @@ class Configuration {
     private $_config;
     private $_definition;
     private $_cacheDir;
+    protected $hash = null;
 
     const ENV_TAG = '${';
-
 
     /**
      * __construct
@@ -69,7 +70,6 @@ class Configuration {
         $this->bundle($bundle, $context);
     }
 
-
     /**
      * getBaseDir
      *
@@ -79,7 +79,6 @@ class Configuration {
     {
         return $this->_baseDir;
     }
-
 
     /**
      * getCurrentBundle
@@ -91,7 +90,6 @@ class Configuration {
         return $this->_bundle ?? $this->_baseBundle;
     }
 
-
     /**
      * getContext
      *
@@ -102,10 +100,9 @@ class Configuration {
         return $this->_context ?? $this->_baseContext;
     }
 
-
     /**
      * setDefinition
-     * 
+     *
      * @param mixed $definition
      */
     public function setDefinition($definition)
@@ -124,16 +121,14 @@ class Configuration {
         }
     }
 
-
     /**
-     * 
+     *
      * @return array of \Symfony\Component\Config\ConfigCacheInterface's instance
      */
     public function getDefinition()
     {
         return $this->_definition;
     }
-
 
     /**
      * bundle
@@ -149,7 +144,6 @@ class Configuration {
         $this->context($context);
     }
 
-
     /**
      * context
      *
@@ -162,7 +156,6 @@ class Configuration {
         $this->_context = $context;
         $this->_loadConfig();
     }
-
 
     /**
      * get
@@ -187,7 +180,6 @@ class Configuration {
         return $config;
     }
 
-
     /**
      * getConfig
      *
@@ -206,7 +198,6 @@ class Configuration {
         return $this->_config;
     }
 
-
     /**
      * getSettings
      *
@@ -223,27 +214,51 @@ class Configuration {
         return $this->_config;
     }
 
+    /**
+     *
+     * @return string
+     */
+    private function _computeHash()
+    {
+        return \loeye\lib\Secure::getKey([$this->getBundle(), $this->getContext()]);
+    }
+
+    /**
+     * isFresh
+     *
+     * @return boolean
+     */
+    public function isFresh()
+    {
+        $hash = $this->_computeHash();
+        if ($this->hash === $hash) {
+            return false;
+        }
+        return true;
+    }
 
     /**
      * _loadConfig
      */
     private function _loadConfig()
     {
-        $bundle  = $this->getBundle();
-        $context = $this->getContext();
-        if ($context) {
-            $array   = explode('=', $context);
-            $context = array_combine([$array[0]], [$array[1]]);
-        }
-        $namespace = strtr($bundle, ['/' => '.', '\\' => '.']);
-        $loader    = new \loeye\config\ConfigurationLoader($this->_baseDir, $namespace, $this->getDefinition(), true, $this->_cacheDir);
-        if (current($this->_definition) instanceof \loeye\config\module\ConfigDefinition) {
-            $this->_config = $loader->loadModules();
-        } else {
-            $this->_config = $loader->load($context);
+        if ($this->isFresh()) {
+            $bundle  = $this->getBundle();
+            $context = $this->getContext();
+            if (is_string($context)) {
+                $array   = explode('=', $context);
+                $context = array_combine([$array[0]], [$array[1]]);
+            }
+            $namespace = strtr($bundle, ['/' => '.', '\\' => '.']);
+            $loader    = new \loeye\config\ConfigurationLoader($this->_baseDir, $namespace, $this->getDefinition(), true, $this->_cacheDir);
+            if (current($this->_definition) instanceof \loeye\config\module\ConfigDefinition) {
+                $this->_config = $loader->loadModules();
+            } else {
+                $this->_config = $loader->load($context);
+            }
+            $this->hash = $this->_computeHash();
         }
     }
-
 
     /**
      * _getConfig
@@ -258,7 +273,6 @@ class Configuration {
     {
         return isset($config[$key]) ? $this->getEnv($config[$key]) : null;
     }
-
 
     /**
      * 获取环境变量
@@ -277,7 +291,7 @@ class Configuration {
             $envArray   = explode(":", $envSetting);
             $key        = $envArray[0];
             $default    = isset($envArray[1]) ? $envArray : null;
-            return getenv($key) ?: $default;
+            return getenv($key) ?: (isset($_ENV[$key]) ? $_ENV[$key] : $default);
         }
         return $var;
     }

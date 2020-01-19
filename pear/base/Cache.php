@@ -29,12 +29,12 @@ use Symfony\Component\Cache\Adapter\{
 
 /**
  * Cache
- * 
+ *
  * @author   Zhang Yi <loeyae@gmail.com>
  */
 class Cache
 {
-    
+
     use \loeye\std\ConfigTrait;
 
     const BUNDLE               = 'cache';
@@ -110,7 +110,7 @@ class Cache
             case self::CACHE_TYPE_ARRAY:
                 $this->instance = new ArrayAdapter($this->defaultLifetime);
             case self::CACHE_TYPE_PHP_ARRAY:
-                $file           = $settins['file'] ?? RUNTIME_CACHE_DIR . '/' . PROJECT_NAMESPACE . '/' . 'app.cache';
+                $file           = $setting['file'] ?? RUNTIME_CACHE_DIR . D_S . PROJECT_NAMESPACE . D_S . 'app.cache';
                 $this->instance = new PhpArrayAdapter($file, new FilesystemAdapter($namespace, $defaultLifetime, RUNTIME_CACHE_DIR));
             case self::CACHE_TYPE_PHP_FILE:
                 $directory      = $setting['directory'] ?? RUNTIME_CACHE_DIR;

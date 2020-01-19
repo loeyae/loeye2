@@ -27,7 +27,7 @@ use \Symfony\Component\Config\Definition\ConfigurationInterface;
 trait ConfigTrait
 {
 
-    
+
     /**
      * bundleConfig
      *
@@ -47,12 +47,13 @@ trait ConfigTrait
     /**
      * propertyConfig
      *
-     * @param string $property property
-     * @param string $bundle   bundle
+     * @param string                            $property   property
+     * @param string                            $bundle     bundle
+     * @param array|ConfigurationInterface|null $definition definition
      *
      * @return \loeye\base\Configuration
      */
-    protected function propertyConfig($property, $bundle = null, ConfigurationInterface $definition = null)
+    protected function propertyConfig($property, $bundle = null, $definition = null)
     {
         $definition ?? ($definition = property_exists($this, 'definition') ? $this->definition : null);
         return new \loeye\base\Configuration($property, $bundle, $definition);

@@ -4,10 +4,10 @@
  * ConfigurationLoader.php
  *
  * PHP version 7
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"),
  * see LICENSE for more details: http://www.apache.org/licenses/LICENSE-2.0.
- * 
+ *
  * @category PHP
  * @package  LOEYE
  * @author   Zhang Yi <loeyae@gmail.com>
@@ -28,25 +28,25 @@ class ConfigurationLoader {
 
     /**
      *
-     * @var string 
+     * @var string
      */
     protected $directory;
 
     /**
-     * 
-     * @var string 
+     *
+     * @var string
      */
     protected $namespace;
 
     /**
      *
-     * @var boolean 
+     * @var boolean
      */
     protected $cacheable;
 
     /**
      *
-     * @var ConfigurationInterface 
+     * @var ConfigurationInterface
      */
     protected $definition;
     protected $cacheDirectory;
@@ -59,7 +59,7 @@ class ConfigurationLoader {
 
 
     /**
-     * 
+     *
      * @param string                            $directory      配置文件基础目录
      * @param string                            $namespace      配置文件名称空间
      * @param array|ConfigurationInterface|null $definition     配置文件规则实例
@@ -77,7 +77,7 @@ class ConfigurationLoader {
         $this->cacheable  = $cacheable;
         if ($this->cacheable) {
             if (null === $cacheDirectory) {
-                $this->cacheDirectory = RUNTIME_CACHE_DIR . DIRECTORY_SEPARATOR . PROJECT_NAMESPACE . 'config';
+                $this->cacheDirectory = RUNTIME_CACHE_DIR . D_S .PROJECT_NAMESPACE .D_S . 'config';
                 !defined('PROJECT_PROPERTY') ?? $this->cacheDirectory . DIRECTORY_SEPARATOR . PROJECT_PROPERTY;
             } else {
                 $this->cacheDirectory = $cacheDirectory;
@@ -89,7 +89,7 @@ class ConfigurationLoader {
 
     /**
      * getDirectory
-     * 
+     *
      * @return string
      */
     public function getDirectory()
@@ -100,9 +100,9 @@ class ConfigurationLoader {
 
     /**
      * load
-     * 
+     *
      * @param array|string|null $context
-     * 
+     *
      * @return array
      */
     public function load($context = null)
@@ -149,9 +149,9 @@ class ConfigurationLoader {
 
     /**
      * loadModules
-     * 
+     *
      * @param array|string|null $context
-     * 
+     *
      * @return array
      */
     public function loadModules($context = null)
@@ -198,9 +198,9 @@ class ConfigurationLoader {
 
     /**
      * nsToPath
-     * 
+     *
      * @param string $namespace
-     * 
+     *
      * @return string
      */
     private function nsToPath(string $namespace): string
@@ -211,9 +211,9 @@ class ConfigurationLoader {
 
     /**
      * getCache
-     * 
+     *
      * @param string|null $key
-     * 
+     *
      * @return mixed
      */
     public function getCache($key = null)
@@ -240,7 +240,7 @@ class ConfigurationLoader {
 
     /**
      * setCache
-     * 
+     *
      * @param array $data data
      */
     protected function setCache(array $data)

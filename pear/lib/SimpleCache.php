@@ -1,7 +1,7 @@
 <?php
 
 /**
- * ConfigCache.php
+ * SimpleCache.php
  *
  * PHP version 7
  *
@@ -23,11 +23,11 @@ use Symfony\Component\Cache\Adapter\{
 };
 
 /**
- * ConfigCache
+ * SimpleCache
  *
  * @author   Zhang Yi <loeyae@gmail.com>
  */
-class ConfigCache
+class SimpleCache
 {
 
     private $cache;

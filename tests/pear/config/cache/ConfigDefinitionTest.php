@@ -54,7 +54,7 @@ class ConfigDefinitionTest extends \loeye\unit\TestCase
     {
         $processor = new \loeye\config\Processor();
         $parser = new \Symfony\Component\Yaml\Parser();
-        $configs = $parser->parseFile(PROJECT_UNIT_DIR.DIRECTORY_SEPARATOR.'config/unit/cache/apc.yml');
+        $configs = $parser->parseFile(PROJECT_CONFIG_DIR.DIRECTORY_SEPARATOR.'unit/cache/apc.yml');
         $settins = $processor->processConfiguration($this->object, $configs);
         $this->assertIsArray($settins);
         $this->assertArrayHasKey("settings", $settins);
@@ -69,13 +69,13 @@ class ConfigDefinitionTest extends \loeye\unit\TestCase
     {
         $processor = new \loeye\config\Processor();
         $parser = new \Symfony\Component\Yaml\Parser();
-        $configs = $parser->parseFile(PROJECT_UNIT_DIR.DIRECTORY_SEPARATOR.'config/unit/cache/mem.yml');
+        $configs = $parser->parseFile(PROJECT_CONFIG_DIR.DIRECTORY_SEPARATOR.'unit/cache/mem.yml');
         $settins = $processor->processConfiguration($this->object, $configs);
         $this->assertIsArray($settins);
         $this->assertArrayHasKey("settings", $settins);
         $this->assertArrayHasKey("memcached", $settins);
     }
-    
+
     /**
      * @covers loeye\config\cache\ConfigDefinition::getConfigTreeBuilder
      * @todo   Implement testGetConfigTreeBuilder().
@@ -84,13 +84,13 @@ class ConfigDefinitionTest extends \loeye\unit\TestCase
     {
         $processor = new \loeye\config\Processor();
         $parser = new \Symfony\Component\Yaml\Parser();
-        $configs = $parser->parseFile(PROJECT_UNIT_DIR.DIRECTORY_SEPARATOR.'config/unit/cache/redis.yml');
+        $configs = $parser->parseFile(PROJECT_CONFIG_DIR.DIRECTORY_SEPARATOR.'unit/cache/redis.yml');
         $settins = $processor->processConfiguration($this->object, $configs);
         $this->assertIsArray($settins);
         $this->assertArrayHasKey("settings", $settins);
         $this->assertArrayHasKey("redis", $settins);
     }
-    
+
     /**
      * @covers loeye\config\cache\ConfigDefinition::getConfigTreeBuilder
      * @todo   Implement testGetConfigTreeBuilder().
@@ -99,13 +99,13 @@ class ConfigDefinitionTest extends \loeye\unit\TestCase
     {
         $processor = new \loeye\config\Processor();
         $parser = new \Symfony\Component\Yaml\Parser();
-        $configs = $parser->parseFile(PROJECT_UNIT_DIR.DIRECTORY_SEPARATOR.'config/unit/cache/pfile.yml');
+        $configs = $parser->parseFile(PROJECT_CONFIG_DIR.DIRECTORY_SEPARATOR.'unit/cache/pfile.yml');
         $settins = $processor->processConfiguration($this->object, $configs);
         $this->assertIsArray($settins);
         $this->assertArrayHasKey("settings", $settins);
         $this->assertArrayHasKey("pfile", $settins);
     }
-    
+
     /**
      * @covers loeye\config\cache\ConfigDefinition::getConfigTreeBuilder
      * @todo   Implement testGetConfigTreeBuilder().
@@ -114,7 +114,7 @@ class ConfigDefinitionTest extends \loeye\unit\TestCase
     {
         $processor = new \loeye\config\Processor();
         $parser = new \Symfony\Component\Yaml\Parser();
-        $configs = $parser->parseFile(PROJECT_UNIT_DIR.DIRECTORY_SEPARATOR.'config/unit/cache/file.yml');
+        $configs = $parser->parseFile(PROJECT_CONFIG_DIR.DIRECTORY_SEPARATOR.'unit/cache/file.yml');
         $settins = $processor->processConfiguration($this->object, $configs);
         $this->assertIsArray($settins);
         $this->assertArrayHasKey("settings", $settins);

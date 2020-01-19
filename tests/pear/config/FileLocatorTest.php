@@ -17,7 +17,7 @@ class FileLocatorTest extends \loeye\unit\TestCase {
      * This method is called before a test is executed.
      */
     protected function setUp() {
-        $paths = PROJECT_UNIT_DIR . DIRECTORY_SEPARATOR . 'config';
+        $paths = PROJECT_CONFIG_DIR;
         $this->object = new \loeye\config\FileLocator($paths);
     }
 
@@ -26,7 +26,7 @@ class FileLocatorTest extends \loeye\unit\TestCase {
      * This method is called after a test is executed.
      */
     protected function tearDown() {
-        
+
     }
 
     /**
@@ -34,7 +34,7 @@ class FileLocatorTest extends \loeye\unit\TestCase {
      * @todo   Implement testLocate().
      */
     public function testLocate() {
-        $this->assertEquals(realpath(PROJECT_UNIT_DIR.DIRECTORY_SEPARATOR.'config/unit/app/master.yml'), $this->object->locate('master.yml', 'unit/app', true));
+        $this->assertEquals(realpath(PROJECT_UNIT_DIR.DIRECTORY_SEPARATOR.'conf/unit/app/master.yml'), $this->object->locate('master.yml', 'unit/app', true));
     }
 
 }

@@ -23,7 +23,7 @@ class YamlFileLoaderTest extends \loeye\unit\TestCase {
      * This method is called before a test is executed.
      */
     protected function setUp() {
-        $paths = PROJECT_UNIT_DIR . DIRECTORY_SEPARATOR .'config';
+        $paths = PROJECT_CONFIG_DIR;
         $this->locator = new \loeye\config\FileLocator($paths);
         $this->object = new \loeye\config\YamlFileLoader($this->locator);
     }
@@ -54,7 +54,7 @@ class YamlFileLoaderTest extends \loeye\unit\TestCase {
     public function testImport() {
         $this->object->setCurrentDir('unit/app');
         $resource = $this->object->import('*.yml');
-        $this->assertCount(3, $resource);
+        $this->assertCount(4, $resource);
     }
 
     /**

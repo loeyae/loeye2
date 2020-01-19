@@ -19,9 +19,9 @@ class ConfigurationLoaderTest extends \loeye\unit\TestCase {
      */
     protected function setUp()
     {
-        $directory = PROJECT_UNIT_DIR .DIRECTORY_SEPARATOR .'config';
+        $directory = PROJECT_CONFIG_DIR;
         $namespace = 'unit.app';
-        $definition = new \loeye\config\app\ConfigDefinition();
+        $definition = [new \loeye\config\app\ConfigDefinition(), new \loeye\config\app\DeltaDefinition()];
         $this->object = new \loeye\config\ConfigurationLoader($directory, $namespace, $definition);
     }
 
@@ -32,7 +32,7 @@ class ConfigurationLoaderTest extends \loeye\unit\TestCase {
      */
     protected function tearDown()
     {
-        
+
     }
 
 
@@ -43,7 +43,7 @@ class ConfigurationLoaderTest extends \loeye\unit\TestCase {
     public function testGetDirectory()
     {
         $actual = $this->object->getDirectory();
-        $expected = PROJECT_UNIT_DIR .DIRECTORY_SEPARATOR .'config';
+        $expected = PROJECT_UNIT_DIR .DIRECTORY_SEPARATOR .'conf';
         $this->assertEquals($expected, $actual);
     }
 

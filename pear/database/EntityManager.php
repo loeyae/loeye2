@@ -30,21 +30,24 @@ class EntityManager
     static protected $schemeDir   = PROJECT_MODELS_DIR . '/scheme';
     static protected $proxiesDir  = PROJECT_MODELS_DIR . '/proxy';
     static protected $cacheDir    = RUNTIME_CACHE_DIR . '/' . PROJECT_NAMESPACE . '/db';
-    static protected $isDevMode   = LOEYE_MODE == LOEYE_MODE_DEV ? true : false;
+    static protected $isDevMode   = (LOEYE_MODE_DEV === LOEYE_MODE || LOEYE_MODE_UNIT === LOEYE_MODE)  ? true : false;
 
     /**
      * getManager
      *
-     * @param array  $dbSetting database setting
-     * @param string $property  property name
+     * @param array                       $dbSetting database setting
+     * @param string                      $property  property name
+     * @param Doctrine\Common\Cache\Cache $cache     cache instance
      *
      * @return \Doctrine\ORM\EntityManager
      */
-    static public function getManager($dbSetting, $property)
+    static public function getManager($dbSetting, $property, Doctrine\Common\Cache\Cache $cache = null)
     {
         // Second configure ORM
         // globally used cache driver, in production use APC or memcached
-        $cache = new \Doctrine\Common\Cache\ArrayCache();
+        if (null === $cache) {
+            $cache = new \Doctrine\Common\Cache\ArrayCache();
+        }
         // standard annotation reader
         $annotationReader = new \Doctrine\Common\Annotations\AnnotationReader();
         $cachedAnnotationReader = new \Doctrine\Common\Annotations\CachedReader(
@@ -78,6 +81,8 @@ class EntityManager
         // use our allready initialized cache driver
         $config->setMetadataCacheImpl($cache);
         $config->setQueryCacheImpl($cache);
+        $logger = new Logger();
+        $config->setSQLLogger($logger);
         // Third, create event manager and hook prefered extension listeners
         $evm = new \Doctrine\Common\EventManager();
         // gedmo extension listeners

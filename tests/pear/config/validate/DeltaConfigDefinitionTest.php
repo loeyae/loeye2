@@ -43,7 +43,7 @@ class DeltaConfigDefinitionTest extends \loeye\unit\TestCase
         $this->assertStringContainsString("validate", $definition);
         $processor = new \loeye\config\Processor();
         $parser = new \Symfony\Component\Yaml\Parser();
-        $configs = $parser->parseFile(PROJECT_UNIT_DIR.DIRECTORY_SEPARATOR.'config/unit/validate/delta.yml');
+        $configs = $parser->parseFile(PROJECT_CONFIG_DIR.DIRECTORY_SEPARATOR.'validate/unit/delta.yml');
         $settins = $processor->processConfiguration($this->object, $configs);
         $this->assertIsArray($settins);
         $this->assertArrayHasKey("settings", $settins);

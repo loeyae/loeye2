@@ -1,7 +1,7 @@
 <?php
 
 /**
- * ConfigDefinition.php
+ * DeltaDefinition.php
  *
  * PHP version 7
  *
@@ -11,7 +11,7 @@
  * @category PHP
  * @package  LOEYE
  * @author   Zhang Yi <loeyae@gmail.com>
- * @version  2020年1月8日 下午9:56:03
+ * @version  2020年1月19日 下午4:03:20
  * @link     https://github.com/loeyae/loeye.git
  */
 
@@ -20,29 +20,27 @@ namespace loeye\config\app;
 use \loeye\config\TreeBuilder;
 
 /**
- * ConfigDefinition
+ * DeltaDefinition
  *
  * @author   Zhang Yi <loeyae@gmail.com>
  */
-class ConfigDefinition implements \Symfony\Component\Config\Definition\ConfigurationInterface {
-
-
-    /**
-     * getConfigTreeBuilder
-     *
-     * @return TreeBuilder
-     */
-    public function getConfigTreeBuilder(): TreeBuilder
+class DeltaDefinition implements \Symfony\Component\Config\Definition\ConfigurationInterface
+{
+    //put your code here
+    public function getConfigTreeBuilder(): \Symfony\Component\Config\Definition\Builder\TreeBuilder
     {
         $treeBuilder = new TreeBuilder('-');
         $treeBuilder->getRootNode()
                  ->children()
                      ->arrayNode('settings')
                          ->children()
-                             ->scalarNode(0)->isRequired()->defaultValue('master')->end()
+                             ->arrayNode('0')->isRequired()
+                                ->children()
+                                    ->scalarNode('profile')->isRequired()->end()
+                                ->end()
+                             ->end()
                          ->end()
                      ->end()
-                     ->scalarNode('profile')->end()
                      ->arrayNode('constants')->canBeUnset()
                          ->constantPrototype()->end()
                      ->end()
@@ -87,6 +85,5 @@ class ConfigDefinition implements \Symfony\Component\Config\Definition\Configura
                  ->end();
         return $treeBuilder;
     }
-
 
 }

@@ -37,6 +37,7 @@ class DB
     protected $defaultType;
     protected $isDevMode = false;
     protected static $_instance;
+    protected $encryptMode = ENCRYPT_MODE_EXPLICIT;
 
     /**
      * __construct
@@ -55,8 +56,21 @@ class DB
         } else {
             $this->defaultType = $settins['default'] ?? null;
             $this->isDevMode   = $settins['is_dev_mode'] ?? false;
+            $this->encryptMode   = $settins['encrypt_mode'] ?? ENCRYPT_MODE_EXPLICIT;
+            if (!in_array($this->encryptMode, [ENCRYPT_MODE_EXPLICIT, ENCRYPT_MODE_CRYPT, ENCRYPT_MODE_KEYDB])) {
+                throw new \loeye\error\BusinessException("Invalid database encrypt mode", \loeye\error\BusinessException::INVALID_CONFIG_SET_CODE);
+            }
         }
         $this->_getEntityManager($config, $property, $type);
+    }
+
+    /**
+     *
+     * @return boolean
+     */
+    public function getDevMode()
+    {
+        return $this->isDevMode;
     }
 
     /**
@@ -96,7 +110,22 @@ class DB
         if (!$dbSetting) {
             throw new \loeye\error\BusinessException("Invalid db setting", \loeye\error\BusinessException::INVALID_CONFIG_SET_CODE);
         }
-        $this->em = \loeye\database\EntityManager::getManager($dbSetting, $property);
+        if (ENCRYPT_MODE_CRYPT === $this->encryptMode && $dbSetting['password']) {
+            $dbSetting['password'] = \loeye\lib\Secure::crypt($property, $dbSetting['password'], true);
+        } elseif (ENCRYPT_MODE_KEYDB === $this->encryptMode && $dbSetting['password']) {
+            $dbSetting['password'] = \loeye\lib\Secure::getKeyDb($property, $dbSetting);
+        }
+        if ($this->isDevMode) {
+            $cache = new \Doctrine\Common\Cache\ArrayCache();
+        } else {
+            if (\Symfony\Component\Cache\Adapter\ApcuAdapter::isSupported()) {
+                $cache = new \Doctrine\Common\Cache\ApcuCache();
+            } else {
+                $directory = RUNTIME_CACHE_DIR .D_S . self::BUNDLE;
+                $cache = new \Doctrine\Common\Cache\PhpFileCache($directory);
+            }
+        }
+        $this->em = \loeye\database\EntityManager::getManager($dbSetting, $property, $cache);
     }
 
     /**

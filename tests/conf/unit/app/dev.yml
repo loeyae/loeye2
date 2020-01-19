@@ -1,0 +1,30 @@
+# delta.yml
+#
+#Licensed under the Apache License, Version 2.0 (the "License"),
+#see LICENSE for more details: http://www.apache.org/licenses/LICENSE-2.0.
+#
+# @author   Zhang Yi <loeyae@gmail.com>
+# @version  2020年1月19日 下午5:34:54
+# - settings: [validate: validate_rule]
+#   validate
+#       fields:
+#           field name:
+#               rule: rule name
+#
+- settings: [profile: dev]
+  constants:
+      BASE_SERVER_URL: http://localhost:8088
+      BASE_VALUE: aaa
+  application:
+      cache: file
+      setting:
+        test: test1
+        text:
+            aaa: bbb
+  configuration:
+      property_name: loeyae
+      timezone: Asia/Shanghai
+  locale:
+      default: zh_CN
+      basename: lang
+      supported_languages: [zh_CN, en_US]

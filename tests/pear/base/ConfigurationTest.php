@@ -19,9 +19,9 @@ class ConfigurationTest extends \loeye\unit\TestCase {
      */
     protected function setUp()
     {
-        $baseDir = PROJECT_UNIT_DIR . DIRECTORY_SEPARATOR . 'config';
-        $cacheDir = PROJECT_UNIT_RUNTIME_DIR . DIRECTORY_SEPARATOR;
-        $definition = new \loeye\config\app\ConfigDefinition();
+        $baseDir = PROJECT_CONFIG_DIR;
+        $cacheDir = RUNTIME_CACHE_DIR;
+        $definition = [new \loeye\config\app\ConfigDefinition(), new \loeye\config\app\DeltaDefinition()];
         $this->object = new \loeye\base\Configuration('unit', 'app', $definition, null, $baseDir, $cacheDir);
     }
 
@@ -32,7 +32,7 @@ class ConfigurationTest extends \loeye\unit\TestCase {
      */
     protected function tearDown()
     {
-        
+
     }
 
 
@@ -42,7 +42,7 @@ class ConfigurationTest extends \loeye\unit\TestCase {
      */
     public function testGetBaseDir()
     {
-        $expected = PROJECT_UNIT_DIR .DIRECTORY_SEPARATOR. 'config'.DIRECTORY_SEPARATOR.'unit';
+        $expected = PROJECT_UNIT_DIR .DIRECTORY_SEPARATOR. 'conf'.DIRECTORY_SEPARATOR.'unit';
         $actual = $this->object->getBaseDir();
         $this->assertEquals($expected, $actual);
     }

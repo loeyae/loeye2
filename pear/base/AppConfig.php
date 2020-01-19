@@ -24,6 +24,7 @@ namespace loeye\base;
  */
 class AppConfig implements \ArrayAccess
 {
+    use \loeye\std\ConfigTrait;
 
     const BUNDLE = 'app';
 
@@ -39,8 +40,38 @@ class AppConfig implements \ArrayAccess
      */
     public function __construct($property)
     {
-        $configuration = new Configuration($property, self::BUNDLE);
-        $this->_config = $configuration->getSettings();
+        $definitions = [new \loeye\config\app\ConfigDefinition(), new \loeye\config\app\DeltaDefinition()];
+        $configuration = $this->propertyConfig($property, self::BUNDLE, $definitions);
+        $this->processConfiguration($configuration);
+    }
+
+    /**
+     * processConfiguration
+     *
+     * @param \loeye\base\Configuration $configuration
+     */
+    protected function processConfiguration(Configuration $configuration)
+    {
+        $masterConfig = $configuration->getConfig();
+        $profile = $configuration->get('profile');
+        if ($profile) {
+            $deltaConfig = $configuration->getConfig(null, ['profile' => $profile]);
+            $this->mergConfiguration($masterConfig, $deltaConfig);
+        }
+    }
+
+    /**
+     * mergConfiguration
+     *
+     * @param array $mater
+     * @param array $delta
+     */
+    protected function mergConfiguration(array $mater, array $delta)
+    {
+        foreach ($delta as $key => $value) {
+            $mater[$key] = $value;
+        }
+        $this->_config = $mater;
     }
 
     /**

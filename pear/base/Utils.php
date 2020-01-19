@@ -650,7 +650,6 @@ class Utils
             $fileKey .= '?' . http_build_query($params);
         }
         $cache = Cache::getInstance($appConfig, 'templates');
-        var_dump($fileKey);
         return $cache->get($fileKey);
     }
 

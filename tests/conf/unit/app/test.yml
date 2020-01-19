@@ -32,6 +32,6 @@
   configuration:
       property_name: test
       timezone: Asia/BeiJing
-  local:
+  locale:
       basename: lang
       supported_languages: [en_UN]

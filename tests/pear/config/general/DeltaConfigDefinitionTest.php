@@ -29,7 +29,7 @@ class DeltaConfigDefinitionTest extends \loeye\unit\TestCase {
      */
     protected function tearDown()
     {
-        
+
     }
 
 
@@ -44,7 +44,7 @@ class DeltaConfigDefinitionTest extends \loeye\unit\TestCase {
         $this->assertStringContainsString("settings", $definition);
         $processor = new \loeye\config\Processor();
         $parser = new \Symfony\Component\Yaml\Parser();
-        $configs = $parser->parseFile(PROJECT_UNIT_DIR.DIRECTORY_SEPARATOR.'config/unit/general/delta.yml');
+        $configs = $parser->parseFile(PROJECT_CONFIG_DIR.DIRECTORY_SEPARATOR.'unit/general/delta.yml');
         $settins = $processor->processConfiguration($this->object, $configs);
         $this->assertIsArray($settins);
         $this->assertArrayHasKey("settings", $settins);
