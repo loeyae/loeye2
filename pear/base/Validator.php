@@ -34,10 +34,10 @@ class Validator {
     use \loeye\std\ConfigTrait;
 
     private $_report;
-    
+
     /**
      *
-     * @var \loeye\base\AppConfig 
+     * @var \loeye\base\AppConfig
      */
     protected $appConfig;
 
@@ -170,7 +170,7 @@ class Validator {
     }
 
     /**
-     * 
+     *
      * @param type $rulesets
      * @param type $setting
      * @return \Symfony\Component\Validator\Constraints\All
@@ -181,6 +181,20 @@ class Validator {
         if (!$ruleset) {
             throw new BusinessException(BusinessException::INVALID_CONFIG_SET_MSG, BusinessException::INVALID_CONFIG_SET_CODE);
         }
+        $ruleset = array_filter($ruleset, function($item){
+            if (null === $item) {
+                return false;
+            }
+            if ([] === $item) {
+                return false;
+            }
+            if (false === $item) {
+                return false;
+            }
+            if ('' === $item) {
+                return false;
+            }
+        });
         $funConstraint = $this->_buildCallbackConstraint($ruleset);
         $typeConstraint = $this->_buildTypeConstraint($ruleset);
         $lengthConstraint = $this->_buildLengthConstraint($ruleset);
@@ -261,7 +275,7 @@ class Validator {
     }
 
     private function _buildRegexConstraint($ruleset) {
-        if (isset($ruleset['regex'])) {
+        if (isset($ruleset['regex']) && $ruleset['regex']) {
             $options = [
                 'pattern' => isset($ruleset['regex']['pattern']) ? $ruleset['regex']['pattern'] : null,
                 'htmlPattern' => isset($ruleset['regex']['html_pattern']) ? $ruleset['regex']['html_pattern'] : null,
@@ -274,7 +288,7 @@ class Validator {
     }
 
     private function _buildChoiceConstraint($ruleset) {
-        if (isset($ruleset['choice'])) {
+        if (isset($ruleset['choice']) && $ruleset['choice']) {
             $options = [
                 'choices' => $ruleset['choice'],
                 'callback' => isset($ruleset['choice_callback']) ? $ruleset['choice_callback'] : null,
@@ -362,7 +376,7 @@ class Validator {
 
     /**
      * _buildCallbackConstraint
-     * 
+     *
      * @param type $ruleset
      * @return array
      */
@@ -384,7 +398,7 @@ class Validator {
 
     /**
      * _buidCallbackValidator
-     * 
+     *
      * @param type $callback
      * @param type $message
      * @return \Symfony\Component\Validator\Constraints\Callback
@@ -433,7 +447,7 @@ class Validator {
 
     /**
      * _filterVar
-     * 
+     *
      * @param type $data
      * @param type $ruleset
      * @return type
@@ -620,7 +634,7 @@ class Validator {
 
     /**
      * _filter
-     * 
+     *
      * @param array $data
      * @param ConstraintViolationList $violationList
      * @param type $pkey
