@@ -194,6 +194,7 @@ class Validator {
             if ('' === $item) {
                 return false;
             }
+            return $item;
         });
         $funConstraint = $this->_buildCallbackConstraint($ruleset);
         $typeConstraint = $this->_buildTypeConstraint($ruleset);
