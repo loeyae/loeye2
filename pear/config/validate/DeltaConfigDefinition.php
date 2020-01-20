@@ -52,7 +52,7 @@ class DeltaConfigDefinition implements \Symfony\Component\Config\Definition\Conf
                                 ->children()
                                     ->regexNode('#\w+#')
                                         ->children()
-                                            ->scalarNode('rule')->isRequired()->end()
+                                            ->variableNode('rule')->isRequired()->end()
                                             ->booleanNode('required_value')->end()
                                             ->arrayNode('required_value_if_match')
                                                 ->variablePrototype()->end()

@@ -45,6 +45,8 @@ class ConfigDefinition implements \Symfony\Component\Config\Definition\Configura
                      ->regexNode('\w+')->canBeUnset()
                          ->children()
                             ->scalarNode('driver')->isRequired()->end()
+                            ->scalarNode('path')->end()
+                            ->scalarNode('dsn')->end()
                             ->scalarNode('user')->end()
                             ->scalarNode('password')->end()
                             ->scalarNode('host')->end()
