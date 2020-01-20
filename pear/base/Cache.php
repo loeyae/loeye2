@@ -36,6 +36,7 @@ class Cache
 {
 
     use \loeye\std\ConfigTrait;
+    use \loeye\std\CacheTrait;
 
     const BUNDLE               = 'cache';
     const CACHE_TYPE_APC       = 'apc';
@@ -73,8 +74,7 @@ class Cache
             $this->defaultType     = $settins['default'] ?? self::CACHE_TYPE_FILE;
             $this->defaultLifetime = $settins['lifetime'] ?? 0;
         }
-        $definition = new \loeye\config\cache\ConfigDefinition();
-        $config = $this->propertyConfig($property, self::BUNDLE, $definition);
+        $config = $this->cacheConfig($appConfig);
         $this->_buildInstance($property, $type, $config);
     }
 
@@ -101,11 +101,11 @@ class Cache
                 $this->instance = new ApcuAdapter($namespace, $defaultLifetime);
                 break;
             case self::CACHE_TYPE_MEMCACHED:
-                $client         = $this->_getMeachedClient($setting);
+                $client         = $this->getMeachedClient($setting);
                 $this->instance = new MemcachedAdapter($client, $namespace, $defaultLifetime);
                 break;
             case self::CACHE_TYPE_REDIS:
-                $redisClient    = $this->_getRedisClient($setting);
+                $redisClient    = $this->getRedisClient($setting);
                 $this->instance = new RedisAdapter($redisClient, $namespace, $defaultLifetime);
             case self::CACHE_TYPE_ARRAY:
                 $this->instance = new ArrayAdapter($this->defaultLifetime);
@@ -122,33 +122,6 @@ class Cache
         }
     }
 
-    private function _getMeachedClient($setting)
-    {
-        $persistent_id = $setting['persistent_id'] ?? PROJECT_NAMESPACE;
-        $client        = new \Memcached($persistent_id);
-        assert($setting['servers'], 'Invalid Memcached Server.');
-        $client->addServers($setting['servers']);
-        return $client;
-    }
-
-    private function _getRedisClient($setting)
-    {
-        $client     = new \Redis();
-        $persistent = $settins['persistent'] ?? false;
-        $host       = $setting['host'] ?? '127.0.0.1';
-        $port       = $setting['port'] ?? 6379;
-        $password   = $setting['password'] ?? null;
-        $timeout    = $setting['timeout'] ?? 5;
-        if ($persistent) {
-            $client->pconnect($host, $port, $timeout);
-        } else {
-            $client->connect($host, $port, $timeout);
-        }
-        if ($password) {
-            $client->auth($password);
-        }
-        return $client;
-    }
 
     /**
      * getInstance

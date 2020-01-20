@@ -27,7 +27,6 @@ use \Symfony\Component\Config\Definition\ConfigurationInterface;
 trait ConfigTrait
 {
 
-
     /**
      * bundleConfig
      *
@@ -58,5 +57,30 @@ trait ConfigTrait
         $definition ?? ($definition = property_exists($this, 'definition') ? $this->definition : null);
         return new \loeye\base\Configuration($property, $bundle, $definition);
     }
+
+    /**
+     * cacheConfig
+     *
+     * @param \loeye\base\AppConfig $appConfig
+     * @return \loeye\base\Configuration
+     */
+    protected function cacheConfig(\loeye\base\AppConfig $appConfig)
+    {
+        $definition = new \loeye\config\cache\ConfigDefinition();
+        return $this->propertyConfig($appConfig->getPropertyName(), \loeye\base\Cache::BUNDLE, $definition);
+    }
+
+    /**
+     * databaseConfig
+     *
+     * @param \loeye\base\AppConfig $appConfig
+     * @return \loeye\base\Configuration
+     */
+    protected function databaseConfig(\loeye\base\AppConfig $appConfig)
+    {
+        $definition = new \loeye\config\database\ConfigDefinition();
+        return $this->propertyConfig($appConfig->getPropertyName(), \loeye\base\DB::BUNDLE, $definition);
+    }
+
 
 }

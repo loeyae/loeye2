@@ -26,6 +26,7 @@ class DB
 {
 
     use \loeye\std\ConfigTrait;
+    use \loeye\std\CacheTrait;
 
     const BUNDLE = 'database';
 
@@ -35,7 +36,7 @@ class DB
      */
     protected $em;
     protected $defaultType;
-    protected $isDevMode = false;
+    protected $isDevMode   = false;
     protected static $_instance;
     protected $encryptMode = ENCRYPT_MODE_EXPLICIT;
 
@@ -47,21 +48,20 @@ class DB
      */
     public function __construct(AppConfig $appConfig, $type = null)
     {
-        $property = $appConfig->getPropertyName();
-        $settins  = $appConfig->getSetting('application.database');
-        $definition = new \loeye\config\database\ConfigDefinition();
-        $config   = $this->propertyConfig($property, static::BUNDLE, $definition);
+        $property   = $appConfig->getPropertyName();
+        $settins    = $appConfig->getSetting('application.database');
+        $config     = $this->databaseConfig($appConfig);
         if (is_string($settins)) {
             $this->defaultType = $settins;
         } else {
             $this->defaultType = $settins['default'] ?? null;
             $this->isDevMode   = $settins['is_dev_mode'] ?? false;
-            $this->encryptMode   = $settins['encrypt_mode'] ?? ENCRYPT_MODE_EXPLICIT;
+            $this->encryptMode = $settins['encrypt_mode'] ?? ENCRYPT_MODE_EXPLICIT;
             if (!in_array($this->encryptMode, [ENCRYPT_MODE_EXPLICIT, ENCRYPT_MODE_CRYPT, ENCRYPT_MODE_KEYDB])) {
                 throw new \loeye\error\BusinessException("Invalid database encrypt mode", \loeye\error\BusinessException::INVALID_CONFIG_SET_CODE);
             }
         }
-        $this->_getEntityManager($config, $property, $type);
+        $this->_getEntityManager($appConfig, $config, $property, $type);
     }
 
     /**
@@ -93,14 +93,15 @@ class DB
     /**
      * _getEntityManager
      *
-     * @param \loeye\base\Configuration $config   Configuration
-     * @param string                    $property property
-     * @param string                    $type     type
+     * @param \loeye\base\AppConfig     $appConfig AppConfig
+     * @param \loeye\base\Configuration $config    Configuration
+     * @param string                    $property  property
+     * @param string                    $type      type
      *
      * @return void
      * @throws Exception
      */
-    private function _getEntityManager(Configuration $config, $property, $type)
+    private function _getEntityManager(AppConfig $appConfig, Configuration $config, $property, $type)
     {
         $key = $type ?? $this->defaultType;
         if (!$key) {
@@ -115,17 +116,42 @@ class DB
         } elseif (ENCRYPT_MODE_KEYDB === $this->encryptMode && $dbSetting['password']) {
             $dbSetting['password'] = \loeye\lib\Secure::getKeyDb($property, $dbSetting);
         }
-        if ($this->isDevMode) {
-            $cache = new \Doctrine\Common\Cache\ArrayCache();
-        } else {
-            if (\Symfony\Component\Cache\Adapter\ApcuAdapter::isSupported()) {
-                $cache = new \Doctrine\Common\Cache\ApcuCache();
-            } else {
-                $directory = RUNTIME_CACHE_DIR .D_S . self::BUNDLE;
-                $cache = new \Doctrine\Common\Cache\PhpFileCache($directory);
-            }
-        }
+        $cache    = $this->getCache($appConfig);
         $this->em = \loeye\database\EntityManager::getManager($dbSetting, $property, $cache);
+    }
+
+    /**
+     * getCache
+     *
+     * @param \loeye\base\AppConfig $appConfig AppConfig
+     * @return \Doctrine\Common\Cache\Cache
+     */
+    protected function getCache(AppConfig $appConfig)
+    {
+        if ($this->isDevMode) {
+            return new \Doctrine\Common\Cache\ArrayCache();
+        }
+        if (\Symfony\Component\Cache\Adapter\ApcuAdapter::isSupported()) {
+            return new \Doctrine\Common\Cache\ApcuCache();
+        }
+        $cacheType = $appConfig->getSetting('application.cache');
+        if (Cache::CACHE_TYPE_REDIS === $cacheType) {
+            $cache = new \Doctrine\Common\Cache\RedisCache();
+            $config = $this->cacheConfig($appConfig);
+            $setting = $config->get($cacheType);
+            $redis = $this->getRedisClient($setting);
+            $cache->setRedis($redis);
+        } elseif (Cache::CACHE_TYPE_MEMCACHED === $cache) {
+            $cache = new \Doctrine\Common\Cache\MemcachedCache();
+            $config = $this->cacheConfig($appConfig);
+            $setting = $config->get($cacheType);
+            $memcached = $this->getMeachedClient($setting);
+            $cache->setMemcached($memcached);
+        } else {
+            $directory = RUNTIME_CACHE_DIR . D_S . self::BUNDLE;
+            $cache     = new \Doctrine\Common\Cache\PhpFileCache($directory);
+        }
+         return $cache;
     }
 
     /**

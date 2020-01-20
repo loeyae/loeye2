@@ -56,7 +56,7 @@ class AppConfig implements \ArrayAccess
         $profile = $configuration->get('profile');
         $deltaConfig = [];
         if ($profile) {
-            $deltaConfig = $configuration->getConfig(null, ['profile' => $profile]);
+            $deltaConfig = $configuration->getConfig(null, ['profile' => $profile]) ?? [];
         }
         $this->mergConfiguration($masterConfig, $deltaConfig);
     }
