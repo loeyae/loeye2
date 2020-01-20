@@ -132,10 +132,6 @@ class ConfigResource implements \Symfony\Component\Config\Resource\SelfCheckingR
                 if (!is_dir($path)) {
                     continue;
                 }
-                if ($this->forExclusion) {
-                    yield $path => new \SplFileInfo($path);
-                    continue;
-                }
                 $files = iterator_to_array(new \RecursiveIteratorIterator(
                     new \RecursiveCallbackFilterIterator(
                         new \RecursiveDirectoryIterator($path, \FilesystemIterator::SKIP_DOTS | \FilesystemIterator::FOLLOW_SYMLINKS),
