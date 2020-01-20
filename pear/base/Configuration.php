@@ -289,7 +289,7 @@ class Configuration
             $l          = mb_strlen(self::ENV_TAG);
             $envSetting = mb_substr($var, $l, - 1);
             $envArray   = explode(':', $envSetting);
-            $key        = array_pop($envArray);
+            $key        = array_shift($envArray);
             $default    = count($envArray) > 0 ? implode(':', $envArray) : null;
             return getenv($key) ?: (isset($_ENV[$key]) ? $_ENV[$key] : $default);
         }

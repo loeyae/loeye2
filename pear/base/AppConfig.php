@@ -24,6 +24,7 @@ namespace loeye\base;
  */
 class AppConfig implements \ArrayAccess
 {
+
     use \loeye\std\ConfigTrait;
 
     const BUNDLE = 'app';
@@ -40,7 +41,7 @@ class AppConfig implements \ArrayAccess
      */
     public function __construct($property)
     {
-        $definitions = [new \loeye\config\app\ConfigDefinition(), new \loeye\config\app\DeltaDefinition()];
+        $definitions   = [new \loeye\config\app\ConfigDefinition(), new \loeye\config\app\DeltaDefinition()];
         $configuration = $this->propertyConfig($property, self::BUNDLE, $definitions);
         $this->processConfiguration($configuration);
     }
@@ -53,8 +54,8 @@ class AppConfig implements \ArrayAccess
     protected function processConfiguration(Configuration $configuration)
     {
         $masterConfig = $configuration->getConfig();
-        $profile = $configuration->get('profile');
-        $deltaConfig = [];
+        $profile      = $configuration->get('profile');
+        $deltaConfig  = [];
         if ($profile) {
             $deltaConfig = $configuration->getConfig(null, ['profile' => $profile]) ?? [];
         }
@@ -70,7 +71,9 @@ class AppConfig implements \ArrayAccess
     protected function mergConfiguration(array $mater, array $delta)
     {
         foreach ($delta as $key => $value) {
-            $mater[$key] = $value;
+            if ($value) {
+                $mater[$key] = $value;
+            }
         }
         $this->_config = $mater;
     }
@@ -167,7 +170,7 @@ class AppConfig implements \ArrayAccess
     public function getSetting($key, $default = null)
     {
         if (empty($key)) {
-            throw new \loeye\error\BusinessException(\loeye\error\BusinessException::INVALID_CONFIG_SET_MSG, \loeye\error\BusinessException::INVALID_CONFIG_SET_CODE, ["setting" => "setting ". $key]);
+            throw new \loeye\error\BusinessException(\loeye\error\BusinessException::INVALID_CONFIG_SET_MSG, \loeye\error\BusinessException::INVALID_CONFIG_SET_CODE, ["setting" => "setting " . $key]);
         }
         $keyList = explode(".", $key);
         $config  = $this->_config;

@@ -142,6 +142,9 @@ class ConfigurationLoader {
         if (is_array($context)) {
             $current = each($context);
             $config  = isset($configs[$current['key']]) ? $configs[$current['key']] : array();
+            if(empty($config)) {
+                return null;
+            }
             return isset($config[$current['value']]) ? $config[$current['value']] : null;
         }
     }
