@@ -82,9 +82,10 @@ class ConfigResource implements \Symfony\Component\Config\Resource\SelfCheckingR
 
         if (null === $this->hash) {
             $this->hash = $hash;
+            return true;
         }
 
-        return $this->hash === $hash;
+        return $this->hash !== $hash;
     }
 
     /**

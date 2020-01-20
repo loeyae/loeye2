@@ -231,10 +231,11 @@ class Configuration
     public function isFresh()
     {
         $hash = $this->_computeHash();
-        if ($this->hash === $hash) {
-            return false;
+        if (null === $this->hash) {
+            $this->hash = $hash;
+            return true;
         }
-        return true;
+        return $hash !== $this->hash;
     }
 
     /**
@@ -256,7 +257,6 @@ class Configuration
             } else {
                 $this->_config = $loader->load($context);
             }
-            $this->hash = $this->_computeHash();
         }
     }
 

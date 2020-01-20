@@ -208,7 +208,7 @@ class ConfigurationLoader {
      */
     private function nsToPath(string $namespace): string
     {
-        return strtr($namespace, ['.' => '/', '-' => '/', '_' => '/']);
+        return DIRECTORY_SEPARATOR . \strtr($namespace, ['.' => '/', '-' => '/', '_' => '/']);
     }
 
 
@@ -248,10 +248,7 @@ class ConfigurationLoader {
      */
     protected function setCache(array $data)
     {
-        foreach ($data as $key => $value) {
-            $this->configCache->save($key, $value);
-        }
-        $this->configCache->commit();
+        $this->configCache->write($data);
     }
 
 }

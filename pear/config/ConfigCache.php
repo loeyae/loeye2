@@ -86,7 +86,7 @@ class ConfigCache {
      */
     public function nsToPattern(): string
     {
-        return \strtr($this->namespace, ['.' => '/', '_' => '/', '-' => '/']);
+        return DIRECTORY_SEPARATOR . \strtr($this->namespace, ['.' => '/', '_' => '/', '-' => '/']);
     }
 
 
