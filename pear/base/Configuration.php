@@ -288,9 +288,9 @@ class Configuration
         if ($var && Utils::startwith($var, self::ENV_TAG)) {
             $l          = mb_strlen(self::ENV_TAG);
             $envSetting = mb_substr($var, $l, - 1);
-            $envArray   = explode(":", $envSetting);
-            $key        = $envArray[0];
-            $default    = isset($envArray[1]) ? $envArray : null;
+            $envArray   = explode(':', $envSetting);
+            $key        = array_pop($envArray);
+            $default    = count($envArray) > 0 ? implode(':', $envArray) : null;
             return getenv($key) ?: (isset($_ENV[$key]) ? $_ENV[$key] : $default);
         }
         return $var;
