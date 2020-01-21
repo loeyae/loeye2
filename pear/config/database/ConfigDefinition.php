@@ -48,7 +48,7 @@ class ConfigDefinition implements \Symfony\Component\Config\Definition\Configura
                             ->scalarNode('path')->end()
                             ->scalarNode('url')->end()
                             ->scalarNode('user')->end()
-                            ->scalarNode('pass')->end()
+                            ->scalarNode('password')->end()
                             ->scalarNode('host')->end()
                             ->integerNode('port')->end()
                             ->scalarNode('dbname')->end()
