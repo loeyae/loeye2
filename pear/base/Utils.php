@@ -822,7 +822,7 @@ class Utils
         $name = defined('PROJECT_PROPERTY') ? PROJECT_PROPERTY : PROJECT_NAMESPACE;
         if ($messageType == Logger::LOEYE_LOGGER_TYPE_CONTEXT_TRACE) {
             $logfile     = RUNTIME_LOG_DIR . DIRECTORY_SEPARATOR
-                    . PROJECT_NAMESPACE . DIRECTORY_SEPARATOR . 'trace_'.$name .'.log';
+                    . PROJECT_NAMESPACE . DIRECTORY_SEPARATOR . 'trace-'.$name .'.log';
             $messageType = Logger::LOEYE_LOGGER_TYPE_DEBUG;
         } else {
             $logfile = RUNTIME_LOG_DIR . DIRECTORY_SEPARATOR
