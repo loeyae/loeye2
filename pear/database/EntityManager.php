@@ -122,7 +122,7 @@ class EntityManager
         $sortableListener->setAnnotationReader($cachedAnnotationReader);
         $evm->addEventSubscriber($sortableListener);
         // mysql set names UTF-8 if required
-        $evm->addEventSubscriber(new \Doctrine\DBAL\Event\Listeners\MysqlSessionInit());
+        //$evm->addEventSubscriber(new \Doctrine\DBAL\Event\Listeners\MysqlSessionInit());
         // Finally, create entity manager
         return \Doctrine\ORM\EntityManager::create($dbSetting, $config, $evm);
     }
