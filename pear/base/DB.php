@@ -114,7 +114,7 @@ class DB
         if (ENCRYPT_MODE_CRYPT === $this->encryptMode && $dbSetting['password']) {
             $dbSetting['password'] = \loeye\lib\Secure::crypt($property, $dbSetting['password'], true);
         } elseif (ENCRYPT_MODE_KEYDB === $this->encryptMode && $dbSetting['password']) {
-            $dbSetting['password'] = \loeye\lib\Secure::getKeyDb($property, $dbSetting);
+            $dbSetting['password'] = \loeye\lib\Secure::getKeyDb($property, $dbSetting['password']);
         }
         $cache    = $this->getCache($appConfig);
         $this->em = \loeye\database\EntityManager::getManager($dbSetting, $property, $cache);
