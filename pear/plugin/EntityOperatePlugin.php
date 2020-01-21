@@ -44,7 +44,7 @@ class EntityOperatePlugin extends Plugin
         if (!class_exists($entity)) {
             \loeye\base\Utils::throwException('entity not exists');
         }
-        $dbType = $appConfig->getSetting('application.database.'.$type);
+        $dbType = $appConfig->getSetting('application.database.'.$type) ?? $type;
         $server = new \loeye\database\Server($appConfig, $dbType);
         $server->setEntity($entity);
         $this->operate($context, $inputs, $server);
