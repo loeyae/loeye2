@@ -826,7 +826,7 @@ class Utils
             $messageType = Logger::LOEYE_LOGGER_TYPE_DEBUG;
         } else {
             $logfile = RUNTIME_LOG_DIR . DIRECTORY_SEPARATOR
-                    . PROJECT_NAMESPACE . DIRECTORY_SEPARATOR . 'error_'. $name .'.log';
+                    . PROJECT_NAMESPACE . DIRECTORY_SEPARATOR . 'error-'. $name .'.log';
         }
         Logger::log($message, $messageType, $logfile);
         if (empty($trace)) {
