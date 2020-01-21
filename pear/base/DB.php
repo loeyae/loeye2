@@ -111,10 +111,10 @@ class DB
         if (!$dbSetting) {
             throw new \loeye\error\BusinessException("Invalid db setting", \loeye\error\BusinessException::INVALID_CONFIG_SET_CODE);
         }
-        if (ENCRYPT_MODE_CRYPT === $this->encryptMode && $dbSetting['password']) {
-            $dbSetting['password'] = \loeye\lib\Secure::crypt($property, $dbSetting['password'], true);
-        } elseif (ENCRYPT_MODE_KEYDB === $this->encryptMode && $dbSetting['password']) {
-            $dbSetting['password'] = \loeye\lib\Secure::getKeyDb($property, $dbSetting['password']);
+        if (ENCRYPT_MODE_CRYPT === $this->encryptMode && $dbSetting['pass']) {
+            $dbSetting['pass'] = \loeye\lib\Secure::crypt($property, $dbSetting['pass'], true);
+        } elseif (ENCRYPT_MODE_KEYDB === $this->encryptMode && $dbSetting['pass']) {
+            $dbSetting['pass'] = \loeye\lib\Secure::getKeyDb($property, $dbSetting['pass']);
         }
         $cache    = $this->getCache($appConfig);
         $this->em = \loeye\database\EntityManager::getManager($dbSetting, $property, $cache);
