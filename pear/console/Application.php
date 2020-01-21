@@ -53,7 +53,7 @@ class Application extends Base
             if ($file->isFile()) {
                 $path = $file->getPath();
                 if ($path != $ns) {
-                    $_ns = str_replace($dir, $ns, $path);
+                    $_ns = strtr(str_replace($dir, $ns, $path), '/', '\\');
                     $cn  = $_ns . '\\' . $file->getBasename('.' . $file->getExtension());
                 } else {
                     $cn = $ns . '\\' . $file->getBasename('.' . $file->getExtension());
