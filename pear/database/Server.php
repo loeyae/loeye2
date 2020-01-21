@@ -47,7 +47,7 @@ class Server
 
     public function __construct(\loeye\base\AppConfig $appConfig, $type = null)
     {
-        $this->db = \loeye\base\Db::getInstance($appConfig, $type);
+        $this->db = \loeye\base\DB::getInstance($appConfig, $type);
     }
 
     /**
