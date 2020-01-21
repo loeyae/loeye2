@@ -291,7 +291,16 @@ class Configuration
             $envArray   = explode(':', $envSetting);
             $key        = array_shift($envArray);
             $default    = count($envArray) > 0 ? implode(':', $envArray) : null;
-            return getenv($key) ?: (isset($_ENV[$key]) ? $_ENV[$key] : $default);
+            if ($value = getenv($key)) {
+                return $value;
+            }
+            if (filter_has_var(INPUT_SERVER, $key)) {
+                return filter_input(INPUT_SERVER, $key);
+            }
+            if (filter_has_var(INPUT_ENV, $key)) {
+                return filter_input(INPUT_ENV, $key);
+            }
+            return $default;
         }
         return $var;
     }
