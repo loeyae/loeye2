@@ -90,10 +90,6 @@ if (!defined("RUNTIME_LOG_DIR")) {
     define('RUNTIME_LOG_DIR', RUNTIME_DIR . D_S.'log');
 }
 
-if (!defined("RUNTIME_LOGGER_LEVEL")) {
-    define('RUNTIME_LOGGER_LEVEL', Logger::LOEYE_LOGGER_TYPE_WARNING);
-}
-
 const PROJECT_SUCCESS = "";
 const RENDER_TYPE_SEGMENT = 'segment';
 const RENDER_TYPE_HTML = 'html';

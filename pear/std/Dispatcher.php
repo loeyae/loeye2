@@ -33,6 +33,10 @@ if (!defined('LOEYE_CONTEXT_TRACE_KEY')) {
     define('LOEYE_CONTEXT_TRACE_KEY', 'LOEYE_TEST_TRACE');
 }
 
+if (!defined("RUNTIME_LOGGER_LEVEL")) {
+    define('RUNTIME_LOGGER_LEVEL', Logger::LOEYE_LOGGER_TYPE_WARNING);
+}
+
 /**
  * Dispatcher
  *
