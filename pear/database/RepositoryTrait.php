@@ -22,8 +22,8 @@ namespace loeye\database;
  *
  * @author   Zhang Yi <loeyae@gmail.com>
  */
-trait RepositoryTrait
-{
+trait RepositoryTrait {
+
     static $alias = 't';
 
     /**
@@ -38,6 +38,7 @@ trait RepositoryTrait
      */
     protected $entityClass;
 
+
     /**
      * one
      *
@@ -50,6 +51,7 @@ trait RepositoryTrait
     {
         return $this->db->one($this->entityClass, $criteria, $orderBy);
     }
+
 
     /**
      * all
@@ -70,6 +72,7 @@ trait RepositoryTrait
         return $this->db->repository($this->entityClass)->findBy($criteria, $orderBy, $limit, $offset);
     }
 
+
     /**
      *
      * @param type $query
@@ -87,19 +90,44 @@ trait RepositoryTrait
             $query->setFirstResult($offset)->setMaxResults($limit);
         } else if ($query instanceof \Doctrine\Common\Collections\Criteria) {
             $qb = $this->db->repository($this->entityClass)->createQueryBuilder(static::$alias);
-            $qb->setFirstResult($offset)->setMaxResults($limit)
-                    ->orderBy($orderBy)->groupBy($groupBy)->having($having);
+            $qb->setFirstResult($offset)->setMaxResults($limit);
+            if ($orderBy) {
+                $qb->orderBy($orderBy);
+            }
+            if ($groupBy) {
+                $qb->groupBy($groupBy);
+            }
+            if ($having) {
+                $qb->having($having);
+            }
             $qb->addCriteria($query)->addSelect(static::$alias);
             $query = $qb->getQuery();
         } else if (is_array($query)) {
-            $qb = $this->db->repository($this->entityClass)->createQueryBuilder(static::$alias);
+            $qb   = $this->db->repository($this->entityClass)->createQueryBuilder(static::$alias);
             $expr = ExpressionFactory::createExpr($query);
-            $qb->where($expr)->orderBy($orderBy)->groupBy($groupBy)->having($having);
+            $qb->where($expr);
+            if ($orderBy) {
+                $qb->orderBy($orderBy);
+            }
+            if ($groupBy) {
+                $qb->groupBy($groupBy);
+            }
+            if ($having) {
+                $qb->having($having);
+            }
             $query = $qb->getQuery();
         } else if (is_null($query)) {
             $qb = $this->db->repository($this->entityClass)->createQueryBuilder(static::$alias);
             $qb->addSelect(static::$alias)->setFirstResult($offset)->setMaxResults($limit);
-            $qb->orderBy($orderBy)->groupBy($groupBy)->having($having);
+            if ($orderBy) {
+                $qb->orderBy($orderBy);
+            }
+            if ($groupBy) {
+                $qb->groupBy($groupBy);
+            }
+            if ($having) {
+                $qb->having($having);
+            }
             $query = $qb->getQuery();
         } else {
             throw new \loeye\error\BusinessException(\loeye\error\BusinessException::INVALID_PARAMETER_MSG, \loeye\error\BusinessException::INVALID_PARAMETER_CODE);
