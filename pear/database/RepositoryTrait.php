@@ -59,38 +59,38 @@ trait RepositoryTrait {
      * @param array|null $criteria
      * @param mixed|null $orderBy
      * @param mixed|null $groupBy
+     * @param int|null   $start
      * @param int|null   $offset
-     * @param int|null   $limit
      *
      * @return array
      */
-    public function all($criteria = null, $orderBy = null, $offset = null, $limit = null)
+    public function all($criteria = null, $orderBy = null, $start = null, $offset = null)
     {
         if (is_null($criteria)) {
             return $this->db->repository($this->entityClass)->findAll();
         }
-        return $this->db->repository($this->entityClass)->findBy($criteria, $orderBy, $limit, $offset);
+        return $this->db->repository($this->entityClass)->findBy($criteria, $orderBy, $offset, $start);
     }
 
 
     /**
      *
      * @param type $query
+     * @param type $start
      * @param type $offset
-     * @param type $limit
      * @param type $orderBy
      * @param type $groupBy
      * @return type
      *
      * @throws \loeye\error\BusinessException
      */
-    public function page($query, $offset = 0, $limit = 10, $orderBy = null, $groupBy = null, $having = null)
+    public function page($query, $start = 0, $offset = 10, $orderBy = null, $groupBy = null, $having = null)
     {
         if ($query instanceof \Doctrine\ORM\Query) {
-            $query->setFirstResult($offset)->setMaxResults($limit);
+            $query->setFirstResult($start)->setMaxResults($offset);
         } else if ($query instanceof \Doctrine\Common\Collections\Criteria) {
             $qb = $this->db->repository($this->entityClass)->createQueryBuilder(static::$alias);
-            $qb->setFirstResult($offset)->setMaxResults($limit);
+            $qb->setFirstResult($start)->setMaxResults($offset);
             if ($orderBy) {
                 $qb->orderBy($orderBy);
             }
@@ -118,7 +118,7 @@ trait RepositoryTrait {
             $query = $qb->getQuery();
         } else if (is_null($query)) {
             $qb = $this->db->repository($this->entityClass)->createQueryBuilder(static::$alias);
-            $qb->addSelect(static::$alias)->setFirstResult($offset)->setMaxResults($limit);
+            $qb->addSelect(static::$alias)->setFirstResult($start)->setMaxResults($offset);
             if ($orderBy) {
                 $qb->orderBy($orderBy);
             }
