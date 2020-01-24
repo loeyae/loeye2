@@ -55,8 +55,9 @@ class Logger
             $dateFormat         = "Y-m-d H:i:s";
             $output             = "[%datetime%][%level_name%]%channel%: %message%\n";
             $formatter          = new \Monolog\Formatter\LineFormatter($output, $dateFormat);
+            $logLevel           = defined('RUNTIME_LOGGER_LEVEL') ? RUNTIME_LOGGER_LEVEL : static::LOEYE_LOGGER_TYPE_DEBUG;
             if (!$handler) {
-                $handler        = new \Monolog\Handler\RotatingFileHandler($logfile, RUNTIME_LOGGER_LEVEL);
+                $handler        = new \Monolog\Handler\RotatingFileHandler($logfile, $logLevel);
             }
             $handler->setFormatter($formatter);
             $logger             = new \Monolog\Logger($name);
