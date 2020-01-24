@@ -58,12 +58,13 @@ class ConfigDefinition implements \Symfony\Component\Config\Definition\Configura
                                  \loeye\base\Cache::CACHE_TYPE_REDIS])->end()
                              ->arrayNode('database')
                                 ->children()
+                                    ->scalarNode('default')->end()
+                                    ->booleanNode('is_dev_mode')->end()
                                     ->enumNode('encrypt_mode')->values([
                                         \loeye\base\ENCRYPT_MODE_EXPLICIT,
                                         \loeye\base\ENCRYPT_MODE_CRYPT,
                                         \loeye\base\ENCRYPT_MODE_KEYDB,
                                     ])->end()
-                                    ->booleanNode('is_dev_mode')->end()
                                     ->regexNode('*')->end()
                                 ->end()
                              ->end()

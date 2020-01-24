@@ -29,7 +29,7 @@
   application:
       cache: pfile
       database:
-        default: mysql
+        mysql: mysql
         is_dev_mode: false
   configuration:
       property_name: test
