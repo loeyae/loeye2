@@ -56,7 +56,17 @@ class ConfigDefinition implements \Symfony\Component\Config\Definition\Configura
                                  \loeye\base\Cache::CACHE_TYPE_PHP_ARRAY,
                                  \loeye\base\Cache::CACHE_TYPE_PHP_FILE,
                                  \loeye\base\Cache::CACHE_TYPE_REDIS])->end()
-                             ->variableNode('database')->cannotBeEmpty()->end()
+                             ->arrayNode('database')
+                                ->children()
+                                    ->enumNode('encrypt_mode')->values([
+                                        \loeye\base\ENCRYPT_MODE_EXPLICIT,
+                                        \loeye\base\ENCRYPT_MODE_CRYPT,
+                                        \loeye\base\ENCRYPT_MODE_KEYDB,
+                                    ])->end()
+                                    ->booleanNode('is_dev_mode')->end()
+                                    ->regexNode('*')->end()
+                                ->end()
+                             ->end()
                              ->regexNode('*')
                                  ->variablePrototype()->end()
                              ->end()

@@ -14,7 +14,9 @@
       BASE_SERVER_URL: http://localhost:8080
   application:
       cache: redis
-      database: default
+      database:
+        default: default
+        encrypt_mode: keydb
   configuration:
       property_name: unit
       timezone: Asia/ChongQing
