@@ -33,10 +33,6 @@ if (!defined('LOEYE_CONTEXT_TRACE_KEY')) {
     define('LOEYE_CONTEXT_TRACE_KEY', 'LOEYE_TEST_TRACE');
 }
 
-if (!defined("RUNTIME_LOGGER_LEVEL")) {
-    define('RUNTIME_LOGGER_LEVEL', Logger::LOEYE_LOGGER_TYPE_WARNING);
-}
-
 /**
  * Dispatcher
  *
@@ -179,6 +175,17 @@ abstract class Dispatcher
                 define($key, $value);
             }
         }
+    }
+    
+    /**
+     * initLogLevel
+     * 
+     * @return void
+     */
+    protected function initLogLevel()
+    {
+        $logLevel = $this->context->getAppConfig()->getSetting('application.logger.level', \loeye\base\Logger::LOEYE_LOGGER_TYPE_DEBUG);
+        define('application', $logLevel);
     }
 
     /**
