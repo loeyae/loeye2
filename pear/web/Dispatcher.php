@@ -44,6 +44,7 @@ class Dispatcher extends \loeye\std\Dispatcher
             $this->initIOObject($moduleId);
             $this->initAppConfig();
             $this->initConfigConstants();
+            $this->initLogger();
             $this->setTimezone();
             $this->initComponent();
             $this->_mDfnObj = new \loeye\base\ModuleDefinition($this->context->getAppConfig(), $moduleId);

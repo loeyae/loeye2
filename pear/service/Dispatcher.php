@@ -55,6 +55,7 @@ class Dispatcher extends \loeye\std\Dispatcher
             $this->initIOObject($moduleId ?? $this->module);
             $this->initAppConfig();
             $this->initConfigConstants();
+            $this->initLogger();
             $this->initComponent();
             $this->setTimezone();
             $handlerNamespace = $this->context->getAppConfig()->getSetting('handler_namespace', '');
