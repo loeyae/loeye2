@@ -33,23 +33,29 @@ class ContextData
     public $data;
 
     /**
-     * expire time
+     * allow access times
      *
      * @var int
      */
-    protected $expire;
+    protected $allowAccessTimes = 0;
+    
+    /**
+     * accessed times
+     * 
+     * @var int 
+     */
+    protected $accessedTimes = 0;
 
     /**
      * __construct
      *
      * @param mixed $data      data
      * @param int   $expire    expire times
-     * @param int   $timestamp timestamp
      */
-    public function __construct($data, $expire = null, $timestamp = null)
+    public function __construct($data, $expire = 1)
     {
         $this->data = $data;
-        $this->expire($expire, $timestamp);
+        $this->expire($expire);
     }
 
     /**
@@ -57,13 +63,17 @@ class ContextData
      *
      * @param mixed $data      data
      * @param int   $expire    expire times
-     * @param int   $timestamp timestamp
      *
      * @return \self
      */
-    static public function init($data, $expire = null, $timestamp = null)
+    static public function init($data, $expire = 1)
     {
-        return new self($data, $expire, $timestamp);
+        return new self($data, $expire);
+    }
+    
+    public function getData()
+    {
+        return $this->data;
     }
 
     /**
@@ -81,8 +91,11 @@ class ContextData
      *
      * @return mixed
      */
-    public function __invoke()
+    public function __invoke($trace = false)
     {
+        if (false === $trace) {
+            $this->accessedTimes += 1;
+        }
         return $this->data;
     }
 
@@ -104,39 +117,28 @@ class ContextData
     /**
      * isExpire
      *
-     * @param int $timestamp timestamp
-     *
      * @return boolean
      */
-    public function isExpire($timestamp = null)
+    public function isExpire()
     {
-        if (isset($this->expire) && empty($this->expire)):
+        if (0 === $this->allowAccessTimes || 0 === $this->accessedTimes):
             return false;
-        elseif (isset($this->expire)):
-            if ($timestamp == null):
-                $timestamp = time();
-            endif;
-            return $this->expire - $timestamp < 0;
+        else:
+            return $this->allowAccessTimes <= $this->accessedTimes;
         endif;
-        return true;
     }
 
     /**
      * expire
      *
      * @param int $expire    expire
-     * @param int $timestamp timestamp
      *
      * @return void
      */
-    public function expire($expire = null, $timestamp = null)
+    public function expire($expire = 1)
     {
-        if ($expire !== null) {
-            if ($timestamp == null) {
-                $timestamp = time();
-            }
-            $this->expire = $timestamp + intval($expire);
-        }
+        $this->allowAccessTimes = $expire;
+        $this->accessedTimes = 0;
     }
 
     /**
@@ -146,7 +148,7 @@ class ContextData
      */
     public function getExpire()
     {
-        return $this->expire;
+        return $this->allowAccessTimes;
     }
 
 }

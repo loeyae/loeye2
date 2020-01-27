@@ -951,7 +951,7 @@ class Utils
         if (!$traceKey) {
             $traceKey = LOEYE_CONTEXT_TRACE_KEY;
         }
-        $tracInfo = $context->get($traceKey);
+        $tracInfo = $context->getTraceData($traceKey);
         if (empty($tracInfo)) {
             return;
         }
@@ -962,7 +962,7 @@ class Utils
         if (count($tracInfo) > 1 && empty(current($tracInfo)['plugin_setting'])) {
             $pluginStartInfo = array_shift($tracInfo);
             $message[] =  "# start ";
-            $message[] =  "#  time${pluginStartInfo['trace_time']}";
+            $message[] =  "#  time: ${pluginStartInfo['trace_time']}";
             $t               = $pluginStartInfo['trace_time'] - $startInfo['trace_time'];
             $message[] =  "#  consuming: $t";
             if ($ignoreData == false) {

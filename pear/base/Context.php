@@ -29,6 +29,7 @@ class Context implements \ArrayAccess
 
     private $_data;
     private $_cdata;
+    private $_traceData;
     private $_errors;
     private $_appConfig;
     private $_request;
@@ -58,6 +59,7 @@ class Context implements \ArrayAccess
         $this->_appConfig      = $appConfig;
         $this->_data           = array();
         $this->_cdata          = array();
+        $this->_traceData      = array();
         $this->_errors         = array();
         $this->_errorProcessed = false;
     }
@@ -228,6 +230,7 @@ class Context implements \ArrayAccess
         $this->_response              = null;
         $this->_router                = null;
         $this->_template              = null;
+        $this->_traceData             = null;
     }
 
     /**
@@ -293,9 +296,9 @@ class Context implements \ArrayAccess
      *
      * @return void
      */
-    public function set($key, $value, $expire = null)
+    public function set($key, $value, $expire = 1)
     {
-        $this->_data[$key] = ContextData::init($value, $expire, time());
+        $this->_data[$key] = ContextData::init($value, $expire);
     }
 
     /**
@@ -309,10 +312,62 @@ class Context implements \ArrayAccess
     public function get($key, $default = null)
     {
         if (array_key_exists($key, $this->_data)) {
-            return $this->_data[$key]();
+            $data = $this->_data[$key];
+            $value = $data();
+            if ($data->isExpire()) {
+                unset($this->_data[$key]);
+            }
+            return $value;
         }
         return $default;
     }
+    
+    /**
+     * getWithTrace
+     * 
+     * @param string $key key
+     * 
+     * @return mixed
+     */
+    public function getWithTrace($key)
+    {
+        if (array_key_exists($key, $this->_data)) {
+            $data = $this->_data[$key];
+            $value = $data(true);
+            return $value;
+        }
+        return null;
+    }
+    
+    
+    /**
+     * setTraceData
+     *
+     * @param string $key   key
+     * @param mixed  $value value
+     *
+     * @return void
+     */
+    public function setTraceData($key, $value)
+    {
+        $this->_traceData[$key] = $value;
+    }
+
+    /**
+     * getExpire
+     *
+     * @param string $key key
+     * 
+     * @return mixed
+     */
+    public function getTraceData($key)
+    {
+        if (isset($this->_traceData[$key])) {
+            return $this->_traceData[$key];
+        }
+        return null;
+    }
+
 
     /**
      * db

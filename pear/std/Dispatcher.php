@@ -38,8 +38,7 @@ if (!defined('LOEYE_CONTEXT_TRACE_KEY')) {
  *
  * @author   Zhang Yi <loeyae@gmail.com>
  */
-abstract class Dispatcher
-{
+abstract class Dispatcher {
 
     /**
      *
@@ -61,6 +60,13 @@ abstract class Dispatcher
     protected $proccessMode;
 
     /**
+     *
+     * @var array 
+     */
+    protected $tracedContextData;
+
+
+    /**
      * __construct
      *
      * @param int $proccessMode proccess mode
@@ -78,6 +84,7 @@ abstract class Dispatcher
         set_error_handler(array('\loeye\base\Utils', 'errorHandle'));
     }
 
+
     /**
      * getContext
      *
@@ -87,6 +94,7 @@ abstract class Dispatcher
     {
         return $this->context;
     }
+
 
     /**
      * getContextData
@@ -100,9 +108,12 @@ abstract class Dispatcher
         return $this->context->get($key);
     }
 
+
     abstract public function dispatche($moduleId = null);
 
+
     abstract protected function initIOObject($moduleId);
+
 
     /**
      * cacheContent
@@ -114,8 +125,9 @@ abstract class Dispatcher
      */
     protected function cacheContent($view, $content)
     {
-
+        
     }
+
 
     /**
      * getContent
@@ -129,6 +141,7 @@ abstract class Dispatcher
         return null;
     }
 
+
     /**
      * getCacheId
      *
@@ -141,6 +154,7 @@ abstract class Dispatcher
         return null;
     }
 
+
     /**
      * initGenericObj
      *
@@ -151,7 +165,7 @@ abstract class Dispatcher
     protected function initAppConfig()
     {
 
-        $property  = $this->context->getRequest()['property'];
+        $property = $this->context->getRequest()['property'];
         if (!defined('PROJECT_PROPERTY')) {
             define('PROJECT_PROPERTY', $property);
         }
@@ -160,6 +174,7 @@ abstract class Dispatcher
         $appConfig->setLocale($this->context->getRequest()->getLanguage());
         $this->context->setAppConfig($appConfig);
     }
+
 
     /**
      * initConfigConstants
@@ -176,7 +191,8 @@ abstract class Dispatcher
             }
         }
     }
-    
+
+
     /**
      * initLogLevel
      * 
@@ -187,6 +203,7 @@ abstract class Dispatcher
         $logLevel = $this->context->getAppConfig()->getSetting('application.logger.level', \loeye\base\Logger::LOEYE_LOGGER_TYPE_DEBUG);
         define('application', $logLevel);
     }
+
 
     /**
      * setTimezone
@@ -199,6 +216,7 @@ abstract class Dispatcher
         $this->context->getAppConfig()->setTimezone($timezone);
         date_default_timezone_set($timezone);
     }
+
 
     /**
      * initComponent
@@ -238,6 +256,7 @@ abstract class Dispatcher
         \loeye\base\AutoLoadRegister::autoLoad();
     }
 
+
     /**
      * setTraceDataIntoContext
      *
@@ -247,24 +266,45 @@ abstract class Dispatcher
      */
     protected function setTraceDataIntoContext($pluginSetting = [])
     {
-        $contextData = $this->context->getData();
-        if (isset($contextData[LOEYE_CONTEXT_TRACE_KEY])) {
-            $trace = $contextData[LOEYE_CONTEXT_TRACE_KEY];
+        $trace = $this->context->getTraceData(LOEYE_CONTEXT_TRACE_KEY);
+        if ($trace) {
             $time  = microtime(true);
         } else {
-            $trace = array();
             $time  = !empty($_SERVER['REQUEST_TIME_FLOAT']) ? $_SERVER['REQUEST_TIME_FLOAT'] : microtime(true);
         }
 
         $trace[$this->traceCount] = array(
             'trace_time'     => $time,
-            'context_data'   => $contextData,
+            'context_data'   => $this->getCurrentContextData() ,
             'plugin_setting' => $pluginSetting,
         );
         $this->traceCount++;
-        $this->context->set(LOEYE_CONTEXT_TRACE_KEY, $trace);
+        $this->context->setTraceData(LOEYE_CONTEXT_TRACE_KEY, $trace);
         unset($contextData);
     }
+
+    
+    /**
+     * getCurrentContextData
+     * 
+     * @return array
+     */
+    protected function getCurrentContextData()
+    {
+        $data = [];
+        if ($this->tracedContextData) {
+            foreach ($this->context->getDataGenerator() as $key => $value) {
+                if (!isset($this->tracedContextData)) {
+                    $data[$key] = $value;
+                } else if ($this->tracedContextData[$key] !== $this->context->getWithTrace($key)) {
+                    $data[$key] = $value;
+                }
+            }
+        }
+        $this->tracedContextData = $this->context->getData();
+        return $data;
+    }
+
 
     /**
      * redirectUrl
@@ -283,6 +323,7 @@ abstract class Dispatcher
             $this->context->getResponse()->redirect($redirectUrl);
         }
     }
+
 
     /**
      * excuteView
@@ -388,6 +429,7 @@ abstract class Dispatcher
             }
         }
     }
+
 
     /**
      * excuteOutput
