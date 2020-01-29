@@ -201,7 +201,7 @@ abstract class Dispatcher {
     protected function initLogger()
     {
         $logLevel = $this->context->getAppConfig()->getSetting('application.logger.level', \loeye\base\Logger::LOEYE_LOGGER_TYPE_DEBUG);
-        define('application', $logLevel);
+        define('RUNTIME_LOGGER_LEVEL', $logLevel);
     }
 
 
