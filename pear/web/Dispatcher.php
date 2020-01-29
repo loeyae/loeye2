@@ -24,11 +24,10 @@ define('LOEYE_PLUGIN_HAS_ERROR', 'lyHasError');
  *
  * @author   Zhang Yi <loeyae@gmail.com>
  */
-class Dispatcher extends \loeye\std\Dispatcher
-{
+class Dispatcher extends \loeye\std\Dispatcher {
 
-    private $_parse;
     private $_mDfnObj;
+
 
     /**
      * dispatche
@@ -59,12 +58,14 @@ class Dispatcher extends \loeye\std\Dispatcher
             \loeye\base\ExceptionHandler($exc, $this->context);
         } catch (\Exception $exc) {
             \loeye\base\ExceptionHandler($exc, $this->context);
-        }
-        if ($this->proccessMode == LOEYE_PROCESS_MODE__TEST) {
-            $this->setTraceDataIntoContext(array());
-            \loeye\base\Utils::logContextTrace($this->context, null, false);
+        } finally {
+            if ($this->proccessMode > LOEYE_PROCESS_MODE__NORMAL) {
+                $this->setTraceDataIntoContext(array());
+                \loeye\base\Utils::logContextTrace($this->context, null, false);
+            }
         }
     }
+
 
     /**
      * setUrlManager
@@ -79,6 +80,7 @@ class Dispatcher extends \loeye\std\Dispatcher
         $router = new \loeye\base\UrlManager($setting);
         $this->context->setUrlManager($router);
     }
+
 
     /**
      * excute_module
@@ -115,11 +117,11 @@ class Dispatcher extends \loeye\std\Dispatcher
             $this->context->loadCacheData();
         }
 
-        if ($this->proccessMode == LOEYE_PROCESS_MODE__TEST) {
+        if ($this->proccessMode > LOEYE_PROCESS_MODE__NORMAL) {
             $this->setTraceDataIntoContext(array());
         }
         $mockMode = $this->context->getRequest()->getParameterGet('ly_p_m');
-        if ($this->proccessMode == LOEYE_PROCESS_MODE__TEST && $mockMode === 'mock') {
+        if ($this->proccessMode > LOEYE_PROCESS_MODE__NORMAL && $mockMode === 'mock') {
             $mockPlugins = $this->_mDfnObj->getMockPlugins();
             list($returnStatus) = $this->_excutePlugin($mockPlugins, false, true);
         } else {
@@ -133,6 +135,7 @@ class Dispatcher extends \loeye\std\Dispatcher
             $this->context->getResponse()->setRenderId($returnStatus);
         }
     }
+
 
     /**
      * initIOObject
@@ -156,6 +159,7 @@ class Dispatcher extends \loeye\std\Dispatcher
         $this->context->setResponse($response);
     }
 
+
     /**
      * _excuteRouter
      *
@@ -166,7 +170,7 @@ class Dispatcher extends \loeye\std\Dispatcher
     private function _excuteRouter($routerDir)
     {
         $moduleId = null;
-        $router     = new \loeye\base\Router($routerDir);
+        $router   = new \loeye\base\Router($routerDir);
         $this->context->setRouter($router);
         if (filter_has_var(INPUT_GET, 'm_id')) {
             $moduleId = filter_input(INPUT_GET, 'm_id', FILTER_SANITIZE_STRING);
@@ -176,6 +180,7 @@ class Dispatcher extends \loeye\std\Dispatcher
         }
         return $moduleId;
     }
+
 
     /**
      * getView
@@ -194,6 +199,7 @@ class Dispatcher extends \loeye\std\Dispatcher
         }
         return null;
     }
+
 
     /**
      * CacheContent
@@ -221,6 +227,7 @@ class Dispatcher extends \loeye\std\Dispatcher
         }
     }
 
+
     /**
      * getContent
      *
@@ -241,6 +248,7 @@ class Dispatcher extends \loeye\std\Dispatcher
         return $content;
     }
 
+
     /**
      * getCacheId
      *
@@ -256,6 +264,7 @@ class Dispatcher extends \loeye\std\Dispatcher
         }
         return $cacheId;
     }
+
 
     /**
      * _excutePlugin
@@ -334,7 +343,7 @@ class Dispatcher extends \loeye\std\Dispatcher
                             $this->context->getParallelClientManager()->reset();
                         }
                         $returnStatus = $pluginObj->process($this->context, $setting);
-                        if ($this->proccessMode == LOEYE_PROCESS_MODE__TEST) {
+                        if ($this->proccessMode > LOEYE_PROCESS_MODE__NORMAL) {
                             $this->setTraceDataIntoContext($plugin);
                         }
                     }
@@ -363,6 +372,7 @@ class Dispatcher extends \loeye\std\Dispatcher
             $pluginList,
         );
     }
+
 
     /**
      * _excuteParallelPlugin
@@ -423,11 +433,12 @@ class Dispatcher extends \loeye\std\Dispatcher
             }
         }
 
-        if ($this->proccessMode == LOEYE_PROCESS_MODE__TEST) {
+        if ($this->proccessMode > LOEYE_PROCESS_MODE__NORMAL) {
             $this->setTraceDataIntoContext($pluginList);
         }
         return $returnStatus;
     }
+
 
     /**
      * _mergePluginList
@@ -445,6 +456,7 @@ class Dispatcher extends \loeye\std\Dispatcher
         return $pluginList1;
     }
 
+
     /**
      * _setArrayInContext
      *
@@ -460,6 +472,7 @@ class Dispatcher extends \loeye\std\Dispatcher
             }
         }
     }
+
 
     /**
      * _handleError
@@ -532,6 +545,7 @@ class Dispatcher extends \loeye\std\Dispatcher
         return false;
     }
 
+
     /**
      * _output
      *
@@ -560,6 +574,7 @@ class Dispatcher extends \loeye\std\Dispatcher
         }
     }
 
+
     /**
      * _getRedirectUrl
      *
@@ -581,6 +596,7 @@ class Dispatcher extends \loeye\std\Dispatcher
         return $url;
     }
 
+
     /**
      * _setTimezone
      *
@@ -592,6 +608,7 @@ class Dispatcher extends \loeye\std\Dispatcher
         $this->context->getAppConfig()->setTimezone($timezone);
         date_default_timezone_set($timezone);
     }
+
 
     /**
      * _initComponent
@@ -638,6 +655,7 @@ class Dispatcher extends \loeye\std\Dispatcher
         }
     }
 
+
     /**
      * parseUrl
      *
@@ -669,6 +687,7 @@ class Dispatcher extends \loeye\std\Dispatcher
         }
         return $moduleId;
     }
+
 
     /**
      * _addResource

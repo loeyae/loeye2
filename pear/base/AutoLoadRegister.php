@@ -215,10 +215,6 @@ class AutoLoadRegister
         if (defined('PROJECT_DIR')) {
             static::addAlias('conf', PROJECT_DIR . DIRECTORY_SEPARATOR . 'conf');
             static::addAlias('errors', PROJECT_DIR . DIRECTORY_SEPARATOR . 'errors');
-            static::addAlias('keydb', PROJECT_DIR . DIRECTORY_SEPARATOR . 'keydb');
-            static::addAlias('lang', PROJECT_DIR . DIRECTORY_SEPARATOR . 'lang');
-            static::addAlias('modules', PROJECT_DIR . DIRECTORY_SEPARATOR . 'modules');
-            static::addAlias('router', PROJECT_DIR . DIRECTORY_SEPARATOR . 'router');
             static::addAlias('views', PROJECT_DIR . DIRECTORY_SEPARATOR . 'views');
         }
     }

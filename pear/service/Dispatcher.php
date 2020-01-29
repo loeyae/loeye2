@@ -86,6 +86,11 @@ class Dispatcher extends \loeye\std\Dispatcher
 
             $renderObj->header($response);
             $renderObj->output($response);
+        } finally {
+            if ($this->proccessMode > LOEYE_PROCESS_MODE__NORMAL) {
+                $this->setTraceDataIntoContext(array());
+                \loeye\base\Utils::logContextTrace($this->context, null, false);
+            }
         }
     }
 

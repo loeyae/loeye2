@@ -25,8 +25,12 @@ if (!defined('LOEYE_PROCESS_MODE__TEST')) {
     define('LOEYE_PROCESS_MODE__TEST', 1);
 }
 
+if (!defined('LOEYE_PROCESS_MODE__TRACE')) {
+    define('LOEYE_PROCESS_MODE__TRACE', 2);
+}
+
 if (!defined('LOEYE_PROCESS_MODE__ERROR_EXIT')) {
-    define('LOEYE_PROCESS_MODE__ERROR_EXIT', 2);
+    define('LOEYE_PROCESS_MODE__ERROR_EXIT', 9);
 }
 
 if (!defined('LOEYE_CONTEXT_TRACE_KEY')) {
@@ -77,7 +81,7 @@ abstract class Dispatcher {
     {
         $this->context      = new \loeye\base\Context();
         $this->proccessMode = $proccessMode;
-        if ($this->proccessMode == LOEYE_PROCESS_MODE__TEST) {
+        if ($this->proccessMode > LOEYE_PROCESS_MODE__NORMAL) {
             $this->setTraceDataIntoContext(array());
         }
         \loeye\base\AutoLoadRegister::initApp();
@@ -292,6 +296,9 @@ abstract class Dispatcher {
     protected function getCurrentContextData()
     {
         $data = [];
+        if (LOEYE_PROCESS_MODE__TRACE !== $this->proccessMode) {
+            return $data;
+        }
         if ($this->tracedContextData) {
             foreach ($this->context->getDataGenerator() as $key => $value) {
                 if (!isset($this->tracedContextData)) {
@@ -316,7 +323,7 @@ abstract class Dispatcher {
         $redirectUrl = $this->context->getResponse()->getRedirectUrl();
 
         if (!empty($redirectUrl)) {
-            if ($this->proccessMode == LOEYE_PROCESS_MODE__TEST) {
+            if ($this->proccessMode > LOEYE_PROCESS_MODE__NORMAL) {
                 $this->setTraceDataIntoContext(array());
                 \loeye\base\Utils::logContextTrace($this->context);
             }
