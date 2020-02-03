@@ -200,6 +200,8 @@ class Factory
      */
     static private function _getErrorPageInfo($e)
     {
+        $traceInfo = $e->getTraceAsString();
+        $traceInfo = str_replace(["\r\n", "\r", "\n"], '<br/>', $traceInfo);
         $html = <<<EOF
 <!DOCTYPE html>
 <html>
@@ -223,10 +225,10 @@ class Factory
                 width: 90%;
                 height: auto;
                 line-height: 30px;
-                text-align:center;
                 overflow: visible;
                 white-space: normal;
                 clear:both;
+                text-align:center;
                 border: 1px #0f3c54 solid;
                 font-size: 1.1em;
                 color: #ff0000;
@@ -236,13 +238,17 @@ class Factory
             #main div span {
                 margin-right: 10px;
             }
+            #main .info {
+                text-align:left;
+                margin-left:20px;
+            }
         </style>
     </head>
     <body>
         <div id="main">
             <div><span>error code: </span>{$e->getCode()}</div>
             <div><span>error message: </span>{$e->getMessage()}</div>
-            <div><span>error trace info:</span>{$e->getTraceAsString()}</div>
+            <div><span>error trace info:</span><p class="info">{$traceInfo}</p></div>
         </div>
     </body>
 </html>
