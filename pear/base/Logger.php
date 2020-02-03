@@ -57,7 +57,7 @@ class Logger
             $formatter          = new \Monolog\Formatter\LineFormatter($output, $dateFormat);
             $logLevel           = defined('RUNTIME_LOGGER_LEVEL') ? RUNTIME_LOGGER_LEVEL : static::LOEYE_LOGGER_TYPE_DEBUG;
             if (!$handler) {
-                $handler        = new \Monolog\Handler\RotatingFileHandler($logfile, $logLevel);
+                $handler        = new \Monolog\Handler\RotatingFileHandler($logfile, 10, $logLevel);
             }
             $handler->setFormatter($formatter);
             $logger             = new \Monolog\Logger($name);
@@ -182,7 +182,7 @@ class Logger
 
     /**
      * critical
-     * 
+     *
      * @param string|array $message
      */
     static public function critical($message)
