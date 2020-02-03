@@ -150,26 +150,20 @@ class OutputPlugin extends \loeye\std\Plugin
      */
     protected function printf($message, \loeye\base\Context $context, array $inputs)
     {
-        $replace = null;
+        $replace = [];
         if (isset($inputs['replace'])) {
             $replace = $inputs['replace'];
         } elseif (isset($inputs['rep_key'])) {
             $replace = \loeye\base\Utils::getData($context, $inputs['rep_key'], null);
         }
-        if (empty($replace)) {
-            return $message;
+        if (!is_array($replace)) {
+            Utils::throwError(\loeye\error\BusinessException::INVALID_PARAMETER_MSG, \loeye\error\BusinessException::INVALID_PARAMETER_CODE, \loeye\error\BusinessException::class);
         }
-        if (isset($inputs['vprint']) && $inputs['vprint']) {
-            return vsprintf($message, (array) $replace);
-        } else {
-            if (is_array($replace)) {
-                $glue = isset($inputs['glue']) ? $inputs['glue'] : ',';
-                $args = implode($glue, $replace);
-            } else {
-                $args = $replace;
-            }
-            return sprintf($message, $args);
+        $translator = $context->get('loeye_translator');
+        if (!$translator) {
+            $translator = new \loeye\base\Translater($context->getAppConfig());
         }
+        return $translator->getString($message, $replace);
     }
 
 }

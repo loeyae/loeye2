@@ -43,9 +43,8 @@ class DataObjectPlugin extends \loeye\std\Plugin
             $data = file_get_contents($file);
             $context->set($dataObject, json_decode($data, true));
         } else {
-            $errorMessage = 'File: ' . $file . ' not found';
             throw new \loeye\error\ResourceException(
-                    $errorMessage, \loeye\error\ResourceException::FILE_NOT_FOUND_CODE);
+            \loeye\error\ResourceException::FILE_NOT_FOUND_MSG, \loeye\error\ResourceException::FILE_NOT_FOUND_CODE, ['file' => $file]);
         }
     }
 

@@ -75,7 +75,7 @@ abstract class Client
         $config       = $this->config->get('service');
         if (empty($config['server_url']) || !is_string($config['server_url'])) {
             throw new \loeye\error\BusinessException(\loeye\error\BusinessException::INVALID_CONFIG_SET_MSG,
-                    \loeye\error\BusinessException::INVALID_CONFIG_SET_CODE);
+                    \loeye\error\BusinessException::INVALID_CONFIG_SET_CODE, ['setting' => 'server_url']);
         }
         $this->baseUrl = $config['server_url'];
         if (!empty($config['timeout']) && $config['timeout'] > 0 && $config['timeout'] <= 30) {

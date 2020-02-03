@@ -33,7 +33,7 @@ class RequestMethodNotSupportedException extends \loeye\base\Exception
     /**
      * default error message
      */
-    const DEFAULT_ERROR_MSG = "Method Not Allowed";
+    const DEFAULT_ERROR_MSG = "Request Method Not Allowed";
 
     public function __construct(string $errorMessage = self::DEFAULT_ERROR_MSG, int $errorCode = self::DEFAULT_ERROR_CODE, $parameter = array())
     {

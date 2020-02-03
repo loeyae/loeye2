@@ -179,7 +179,7 @@ class Validator {
     private function _buildConstraint($rulesets, $setting) {
         $ruleset = $rulesets[$setting['rule']] ?? null;
         if (!$ruleset) {
-            throw new BusinessException(BusinessException::INVALID_CONFIG_SET_MSG, BusinessException::INVALID_CONFIG_SET_CODE);
+            throw new BusinessException(BusinessException::INVALID_CONFIG_SET_MSG, BusinessException::INVALID_CONFIG_SET_CODE, ['setting' => 'validate ruleset: '.$setting['rule']]);
         }
         $ruleset = array_filter($ruleset, function($item){
             if (null === $item) {
@@ -369,7 +369,7 @@ class Validator {
                 $validator->version = (isset($ruleset['version']) ? $ruleset['version'] : Assert\Ip::V4);
             }
         } else if ($type) {
-            throw new BusinessException('No Support type: ' . $type, BusinessException::DEFAULT_ERROR_CODE);
+            throw new BusinessException('No Support type: %type%', BusinessException::DEFAULT_ERROR_CODE, ['type' => $type]);
         }
         (!$message && $validator) ?: $validator->message = $message;
         return $validator ? [$validator] : [];
@@ -434,7 +434,7 @@ class Validator {
             if (isset($schema[$key])) {
                 $ruleset = $rulesets[$schema[$key]['rule']] ?? null;
                 if (!$ruleset) {
-                    throw new BusinessException(BusinessException::INVALID_CONFIG_SET_MSG, BusinessException::INVALID_CONFIG_SET_CODE);
+                    throw new BusinessException(BusinessException::INVALID_CONFIG_SET_MSG, BusinessException::INVALID_CONFIG_SET_CODE, ['setting' => 'validate ruleset: '. $schema[$key]['rule']]);
                 }
                 if (!empty($ruleset['filter'])) {
                     $filtedData[$key] = $this->_filterVar($value, $ruleset);
@@ -504,7 +504,7 @@ class Validator {
                 foreach ($children as $k => $child) {
                     if (empty($child) || !is_array($child)) {
                         throw new BusinessException(
-                                BusinessException::INVALID_CONFIG_SET_MSG, BusinessException::INVALID_CONFIG_SET_CODE);
+                                BusinessException::INVALID_CONFIG_SET_MSG, BusinessException::INVALID_CONFIG_SET_CODE, ['setting' => 'validate ruleset child']);
                     }
                     $childrenSchema = array();
                     if ($k == 'i') {

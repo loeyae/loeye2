@@ -65,7 +65,7 @@ abstract class Dispatcher {
 
     /**
      *
-     * @var array 
+     * @var array
      */
     protected $tracedContextData;
 
@@ -129,7 +129,7 @@ abstract class Dispatcher {
      */
     protected function cacheContent($view, $content)
     {
-        
+
     }
 
 
@@ -199,7 +199,7 @@ abstract class Dispatcher {
 
     /**
      * initLogLevel
-     * 
+     *
      * @return void
      */
     protected function initLogger()
@@ -287,10 +287,10 @@ abstract class Dispatcher {
         unset($contextData);
     }
 
-    
+
     /**
      * getCurrentContextData
-     * 
+     *
      * @return array
      */
     protected function getCurrentContextData()

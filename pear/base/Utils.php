@@ -16,7 +16,7 @@
  */
 
 namespace loeye\base;
-use loeye\error\{LogicExcption, BusinessException, DataException};
+use loeye\error\{LogicException, BusinessException, DataException};
 
 /**
  * Description of Utils
@@ -88,27 +88,26 @@ class Utils
     {
         if (empty($key)) {
             if ($data !== $value) {
-                self::throwException("${data} not equi ${value}", LogicExcption::DEFAULT_ERROR_CODE);
+                self::throwException(DataException::DATA_NOT_EQUALS_MSG, DataException::DATA_NOT_EQUALS, ['expected' => $value, 'actual' => $data], DataException::class);
             }
             return $data;
         } else if ($data instanceof Context) {
             self::checkKeyExist($data, $key);
             $origin = $data->get($key);
             if ($origin !== $value) {
-                self::throwException("${key} of context not equi ${value}", LogicExcption::DEFAULT_ERROR_CODE);
+                self::throwException(DataException::CONTEXT_VALUE_NOT_EQUALS_MSG, DataException::CONTEXT_VALUE_NOT_EQUALS, ['key' => $key, 'expected' => $value], DataException::class);
             }
             return $origin;
         } else if (is_array($data)) {
             self::checkKeyExist($data, $key);
             $origin = $data[$key];
             if ($origin !== $value) {
-                self::throwException("${key} of array not equi ${value}", LogicExcption::DEFAULT_ERROR_CODE);
+                self::throwException(DataException::ARRAY_VALUE_NOT_EQUALS_MSG, DataException::ARRAY_VALUE_NOT_EQUALS, ['key' => $key, 'data' => print_r($data, true), 'expected' => $value], DataException::class);
             }
             return $origin;
         } else {
             if ($data !== $value) {
-                self::throwException(
-                        print_r($data, true) . ' not equi ' . $value, LogicExcption::DEFAULT_ERROR_CODE);
+                self::throwException(DataException::DATA_NOT_EQUALS_MSG, DataException::DATA_NOT_EQUALS, ['expected' => $value, 'actual' => $data], DataException::class);
             }
             return $data;
         }
@@ -126,16 +125,16 @@ class Utils
     {
         if ($data instanceof Context) {
             if (!$data->isExist($key)) {
-                self::throwException("${key} of context not exists", LogicExcption::CONTEXT_KEY_NOT_FOUND);
+                self::throwException(LogicException::CONTEXT_KEY_NOT_FOUND_MSG, LogicException::CONTEXT_KEY_NOT_FOUND, ['key' => $key], LogicException::class);
             }
             return $data->get($key);
         } else if (is_array($data)) {
             if (!isset($data[$key])) {
-                self::throwException("${key} of array not exists", LogicExcption::DATA_KEY_NOT_FOUND);
+                self::throwException(LogicException::DATA_KEY_NOT_FOUND_MSG, LogicException::DATA_KEY_NOT_FOUND, ['key' => $key, 'data' => print_r($data, true)], LogicException::class);
             }
             return $data[$key];
         } else {
-            self::throwException("${key} not exists", LogicExcption::DATA_KEY_NOT_FOUND);
+            self::throwException(LogicException::DATA_KEY_NOT_FOUND_MSG, LogicException::DATA_KEY_NOT_FOUND, ['key' => $key, 'data' => print_r($data, true)], LogicException::class);
         }
     }
 
@@ -151,16 +150,16 @@ class Utils
     {
         if ($data instanceof Context) {
             if (!$data->isExistKey($key)) {
-                self::throwException("${key} of context not exists", LogicExcption::CONTEXT_KEY_NOT_FOUND);
+                self::throwException(LogicException::CONTEXT_KEY_NOT_FOUND_MSG, LogicException::CONTEXT_KEY_NOT_FOUND, ['key' => $key], LogicException::class);
             }
             return $data->get($key);
         } else if (is_array($data)) {
             if (!isset($data[$key])) {
-                self::throwException("${key} of array not exists", LogicExcption::DATA_KEY_NOT_FOUND);
+                self::throwException(LogicException::DATA_KEY_NOT_FOUND_MSG, LogicException::DATA_KEY_NOT_FOUND, ['key' => $key, 'data' => print_r($data, true)], LogicException::class);
             }
             return $data[$key];
         } else {
-            self::throwException("${key} not exists", LogicExcption::DATA_KEY_NOT_FOUND);
+            self::throwException(LogicException::DATA_KEY_NOT_FOUND_MSG, LogicException::DATA_KEY_NOT_FOUND, ['key' => $key, 'data' => print_r($data, true)], LogicException::class);
         }
     }
 
@@ -177,25 +176,25 @@ class Utils
     {
         if ($data instanceof Context) {
             if ($data->isEmpty($key, $ignore)) {
-                self::throwException("${key} of context is empty", LogicExcption::CONTEXT_VALUE_IS_EMPTY);
+                self::throwException(LogicException::CONTEXT_VALUE_IS_EMPTY_MSG, LogicException::CONTEXT_VALUE_IS_EMPTY, ['key' => $key], LogicException::class);
             }
             return $data->get($key);
         } else if (is_array($data)) {
             if (!isset($data[$key])) {
-                self::throwException("${key} of array is empty", LogicExcption::DATA_VALUE_IS_EMPTY);
+                self::throwException(LogicException::DATA_VALUE_IS_EMPTY_MSG, LogicException::DATA_VALUE_IS_EMPTY, ['key' => $key, 'data' => print_r($data, true)], LogicException::class);
             }
             if ($ignore) {
                 if (empty($data[$key]) && !is_numeric($data[$key])) {
-                    self::throwException("${key} of array is empty", LogicExcption::DATA_VALUE_IS_EMPTY);
+                    self::throwException(LogicException::DATA_VALUE_IS_EMPTY_MSG, LogicException::DATA_VALUE_IS_EMPTY, ['key' => $key, 'data' => print_r($data, true)], LogicException::class);
                 }
             } else {
                 if (empty($data[$key])) {
-                    self::throwException("${key} of array is empty", LogicExcption::DATA_VALUE_IS_EMPTY);
+                    self::throwException(LogicException::DATA_VALUE_IS_EMPTY_MSG, LogicException::DATA_VALUE_IS_EMPTY, ['key' => $key, 'data' => print_r($data, true)], LogicException::class);
                 }
             }
             return $data[$key];
         } else {
-            self::throwException("${key} is empty", LogicExcption::DATA_VALUE_IS_EMPTY);
+                self::throwException(LogicException::DATA_VALUE_IS_EMPTY_MSG, LogicException::DATA_VALUE_IS_EMPTY, ['key' => $key, 'data' => print_r($data, true)], LogicException::class);
         }
     }
 
@@ -222,7 +221,7 @@ class Utils
         } else if (!empty($default)) {
             $key = $default;
         } else {
-            self::throwException('error key for set not setting', BusinessException::INVALID_PARAMETER_CODE);
+            self::throwException('error key for set not exists in setting', BusinessException::INVALID_PLUGIN_SET_CODE, [], BusinessException::class);
         }
         $context->addErrors($key, $errors);
     }
@@ -246,7 +245,7 @@ class Utils
         } else if (!empty($default)) {
             $key = $default;
         } else {
-            self::throwException('error key for get not setting', BusinessException::INVALID_PARAMETER_CODE);
+            self::throwException('error key for get not exists in setting', BusinessException::INVALID_PLUGIN_SET_CODE, [], BusinessException::class);
         }
         return $context->getErrors($key);
     }
@@ -270,7 +269,7 @@ class Utils
         } else if (!empty($default)) {
             $key = $default;
         } else {
-            self::throwException('error key for remove not exists', BusinessException::INVALID_PARAMETER_CODE);
+            self::throwException('error key for remove not exists in setting',  BusinessException::INVALID_PLUGIN_SET_CODE, [], BusinessException::class);
         }
         return $context->removeErrors($key);
     }
@@ -300,7 +299,7 @@ class Utils
         } else if (!empty($default)) {
             $key = $default;
         } else {
-            self::throwException('data key for set not exists', BusinessException::INVALID_PARAMETER_CODE);
+            self::throwException('data key for set not exists in setting',  BusinessException::INVALID_PLUGIN_SET_CODE, [], BusinessException::class);
         }
         if (isset($setting['expire'])) {
             $expire = $setting['expire'];
@@ -360,7 +359,7 @@ class Utils
         } else if (!empty($default)) {
             $key = $default;
         } else {
-            self::throwException('data key for unset not exists', BusinessException::INVALID_PARAMETER_CODE);
+            self::throwException('data key for unset not exists in setting',  BusinessException::INVALID_PLUGIN_SET_CODE, [], BusinessException::class);
         }
         return $context->unsetKey($key);
     }
@@ -386,7 +385,7 @@ class Utils
         } else if (!empty($default)) {
             $key = $default;
         } else {
-            self::throwException("data key for get not exists", BusinessException::INVALID_PARAMETER_CODE);
+            self::throwException("data key for get not exists in setting",  BusinessException::INVALID_PLUGIN_SET_CODE, [], BusinessException::class);
         }
         return $context->get($key);
     }
@@ -413,7 +412,7 @@ class Utils
         } else if (!empty($default)) {
             $key = $default;
         } else {
-            self::throwException('input key not setting', BusinessException::INVALID_PARAMETER_CODE);
+            self::throwException('input key not exists in setting',  BusinessException::INVALID_PLUGIN_SET_CODE, [], BusinessException::class);
         }
         return self::checkNotEmpty($context, $key, $ignore);
     }
@@ -474,10 +473,7 @@ class Utils
             $pattern = array_combine($least, $least);
             $keyList = array_intersect_key($data, $pattern);
             if (empty($keyList)) {
-                self::throwException(
-                        'array data contains one of ' . print_r($least, true),
-                        LogicExcption::DEFAULT_ERROR_CODE
-                );
+                self::throwException(LogicException::DATA_AT_LEAST_EXIST_ONE_KEY_ERROR, LogicException::DATA_AT_LEAST_EXIST_ONE_KEY, ['keyList' => implode(',', $least), 'data' => $data], LogicException::class);
             }
             foreach ($keyList as $key => $value) {
                 $result[$key] = $value;
@@ -549,15 +545,20 @@ class Utils
      *
      * @param string $errorMsg  error message
      * @param int    $errorCode error code
+     * @param array  $parameter parameter
+     * @param string $exception class name
      *
      * @return void
      * @throws Exception
      */
-    static public function throwException($errorMsg, $errorCode = 500)
+    static public function throwException($errorMsg, $errorCode = 500, array $parameter = [], $exception = null)
     {
         $logMsg = "[logic] ${errorMsg}";
         self::log($logMsg, Logger::LOEYE_LOGGER_TYPE_ERROR);
-        throw new Exception($errorMsg, $errorCode);
+        if (null === $exception) {
+            $exception = Exception::class;
+        }
+        throw new $exception($errorMsg, $errorCode, $parameter);
     }
 
     /**
@@ -804,7 +805,7 @@ class Utils
         } catch (\Exception $e) {
             self::errorLog($e);
             self::throwException(
-                BusinessException::INVALID_PARAMETER_MSG, BusinessException::INVALID_PARAMETER_CODE);
+                BusinessException::INVALID_PARAMETER_MSG, BusinessException::INVALID_PARAMETER_CODE, [], BusinessException::class);
         }
     }
 

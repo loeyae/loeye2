@@ -183,7 +183,7 @@ class Template
     {
         $file = $this->formatFilePath($tpl);
         if (!$this->smarty->templateExists($file)) {
-            throw new \loeye\error\ResourceException('template not found', \loeye\error\ResourceException::FILE_NOT_FOUND_CODE);
+            throw new \loeye\error\ResourceException(\loeye\error\ResourceException::FILE_NOT_FOUND_MSG, \loeye\error\ResourceException::FILE_NOT_FOUND_CODE, ['file' => $file]);
         }
         $this->smarty->display($file);
     }

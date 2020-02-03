@@ -102,7 +102,7 @@ abstract class Handler extends Resource
         }
         if ($this->withDefaultRequestHeader) {
             if (!array_key_exists($this->withDefaultRequestKey, $requestData)) {
-                throw new RequestParameterException(RequestParameterException::$PARAMETER_ERROR_MSG_TEMPLATES["parameter_required"], RequestParameterException::REQUEST_PARAMETER_ERROR_CODE, ["{field}" => $this->withDefaultRequestKey]);
+                throw new RequestParameterException(RequestParameterException::$PARAMETER_ERROR_MSG_TEMPLATES["parameter_required"], RequestParameterException::REQUEST_PARAMETER_ERROR_CODE, ["field" => $this->withDefaultRequestKey]);
             }
             $requestData = $requestData[$this->withDefaultRequestKey];
         }
@@ -220,7 +220,7 @@ abstract class Handler extends Resource
         ) {
             return $this->pathParameter[$position];
         } else {
-            throw new RequestParameterException(RequestParameterException::$PARAMETER_ERROR_MSG_TEMPLATES['path_var_required'], RequestParameterException::REQUEST_PARAMETER_ERROR_CODE, ["{field}"=>$field]);
+            throw new RequestParameterException(RequestParameterException::$PARAMETER_ERROR_MSG_TEMPLATES['path_var_required'], RequestParameterException::REQUEST_PARAMETER_ERROR_CODE, ["field"=>$field]);
         }
     }
 
@@ -240,7 +240,7 @@ abstract class Handler extends Resource
         if ($default !== null && $value == $default) {
             return $value;
         } else if (empty($value)) {
-            throw new RequestParameterException(RequestParameterException::$PARAMETER_ERROR_MSG_TEMPLATES['path_var_not_empty'], RequestParameterException::REQUEST_PARAMETER_ERROR_CODE, ["{field}"=>$field]);
+            throw new RequestParameterException(RequestParameterException::$PARAMETER_ERROR_MSG_TEMPLATES['path_var_not_empty'], RequestParameterException::REQUEST_PARAMETER_ERROR_CODE, ["field"=>$field]);
         }
         return $value;
     }
@@ -259,7 +259,7 @@ abstract class Handler extends Resource
         if (is_array($data) && array_key_exists($key, $data)) {
             return $data[$key];
         } else {
-            throw new RequestParameterException(RequestParameterException::$PARAMETER_ERROR_MSG_TEMPLATES['parameter_not_empty'], RequestParameterException::REQUEST_PARAMETER_ERROR_CODE, ["{field}"=>$key]);
+            throw new RequestParameterException(RequestParameterException::$PARAMETER_ERROR_MSG_TEMPLATES['parameter_not_empty'], RequestParameterException::REQUEST_PARAMETER_ERROR_CODE, ["field"=>$key]);
         }
     }
 
@@ -279,7 +279,7 @@ abstract class Handler extends Resource
         if ($default !== null && $value == $default) {
             return $value;
         } else if (empty($value)) {
-            throw new RequestParameterException(RequestParameterException::$PARAMETER_ERROR_MSG_TEMPLATES['parameter_required'], RequestParameterException::REQUEST_PARAMETER_ERROR_CODE, ["{field}"=>$key]);
+            throw new RequestParameterException(RequestParameterException::$PARAMETER_ERROR_MSG_TEMPLATES['parameter_required'], RequestParameterException::REQUEST_PARAMETER_ERROR_CODE, ["field"=>$key]);
         }
         return $value;
     }

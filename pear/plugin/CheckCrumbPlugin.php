@@ -45,20 +45,20 @@ class CheckCrumbPlugin extends \loeye\std\Plugin
             if (isset($_REQUEST[$this->_crumbKey])) {
                 $crumb = $_REQUEST[$this->_crumbKey];
             }
-            if (Cookie::validateCrumb($crumbKey, $crumb) == false) {
+            if (\loeye\lib\Cookie::validateCrumb($crumbKey, $crumb) == false) {
                 if (isset($inputs['output']) && $inputs['output']) {
                     $outputPlugin = new OutputPlugin();
                     $inputsData   = ['format' => $inputs['output'],
                         'code'   => PermissionException::CRUMB_ERROR_CODE,
-                        'msg'    => 'crumb验证失败'];
+                        'msg'    => 'crumb check failed'];
                     $outputPlugin->process($context, $inputsData);
                 } else {
                     \loeye\base\Utils::throwException(
-                            'crumb验证失败', \PermissionException::CRUMB_ERROR_CODE);
+                            'crumb check failed', \PermissionException::CRUMB_ERROR_CODE);
                 }
             }
         } else {
-            $crumb = Cookie::createCrumb($crumbKey);
+            $crumb = \loeye\lib\Cookie::createCrumb($crumbKey);
             \loeye\base\Utils::setContextData($crumb, $context, $inputs, __CLASS__ . '_crumb');
         }
     }

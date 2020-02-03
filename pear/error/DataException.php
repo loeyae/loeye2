@@ -36,6 +36,15 @@ class DataException extends \loeye\base\Exception
     const DATA_NOT_FOUND_ERROR_CODE = 420404;
     const DATA_NOT_FOUND_ERROR_MSG = "Data Not Found";
 
+    const DATA_NOT_EQUALS = 420001;
+    const DATA_NOT_EQUALS_MSG = "%expected% not equals %actual%";
+
+    const CONTEXT_VALUE_NOT_EQUALS = 420002;
+    const CONTEXT_VALUE_NOT_EQUALS_MSG = "%key% of context not equals %expected%";
+
+    const ARRAY_VALUE_NOT_EQUALS = 420003;
+    const ARRAY_VALUE_NOT_EQUALS_MSG = "%key% of %data% not equals %expected%";
+
     public function __construct(string $errorMessage = self::DEFAULT_ERROR_MSG, int $errorCode = self::DEFAULT_ERROR_CODE, $parameter = array())
     {
         parent::__construct($errorMessage, $errorCode, $parameter);

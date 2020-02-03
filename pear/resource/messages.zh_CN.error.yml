@@ -1,0 +1,65 @@
+# messages.zh_CN.yml
+#
+#Licensed under the Apache License, Version 2.0 (the "License"),
+#see LICENSE for more details: http://www.apache.org/licenses/LICENSE-2.0.
+#
+# @author   Zhang Yi <loeyae@gmail.com>
+# @version  2020年2月3日 上午10:37:20
+#
+# group name:
+#     property: value
+#
+'Business Error': 业务错误
+'Invalid config: %setting%': 无效的配置：%setting%
+'Invalid language: %setting%': 无效的语言设置：%setting%
+'Invalid paramter': 无效的参数
+'Invalid module id': 无效的模块ID
+'Invalid module setting: %mode%': 无效的模块设置:%mode%
+'Invalid file type': 无效的文件类型
+'PDO error': PDO错误
+'PDO sql setting error': PDO SQL错误
+'Invalid pluging': 无效的插件
+'Invalid pluging setting': 无效的插件设置
+'Invalid pluging instance': 无效的插件实例
+'Invalid render setting': 无效的视图设置
+'Internal Error': 内部错误
+'DataBase Error': 数据库错误
+'Data Error': 数据错误
+'Data Not Found': 数据未找到
+'%expected% not equals %actual%': "%expected%不等于%actual%"
+'%key% of context not equals %expected%': context中%key%的值不等于%expected%
+'%key% of %data% not equals %expected%': 数组%data%中%key%的值不等于%expected%
+'Logic Error': 逻辑错误
+'Permission Error': 权限错误
+'Request Method Not Allowed': 请求方式不被允许
+'Request Parameter Error': 请求参数错误
+'Path Variable %field% Not Emprty': 路径变量：%field%不能为空
+'Path Variable %field% Must Be Required': 必须包含路径变量：%field%
+'Parameter Variable %field% Not Emprty': 参数变量：%field%不能为空
+'Parameter Variable %field% Must Be Required': 必须包含参数变量：%field%
+'%key% of context not exists': context中不存在：%key%
+'%key% of context is empty': context中：%key%为空
+'%key% of %data% not exists': "%data%中不存在：%key%"
+'%key% of %data% is empty': "%data%中：%key%为空"
+'%data% contains one of %keyList%': "%data%至少包含%keyList%中的一个"
+'error key for set not exists in setting': 作用于设置的错误键不存在
+'error key for get not exists in setting': 作用于获取的错误键不存在
+'error key for remove not exists in setting': 作用于移除的错误键不存在
+'data key for set not exists in setting': 作用于设置的数据键不存在
+'data key for get not exists in setting': 作用于获取的数据键不存在
+'data key for unset not exists in setting': 作用于移除的数据键不存在
+'input key not exists in setting': 数据输入键不存在
+'APCu not supported.': APCu模块不支持
+'Invalid database type': 无效的数据库类型
+'Invalid db setting': 无效的数据库设置
+'No Support type: %type%': 不支持的类型：%type%
+'crumb check failed': crumb验证失败
+'validate has error': 验证出错
+'Resource Not Found': 资源不存在
+'Page Not Found': 页面不存在
+'Module Not Found': 模块不存在
+'Module: %module%  Not Exists': 模块：%module%不存在
+'Property Bundle: %bundle% Not Exists': "property bundle: %bundle%不存在"
+'File: %file% Not Exists': 文件：%file%不存在
+'Language File: %file% Not Exists': 语言文件：%file%不存在
+'Record Not Exists': 记录不存在

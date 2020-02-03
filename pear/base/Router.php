@@ -233,7 +233,7 @@ class Router implements \ArrayAccess
     {
         if (!isset($this->_router[$routerName])) {
             throw new BusinessException(BusinessException::INVALID_CONFIG_SET_MSG,
-                    BusinessException::INVALID_CONFIG_SET_CODE
+                    BusinessException::INVALID_CONFIG_SET_CODE, ['setting' => 'router: '. $routerName]
             );
         }
         $query   = $params;
@@ -298,7 +298,7 @@ class Router implements \ArrayAccess
             foreach ($config as $name => $value) {
                 if (!isset($value['path'])) {
                     throw new BusinessException(
-                        BusinessException::INVALID_CONFIG_SET_MSG, BusinessException::INVALID_CONFIG_SET_CODE);
+                        BusinessException::INVALID_CONFIG_SET_MSG, BusinessException::INVALID_CONFIG_SET_CODE, ['setting' => 'route path']);
                 }
                 $search  = array('#');
                 $replace = array('\#');

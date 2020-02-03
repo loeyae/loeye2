@@ -168,7 +168,7 @@ class ModuleDefinition
                 throw new BusinessException(
                     BusinessException::INVALID_MODULE_SET_MSG,
                     BusinessException::INVALID_MODULE_SET_CODE,
-                    ["{mode}"=>"inputs"]
+                    ["mode"=>"inputs"]
                 );
             }
             $inputs = $this->_currentModule['inputs'];
@@ -180,7 +180,7 @@ class ModuleDefinition
                 throw new BusinessException(
                     BusinessException::INVALID_MODULE_SET_MSG,
                     BusinessException::INVALID_MODULE_SET_CODE,
-                    ["{mode}"=>"setting"]
+                    ["mode"=>"setting"]
                 );
             }
             $setting = $this->_currentModule['setting'];
@@ -247,7 +247,8 @@ class ModuleDefinition
                 } else {
                     throw new ResourceException(
                         ResourceException::MODULE_NOT_EXISTS_MSG,
-                        ResourceException::MODULE_NOT_EXISTS_CODE
+                        ResourceException::MODULE_NOT_EXISTS_CODE,
+                        ['module' => $plugin['include_module']]
                     );
                 }
             } else {
@@ -277,7 +278,7 @@ class ModuleDefinition
                 }
             }
         }
-        throw new ResourceException(ResourceException::MODULE_NOT_FOUND_MSG, ResourceException::MODULE_NOT_FOUND_CODE);
+        throw new ResourceException(ResourceException::MODULE_NOT_EXISTS_MSG, ResourceException::MODULE_NOT_EXISTS_CODE, ['module' => $moduleId]);
     }
 
     /**

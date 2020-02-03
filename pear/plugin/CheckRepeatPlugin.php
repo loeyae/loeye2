@@ -47,7 +47,7 @@ class CheckRepeatPlugin extends \loeye\std\Plugin
             if (Cookie::getCookie($this->cookieName) == $crumb) {
                 $context->set('repeat_submit', true);
                 if (\loeye\base\Utils::getData($inputs, 'throw_error') == true) {
-                    $errmsg = '重复请求';
+                    $errmsg = 'repeated request';
                     throw new \loeye\base\Exception($errmsg, PermissionException::REPEAT_ERROR_CODE);
                 }
                 $context->set('page_timeout', true);
@@ -62,7 +62,7 @@ class CheckRepeatPlugin extends \loeye\std\Plugin
                     $outputPlugin = new OutputPlugin();
                     $inputsData   = ['format' => $inputs['output'],
                         'code'   => PermissionException::REPEAT_ERROR_CODE,
-                        'msg'    => '重复请求'];
+                        'msg'    => 'repeated request'];
                     $outputPlugin->process($context, $inputsData);
                 }
             }

@@ -43,19 +43,19 @@ class PrivacyCookiePlugin extends \loeye\std\Plugin
                 if (is_numeric($key)) {
                     continue;
                 }
-                Cookie::setCookie($key, $value);
+                \loeye\lib\Cookie::setCookie($key, $value);
             }
         }
         $key  = \loeye\base\Utils::getData($inputs, 'get', null);
         $data = array();
         if (empty($key)) {
-            $cookie = Cookie::getCookie() or $cookie = array();
+            $cookie = \loeye\lib\Cookie::getCookie() or $cookie = array();
             foreach ($cookie as $key => $value) {
                 $data[$key] = $value;
             }
         } else {
             foreach ((array) $key as $item) {
-                $data[$item] = Cookie::getCookie($item);
+                $data[$item] = \loeye\lib\Cookie::getCookie($item);
             }
         }
         \loeye\base\Utils::setContextData($data, $context, $inputs, $this->outKey);

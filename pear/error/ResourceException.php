@@ -37,16 +37,16 @@ class ResourceException extends \loeye\base\Exception
     const MODULE_NOT_FOUND_MSG = "Module Not Found";
 
     const MODULE_NOT_EXISTS_CODE = 404010;
-    const MODULE_NOT_EXISTS_MSG = "Module Not Exists";
+    const MODULE_NOT_EXISTS_MSG = "Module: %module% Not Exists";
 
     const BUNDLE_NOT_FOUND_CODE = 404020;
-    const BUMDLE_NOT_FOUND_MSG = "Property Bundle Not Exists";
+    const BUMDLE_NOT_FOUND_MSG = "Property Bundle: %bundle% Not Exists";
 
     const FILE_NOT_FOUND_CODE   = 404030;
-    const FILE_NOT_FOUND_MSG   = "File Not Exists";
+    const FILE_NOT_FOUND_MSG   = "File: %file% Not Exists";
 
     const LANGUAGE_FILE_NOT_FOUND_CODE   = 404031;
-    const LANGUAGE_FILE_NOT_FOUND_MSG   = "Language File Not Exists";
+    const LANGUAGE_FILE_NOT_FOUND_MSG   = "Language File: %file% Not Exists";
 
     const RECORD_NOT_FOUND_CODE   = 404032;
     const RECORD_NOT_FOUND_MSG   = "Record Not Exists";

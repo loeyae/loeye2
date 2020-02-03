@@ -102,7 +102,6 @@ class Request
      * @param string $mothed method
      *
      * @return void
-     * @throws Exception
      */
     public function setMethod($mothed = 'GET')
     {

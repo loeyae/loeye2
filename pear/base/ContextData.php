@@ -38,11 +38,11 @@ class ContextData
      * @var int
      */
     protected $allowAccessTimes = 0;
-    
+
     /**
      * accessed times
-     * 
-     * @var int 
+     *
+     * @var int
      */
     protected $accessedTimes = 0;
 
@@ -70,7 +70,7 @@ class ContextData
     {
         return new self($data, $expire);
     }
-    
+
     public function getData()
     {
         return $this->data;
@@ -137,6 +137,9 @@ class ContextData
      */
     public function expire($expire = 1)
     {
+        if (null == $expire) {
+            $expire = 1;
+        }
         $this->allowAccessTimes = $expire;
         $this->accessedTimes = 0;
     }
