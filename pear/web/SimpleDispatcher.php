@@ -51,6 +51,7 @@ class SimpleDispatcher extends \loeye\std\Dispatcher
             $this->initIOObject($moduleId ?? $this->module);
             $this->initAppConfig();
             $this->initConfigConstants();
+            $this->initLogger();
             $this->setTimezone();
             $this->initComponent();
             $object = $this->excuteModule();
