@@ -24,8 +24,7 @@ use Symfony\Component\Translation as I18n;
  *
  * @author   Zhang Yi <loeyae@gmail.com>
  */
-class Translater
-{
+class Translater {
 
     private $_locale = "zh_CN";
 
@@ -35,6 +34,7 @@ class Translater
      */
     protected $translater;
 
+
     /**
      * __construct
      *
@@ -42,10 +42,22 @@ class Translater
      */
     public function __construct(AppConfig $appConfig)
     {
-        $this->_locale = $appConfig->getLocale() ?? $this->_locale;
-        $this->translater = new I18n\Translator( $this->_locale );
+        $this->_locale    = $appConfig->getLocale() ?? $this->_locale;
+        $this->translater = new I18n\Translator($this->_locale);
         $loader           = new I18n\Loader\YamlFileLoader();
-        $resourseDir      = PROJECT_LOCALE_DIR . '/' . $appConfig->getPropertyName();
+        $this->initFrameworkResource();
+        $this->initProjectResource();
+        $this->translater->addLoader('yml', $loader);
+    }
+
+    /**
+     * initFrameworkResource
+     * 
+     * @return void
+     */
+    protected function initFrameworkResource()
+    {
+        $resourseDir = LOEYE_DIR . DIRECTORY_SEPARATOR . 'resource';
         foreach (new \FilesystemIterator($resourseDir, \FilesystemIterator::KEY_AS_FILENAME) as $key => $item) {
             if (!$item->isFile()) {
                 continue;
@@ -55,16 +67,40 @@ class Translater
             $lang = substr($key, $lpos + 1, $rpos - $lpos - 1);
             $this->translater->addResource('yml', $item->getRealPath(), $lang);
         }
-        $this->translater->addLoader('yml', $loader);
     }
+
+
+    /**
+     * initProjectResource
+     * 
+     * @return void
+     */
+    protected function initProjectResource()
+    {
+        $resourseDir = PROJECT_LOCALE_DIR . DIRECTORY_SEPARATOR . $appConfig->getPropertyName();
+        if (file_exists($resourseDir)) {
+            foreach (new \FilesystemIterator($resourseDir, \FilesystemIterator::KEY_AS_FILENAME) as $key => $item) {
+                if (!$item->isFile()) {
+                    continue;
+                }
+                $lpos = strpos($key, ".");
+                $rpos = strrpos($key, ".");
+                $lang = substr($key, $lpos + 1, $rpos - $lpos - 1);
+                $this->translater->addResource('yml', $item->getRealPath(), $lang);
+            }
+        }
+    }
+
 
     /**
      * 
      * @return type
      */
-    public function getLocale() {
+    public function getLocale()
+    {
         return $this->_locale;
     }
+
 
     /**
      * getString
@@ -77,6 +113,7 @@ class Translater
     {
         return $this->translater->trans($string);
     }
+
 
     /**
      * getReplacedString
@@ -93,6 +130,7 @@ class Translater
         $string = $this->getString($key);
         return str_replace($search, $replace, $string, $count);
     }
+
 
     /**
      * getFormatString
