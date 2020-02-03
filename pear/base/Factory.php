@@ -213,14 +213,14 @@ class Factory
                 margin: 0px auto;
             }
             #main {
-                width: 400px;
+                width: 100%;
                 height: auto;
                 margin-top: 100px;
                 margin-left: auto;
                 margin-right: auto;
             }
             #main div {
-                width: 400px;
+                width: 90%;
                 height: auto;
                 line-height: 30px;
                 text-align:center;
@@ -231,7 +231,7 @@ class Factory
                 font-size: 1.1em;
                 color: #ff0000;
                 padding: 10px;
-                margin-bottom: 10px;
+                margin: 10px auto;
             }
             #main div span {
                 margin-right: 10px;
@@ -242,6 +242,7 @@ class Factory
         <div id="main">
             <div><span>error code: </span>{$e->getCode()}</div>
             <div><span>error message: </span>{$e->getMessage()}</div>
+            <div><span>error trace info:</span>{$e->getTraceAsString()}</div>
         </div>
     </body>
 </html>
