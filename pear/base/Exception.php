@@ -27,6 +27,11 @@ namespace loeye\base;
  */
 function ExceptionHandler(\Exception $exc, Context $context)
 {
+    if (!($exc instanceof Exception)) {
+        $errorCode = $exc->getCode();
+        $errorMessage = $exc->getMessage();
+        Logger::trace($errorMessage, $errorCode, $exc->getFile(), $exc->getLine(), Logger::LOEYE_LOGGER_TYPE_ERROR);
+    }
     $format = null;
     if ($context->getRequest() instanceof \loeye\web\Request) {
         $format = $context->getRequest()->getFormatType();
@@ -92,7 +97,7 @@ class Exception extends \Exception
      */
     public function __construct(string $errorMessage = self::DEFAULT_ERROR_MSG, int $errorCode = self::DEFAULT_ERROR_CODE, array $parameter = [])
     {
-        $appConfig = new AppConfig(PROJECT_PROPERTY);
+        $appConfig = defined('PROJECT_PROPERTY') ? new AppConfig(PROJECT_PROPERTY) : null;
         $translater = new Translater($appConfig);
         $parameters = [];
         foreach ($parameter as $key => $value) {
