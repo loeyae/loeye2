@@ -41,10 +41,12 @@ class Translater
      *
      * @param \loeye\base\AppConfig $appConfig AppConfig instance
      */
-    public function __construct(AppConfig $appConfig)
+    public function __construct(AppConfig $appConfig = null)
     {
-        $this->_locale    = $appConfig->getLocale() ?? $this->_locale;
-        $this->_domain    = $appConfig->getSetting('locale.basename', $this->_domain);
+        if ($appConfig) {
+            $this->_locale = $appConfig->getLocale();
+            $this->_domain = $appConfig->getSetting('locale.basename', $this->_domain);
+        }
         $this->translater = new I18n\Translator($this->_locale);
         $loader           = new I18n\Loader\YamlFileLoader();
         $this->initFrameworkResource();
@@ -77,10 +79,15 @@ class Translater
     /**
      * initProjectResource
      *
+     * @param \loeye\base\AppConfig $appConfig AppConfig instance
+     *
      * @return void
      */
-    protected function initProjectResource($appConfig)
+    protected function initProjectResource(AppConfig $appConfig = null)
     {
+        if (!$appConfig) {
+            return ;
+        }
         $resourseDir = PROJECT_LOCALE_DIR . DIRECTORY_SEPARATOR . $appConfig->getPropertyName();
         if (file_exists($resourseDir)) {
             foreach (new \FilesystemIterator($resourseDir, \FilesystemIterator::KEY_AS_FILENAME) as $key => $item) {
