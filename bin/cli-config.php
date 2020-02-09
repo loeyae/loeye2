@@ -8,13 +8,21 @@
  */
 use Doctrine\ORM\Tools\Console\ConsoleRunner;
 
-define('LOEYE_MODE', 'prod');
+if (!defined('LOEYE_MODE')) {
+    define('LOEYE_MODE', 'dev');
+}
 
+if (count($_SERVER['argv']) < 3) {
+    echo "Usage: command property db-id doctrine-command";
+    exit(0);
+}
 $property        = $_SERVER['argv'][1];
+$dbId = $_SERVER['argv'][2];
 unset($_SERVER['argv'][1]);
+unset($_SERVER['argv'][2]);
 $_SERVER['argv'] = array_values($_SERVER['argv']);
 $appConfig       = new \loeye\base\AppConfig($property);
-$dbKey           = $appConfig->getSetting('application.database') ?? 'default';
+$dbKey           = $appConfig->getSetting('application.database.'.$dbId) ?? 'default';
 $config          = new \loeye\base\Configuration($property, 'database');
 $dbSetting       = $config->get($dbKey);
 if (!$dbSetting) {

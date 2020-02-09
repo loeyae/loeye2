@@ -72,7 +72,7 @@ class EntityManager
         // register annotation driver for our application Entity fully qualified namespace
         $driverChain->setDefaultDriver($annotationDriver);
         // general ORM configuration
-        $config = Setup::createAnnotationMetadataConfiguration([], static::$isDevMode);
+        $config = Setup::createAnnotationMetadataConfiguration([], static::$isDevMode, self::$proxiesDir, $cache);
         $config->setProxyDir(self::$proxiesDir);
 //        $config->setProxyNamespace('\\'. PROJECT_NAMESPACE .'\\models\\proxy\\'. $property);
         $config->setAutoGenerateProxyClasses(false); // this can be based on production config.
