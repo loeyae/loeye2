@@ -13,7 +13,10 @@ if (!defined('LOEYE_MODE')) {
 }
 
 if (count($_SERVER['argv']) < 3) {
-    echo "Usage: command property db-id doctrine-command";
+    echo ' '.PHP_EOL;
+    echo '             Not enough arguments (missing: "property, db-id").'.PHP_EOL;
+    echo ' '.PHP_EOL;
+    echo 'loeye-orm <property> <db-id> [command] [--]'.PHP_EOL;
     exit(0);
 }
 $property        = $_SERVER['argv'][1];
