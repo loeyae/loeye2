@@ -13,25 +13,48 @@ if (!defined('LOEYE_MODE')) {
 }
 
 if (count($_SERVER['argv']) < 3) {
-    echo ' '.PHP_EOL;
-    echo '             Not enough arguments (missing: "property, db-id").'.PHP_EOL;
-    echo ' '.PHP_EOL;
-    echo 'loeye-orm <property> <db-id> [command] [--]'.PHP_EOL;
+    echo ' ' . PHP_EOL;
+    echo '             Not enough arguments (missing: "property, db-id").' . PHP_EOL;
+    echo ' ' . PHP_EOL;
+    echo 'loeye-orm <property> <db-id> [command] [--]' . PHP_EOL;
     exit(0);
 }
 $property        = $_SERVER['argv'][1];
-$dbId = $_SERVER['argv'][2];
+$dbId            = $_SERVER['argv'][2];
 unset($_SERVER['argv'][1]);
 unset($_SERVER['argv'][2]);
 $_SERVER['argv'] = array_values($_SERVER['argv']);
-$appConfig       = new \loeye\base\AppConfig($property);
-$dbKey           = $appConfig->getSetting('application.database.'.$dbId) ?? 'default';
-$config          = new \loeye\base\Configuration($property, 'database');
-$dbSetting       = $config->get($dbKey);
+$command         = $_SERVER['argv'][1];
+if ($command == 'convert:mapping') {
+    $_SERVER['argv'][1] = 'orm:convert-mapping';
+    array_push($_SERVER['argv'], '--from-database');
+    array_push($_SERVER['argv'], '-f');
+    array_push($_SERVER['argv'], '--namespace=app\\models\\entity\\' . $property . '\\');
+    array_push($_SERVER['argv'], 'annotation');
+    array_push($_SERVER['argv'], realpath(PROJECT_DIR .'/../'));
+} else if ($command == 'generate:proxies') {
+    $_SERVER['argv'][1] = 'orm:generate-proxies';
+    array_push($_SERVER['argv'], realpath(PROJECT_DIR .'/../'));
+} else if ($command == 'generate:repositories') {
+    $_SERVER['argv'][1] = 'orm:generate-repositories';
+    array_push($_SERVER['argv'], realpath(PROJECT_DIR .'/../'));
+} else if ($command == 'generate:entities') {
+    $_SERVER['argv'][1] = 'orm:generate-entities';
+    array_push($_SERVER['argv'], '--generate-annotations=true');
+    array_push($_SERVER['argv'], '--regenerate-entities=true');
+    array_push($_SERVER['argv'], '--update-entities=true');
+    array_push($_SERVER['argv'], '--generate-methods=true');
+    array_push($_SERVER['argv'], '--no-backup');
+    array_push($_SERVER['argv'], realpath(PROJECT_DIR .'/../'));
+}
+$appConfig = new \loeye\base\AppConfig($property);
+$dbKey     = $appConfig->getSetting('application.database.' . $dbId) ?? 'default';
+$config    = new \loeye\base\Configuration($property, 'database');
+$dbSetting = $config->get($dbKey);
 if (!$dbSetting) {
     throw new Exception('Invalid database setting: ' . $dbKey . '.');
 }
-$entityManager = \loeye\database\EntityManager::getManager($dbSetting, true);
+$entityManager = \loeye\database\EntityManager::getManager($dbSetting, $property);
 $platform      = $entityManager->getConnection()->getDatabasePlatform();
 $platform->registerDoctrineTypeMapping("enum", "string");
 $platform->registerDoctrineTypeMapping("set", "string");
