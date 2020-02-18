@@ -24,7 +24,7 @@ $dbId            = $_SERVER['argv'][2];
 unset($_SERVER['argv'][1]);
 unset($_SERVER['argv'][2]);
 $_SERVER['argv'] = array_values($_SERVER['argv']);
-$command         = $_SERVER['argv'][1];
+$command         = isset($_SERVER['argv'][1]) ? $_SERVER['argv'][1] : null;
 if ($command == 'convert:mapping') {
     $_SERVER['argv'][1] = 'orm:convert-mapping';
     array_push($_SERVER['argv'], '--from-database');

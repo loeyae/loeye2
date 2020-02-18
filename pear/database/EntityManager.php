@@ -74,6 +74,8 @@ class EntityManager
         // general ORM configuration
         $config = Setup::createAnnotationMetadataConfiguration([], static::$isDevMode, self::$proxiesDir, $cache);
         $config->setProxyDir(self::$proxiesDir);
+//        $repositoryFactory = new \Doctrine\ORM\Repository\DefaultRepositoryFactory();
+//        $config->setRepositoryFactory($repositoryFactory);
 //        $config->setProxyNamespace('\\'. PROJECT_NAMESPACE .'\\models\\proxy\\'. $property);
         $config->setAutoGenerateProxyClasses(false); // this can be based on production config.
         // register metadata driver
