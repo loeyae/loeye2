@@ -43,7 +43,7 @@ trait EntityTrait
      *
      * @return obejct
      */
-    public function insert($data)
+    public function insert($data): object
     {
         $entity = \loeye\base\Utils::source2entity($data, $this->entityClass);
         $this->db->save($entity);
@@ -57,7 +57,7 @@ trait EntityTrait
      *
      * @return obejct
      */
-    public function get($id)
+    public function get($id): object
     {
         return $this->db->entity($this->entityClass, $id);
     }
@@ -69,7 +69,7 @@ trait EntityTrait
      *
      * @return type
      */
-    public function update($id, $data)
+    public function update($id, $data): object
     {
         $entity = $this->entity($id);
         \loeye\base\Utils::checkNotNull($entity);
@@ -85,7 +85,7 @@ trait EntityTrait
      *
      * @return boolean
      */
-    public function delete($id)
+    public function delete($id): bool
     {
         $entity = $this->entity($id);
         \loeye\base\Utils::checkNotNull($entity);

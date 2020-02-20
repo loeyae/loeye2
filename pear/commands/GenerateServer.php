@@ -25,16 +25,17 @@ use \Symfony\Component\Console\{
  */
 class GenerateServer extends Command {
 
-    protected $name             = 'loeye:generate-server';
-    protected $args             = [
-        ['property', 'required' => true, 'help' => 'The application property name.'],
-        ['dest-path', 'required' => false, 'help' => 'The path to generate your server classes.', 'default' => null]
+    use \loeye\console\helper\EntityGeneratorTraite;
+
+    protected $args   = [
+        ['property', 'required' => true, 'help' => 'The application property name.']
     ];
-    protected $params           = [
+    protected $params = [
         ['db-id', 'd', 'required' => false, 'help' => 'database setting id', 'default' => 'default'],
         ['filter', 'f', 'required' => false, 'help' => 'filter', 'default' => null],
         ['force', null, 'required' => false, 'help' => 'force update file', 'default' => false],
     ];
+    protected $name             = 'loeye:generate-server';
     protected static $_template = '<?php
 
 namespace <namespace>;
@@ -53,74 +54,32 @@ class <className> extends <serverName>
 
 
     /**
-     * process
-     *
-     * @param \Symfony\Component\Console\Input\InputInterface $input
-     * @param \Symfony\Component\Console\Output\OutputInterface $output
-     *
-     * @return void
+     * generateFile
+     * 
+     * @param \Symfony\Component\Console\Style\SymfonyStyle $ui
+     * @param \Doctrine\Persistence\Mapping\ClassMetadata   $metadata
+     * @param string                                        $namespace
+     * @param string                                        $destPath
      */
-    public function process(InputInterface $input, OutputInterface $output)
+    protected function generateFile(\Symfony\Component\Console\Style\SymfonyStyle $ui, \Doctrine\Persistence\Mapping\ClassMetadata $metadata, $namespace, $destPath, $force)
     {
-        $property = $input->getArgument('property');
-        $force    = $input->getOption('force');
-        $ui       = new \Symfony\Component\Console\Style\SymfonyStyle($input, $output);
+        $className     = $this->getClassNmae($metadata->reflClass->name);
+        $entityClass   = $this->getEntityClass($metadata->reflClass->name);
+        $fullClassName = $namespace . '\\' . $className;
+        $ui->text(sprintf('Processing Server "<info>%s</info>"', $fullClassName));
+        $this->writeServerClass($namespace, $className, $entityClass, $destPath, $force);
+    }
 
-        $appConfig = $this->loadAppConfig($property);
-        $type      = $input->getOption('db-id');
-        $db        = \loeye\base\DB::getInstance($appConfig, $type);
-        $em        = $db->em();
 
-        $metadatas = $em->getMetadataFactory()->getAllMetadata();
-        $metadatas = \Doctrine\ORM\Tools\Console\MetadataFilter::filter($metadatas, $input->getOption('filter'));
-
-        $destPath = $input->getArgument('dest-path');
-
-        if (!$destPath) {
-            $destPath = PROJECT_MODELS_DIR . D_S . 'server' . D_S . $property;
-        }
-
-        if (!file_exists($destPath)) {
-            $fileSystem = new \Symfony\Component\Filesystem\Filesystem();
-            $fileSystem->mkdir($destPath);
-            $destPath   = realpath($destPath);
-        }
-
-        if (!is_writable($destPath)) {
-            throw new \InvalidArgumentException(
-                    sprintf("Entities destination directory '<info>%s</info>' does not have write permissions.", $destPath)
-            );
-        }
-
-        if (empty($metadatas)) {
-            $ui->success('No Metadata Classes to process.');
-            return 0;
-        }
-        $namespace = $this->getNamespace($destPath);
-
-        $numRepositories = 0;
-
-        foreach ($metadatas as $metadata) {
-            if ($metadata->reflFields) {
-                $className     = $this->getClassNmae($metadata->reflClass->name);
-                $entityClass   = $this->getEntityClass($metadata->reflClass->name);
-                $fullClassName = $namespace . '\\' . $className;
-                $ui->text(sprintf('Processing Server "<info>%s</info>"', $fullClassName));
-                $this->writeServerClass($namespace, $className, $entityClass, $destPath, $force);
-                ++$numRepositories;
-            }
-        }
-
-        if ($numRepositories === 0) {
-            $ui->text('No Repository classes were found to be processed.');
-            return 0;
-        }
-
-        // Outputting information message
-        $ui->newLine();
-        $ui->text(sprintf('Repository classes generated to "<info>%s</info>"', $destPath));
-
-        return 0;
+    /**
+     * 
+     * @param InputInterface $input
+     * 
+     * @return string
+     */
+    protected function getDestPath(InputInterface $input)
+    {
+        return PROJECT_MODELS_DIR . D_S . 'server' . D_S . $input->getArgument('property');
     }
 
 
@@ -133,19 +92,6 @@ class <className> extends <serverName>
     protected function getEntityClass($className)
     {
         return '\\' . $className . '::class';
-    }
-
-
-    /**
-     * getNamespace
-     * 
-     * @param string $destDir
-     * @return string
-     */
-    protected function getNamespace($destDir)
-    {
-        $dir = substr($destDir, strlen(PROJECT_DIR) + 1);
-        return PROJECT_NAMESPACE . '\\' . $dir;
     }
 
 
@@ -195,18 +141,7 @@ class <className> extends <serverName>
     {
         $code = $this->generateServerClass($namespace, $className, $entityClass);
 
-        $path = $outputDirectory . \DIRECTORY_SEPARATOR
-                . str_replace('\\', \DIRECTORY_SEPARATOR, $className) . '.php';
-        $dir  = dirname($path);
-
-        if (!is_dir($dir)) {
-            mkdir($dir, 0775, true);
-        }
-
-        if ($force || !file_exists($path)) {
-            file_put_contents($path, $code);
-            chmod($path, 0664);
-        }
+        $this->writeFile($outputDirectory, $className, $code, $force);
     }
 
 }
