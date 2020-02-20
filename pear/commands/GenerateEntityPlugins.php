@@ -84,7 +84,7 @@ abstract class <className> extends Plugin
         $data = null;
         $error = null;
         \loeye\base\Utils::filterResult($result, $data, $error);
-        \loeye\base\Utils::setContextData($result, $context, $inputs, $this->outDataKey);
+        \loeye\base\Utils::setContextData($data, $context, $inputs, $this->outDataKey);
         if ($error) {
             \loeye\base\Utils::addErrors($error, $context, $inputs, $this->outErrorsKey);
         }
