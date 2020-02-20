@@ -132,7 +132,7 @@ class <className> extends <abstractClassName>
      */
     protected function execute(\loeye\base\Context $context, array $inputs, $type)
     {
- <paramsStatement>
+<paramsStatement>
         $this->server-><method>(<params>);
     }
 
