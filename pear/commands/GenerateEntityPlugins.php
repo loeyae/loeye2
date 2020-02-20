@@ -196,7 +196,7 @@ EOF;
      */
     protected function getEntityName($fullClassName)
     {
-        return strtolower(substr($fullClassName, strrpos($fullClassName, '\\') + 1));
+        return lcfirst(substr($fullClassName, strrpos($fullClassName, '\\') + 1));
     }
 
 
