@@ -47,7 +47,7 @@ namespace <namespace>;
  */
 class <className> extends <serverName>
 {
-    
+    protected $entityClass = <entityClass>;
 }
 ';
 
@@ -103,9 +103,10 @@ class <className> extends <serverName>
         foreach ($metadatas as $metadata) {
             if ($metadata->reflFields) {
                 $className     = $this->getClassNmae($metadata->reflClass->name);
+                $entityClass   = $this->getEntityClass($metadata->reflClass->name);
                 $fullClassName = $namespace . '\\' . $className;
                 $ui->text(sprintf('Processing Server "<info>%s</info>"', $fullClassName));
-                $this->writeServerClass($namespace, $className, $destPath, $force);
+                $this->writeServerClass($namespace, $className, $entityClass, $destPath, $force);
                 ++$numRepositories;
             }
         }
@@ -120,6 +121,18 @@ class <className> extends <serverName>
         $ui->text(sprintf('Repository classes generated to "<info>%s</info>"', $destPath));
 
         return 0;
+    }
+
+
+    /**
+     * getEntityClass
+     * 
+     * @param string $className
+     * @return type
+     */
+    protected function getEntityClass($className)
+    {
+        return '\\' . $className . '::class';
     }
 
 
@@ -153,14 +166,16 @@ class <className> extends <serverName>
      * 
      * @param string $namespace
      * @param string $className
+     * @param string $entityClass
      * @return string
      */
-    protected function generateServerClass($namespace, $className)
+    protected function generateServerClass($namespace, $className, $entityClass)
     {
         $variables = [
-            '<namespace>'  => $namespace,
-            '<serverName>' => 'loeye\\database\\Server',
-            '<className>'  => $className,
+            '<namespace>'   => $namespace,
+            '<serverName>'  => '\\loeye\\database\\Server',
+            '<className>'   => $className,
+            '<entityClass>' => $entityClass,
         ];
 
         return str_replace(array_keys($variables), array_values($variables), self::$_template);
@@ -172,12 +187,13 @@ class <className> extends <serverName>
      * 
      * @param string  $namespace
      * @param string  $className
+     * @prara String  $entityClass
      * @param string  $outputDirectory
      * @param boolean $force
      */
-    public function writeServerClass($namespace, $className, $outputDirectory, $force = false)
+    public function writeServerClass($namespace, $className, $entityClass, $outputDirectory, $force = false)
     {
-        $code = $this->generateServerClass($namespace, $className);
+        $code = $this->generateServerClass($namespace, $className, $entityClass);
 
         $path = $outputDirectory . \DIRECTORY_SEPARATOR
                 . str_replace('\\', \DIRECTORY_SEPARATOR, $className) . '.php';
