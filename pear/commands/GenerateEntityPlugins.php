@@ -80,7 +80,7 @@ abstract class <className> extends Plugin
         $type = \loeye\base\Utils::getContextData($context, $inputs, $this->dbId);
         $rfc = new \ReflectionClass($this->serverName);
         $this->server = $rfc->newInstance($context->getAppConfig(), $type);
-        $result = $this->excute($context, $inputs, $type);
+        $result = $this->execute($context, $inputs, $type);
         $data = null;
         $error = null;
         \loeye\base\Utils::filterResult($result, $data, $error);
