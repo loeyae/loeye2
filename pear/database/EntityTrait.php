@@ -55,9 +55,9 @@ trait EntityTrait
      *
      * @param mixed $id
      *
-     * @return obejct
+     * @return obejct|null
      */
-    public function get($id): object
+    public function get($id): ?object
     {
         return $this->db->entity($this->entityClass, $id);
     }

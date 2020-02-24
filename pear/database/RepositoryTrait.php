@@ -45,9 +45,9 @@ trait RepositoryTrait {
      * @param array $criteria
      * @param mixed $orderBy
      *
-     * @return object
+     * @return object|null
      */
-    public function one(array $criteria, $orderBy = null): object
+    public function one(array $criteria, $orderBy = null): ?object
     {
         return $this->db->one($this->entityClass, $criteria, $orderBy);
     }
@@ -62,9 +62,9 @@ trait RepositoryTrait {
      * @param int|null   $start
      * @param int|null   $offset
      *
-     * @return array
+     * @return array|null
      */
-    public function all($criteria = null, $orderBy = null, $start = null, $offset = null): array
+    public function all($criteria = null, $orderBy = null, $start = null, $offset = null): ?array
     {
         if (is_null($criteria)) {
             return $this->db->repository($this->entityClass)->findAll();
@@ -81,11 +81,11 @@ trait RepositoryTrait {
      * @param mixed $orderBy
      * @param mixed $groupBy
      * 
-     * @return array
+     * @return array|null
      *
      * @throws \loeye\error\BusinessException
      */
-    public function page($query, $start = 0, $offset = 10, $orderBy = null, $groupBy = null, $having = null): array
+    public function page($query, $start = 0, $offset = 10, $orderBy = null, $groupBy = null, $having = null): ?array
     {
         if ($query instanceof \Doctrine\ORM\Query) {
             $query->setFirstResult($start)->setMaxResults($offset);
