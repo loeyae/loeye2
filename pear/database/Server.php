@@ -48,7 +48,7 @@ class Server
     public function __construct(\loeye\base\AppConfig $appConfig, $type = null, $singleConnection = true)
     {
         if ($singleConnection) {
-            $this->db = \loeye\base\DB::getInstance($appConfig, $type);
+            $this->db = \loeye\base\DB::getInstance($appConfig, $type, is_bool($singleConnection) ? null : (string) $singleConnection);
         } else {
             $this->db = new \loeye\base\DB($appConfig, $type);
         }
