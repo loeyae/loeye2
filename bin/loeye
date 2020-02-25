@@ -10,9 +10,22 @@
 
 mb_internal_encoding('UTF-8');
 
-define('LOEYE_MODE', 'prod');
-define('APP_BASE_DIR', getcwd());
-define("PROJECT_DIR", realpath(APP_BASE_DIR .'/app'));
+define('BASE_DIR', realpath(__DIR__ . '/../'));
+
+$projectDirs = [
+    __DIR__ . '/../app',
+    __DIR__ . '/../../app',
+    __DIR__ . '/../../../app',
+    __DIR__ . '/../../../../app',
+];
+
+foreach ($projectDirs as $projectDir) {
+    if (file_exists($projectDir)) {
+        define('LOEYE_MODE', 'dev');
+        define("PROJECT_DIR", realpath($projectDir));
+        break;
+    }
+}
 
 $autoloadFiles = [
     __DIR__ . '/../vendor/autoload.php',

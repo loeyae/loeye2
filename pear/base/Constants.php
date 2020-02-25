@@ -41,7 +41,7 @@ if (!defined('PROJECT_NAMESPACE')) {
 }
 
 if (!defined("PROJECT_DIR")) {
-    $projectDir = realpath(LOEYE_DIR . D_S.'..'.D_S . PROJECT_NAMESPACE) ?? realpath(LOEYE_DIR .D_S.'..'.D_S.'..'.D_S.'..'.D_S.'..'.D_S . PROJECT_NAMESPACE);
+    $projectDir = realpath(LOEYE_DIR . D_S.'..'.D_S . PROJECT_NAMESPACE) ? realpath(LOEYE_DIR . D_S.'..'.D_S . PROJECT_NAMESPACE) : realpath(LOEYE_DIR .D_S.'..'.D_S.'..'.D_S.'..'.D_S.'..'.D_S . PROJECT_NAMESPACE);
     if (false === $projectDir) {
         $projectDir = realpath(LOEYE_DIR.D_S.'..'.D_S.'tests');
         define('RUNTIME_DIR', $projectDir .D_S.'runtime');

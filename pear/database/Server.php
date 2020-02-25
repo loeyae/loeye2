@@ -45,9 +45,13 @@ class Server
      */
     protected $appConfig;
 
-    public function __construct(\loeye\base\AppConfig $appConfig, $type = null)
+    public function __construct(\loeye\base\AppConfig $appConfig, $type = null, $singleConnection = true)
     {
-        $this->db = \loeye\base\DB::getInstance($appConfig, $type);
+        if ($singleConnection) {
+            $this->db = \loeye\base\DB::getInstance($appConfig, $type, is_bool($singleConnection) ? null : (string) $singleConnection);
+        } else {
+            $this->db = new \loeye\base\DB($appConfig, $type);
+        }
     }
 
     /**
@@ -55,7 +59,7 @@ class Server
      *
      * @param object $entity
      */
-    public function setEntity($entity)
+    final public function setEntity($entity)
     {
         $this->entityClass = $entity;
     }
@@ -64,7 +68,7 @@ class Server
      *
      * @return obejct
      */
-    public function getEntity()
+    final public function getEntity()
     {
         return $this->entityClass;
     }

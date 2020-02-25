@@ -71,12 +71,14 @@ class DB
      *
      * @param \loeye\base\AppConfig $appConfig AppConfig
      * @param string|null           $type      type
+     * @param string|null           $sign      sign
      *
      * @return self
      */
-    static public function getInstance(AppConfig $appConfig, $type = null)
+    static public function getInstance(AppConfig $appConfig, $type = null, $sign = null)
     {
         $it = ($type ?? 'default');
+        $it = md5($it.$sign);
         if (!isset(self::$_instance[$it])) {
             self::$_instance[$it] = new self($appConfig, $type);
         }
