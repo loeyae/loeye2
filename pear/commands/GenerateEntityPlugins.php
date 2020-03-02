@@ -2,10 +2,10 @@
 
 /**
  * GenerateEntityPlugins.php
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"),
  * see LICENSE for more details: http://www.apache.org/licenses/LICENSE-2.0.
- * 
+ *
  * @author  Zhang Yi <loeyae@gmail.com>
  * @version SVN: $Id: Zhang Yi $
  */
@@ -23,7 +23,8 @@ use \Symfony\Component\Console\{
  *
  * @author   Zhang Yi <loeyae@gmail.com>
  */
-class GenerateEntityPlugins extends Command {
+class GenerateEntityPlugins extends Command
+{
 
     use \loeye\console\helper\EntityGeneratorTraite;
 
@@ -51,19 +52,19 @@ use \loeye\std\Plugin;
  */
 abstract class <className> extends Plugin
 {
-    
+
     protected $inDataKey = '<className>_input';
     protected $outDataKey = '<className>_output';
     protected $outErrorsKey = '<className>_errors';
-    
+
     /**
      *
      * @var \loeye\database\Server
      */
     protected $server;
-    
+
     protected $dbId = 'default';
-    
+
     protected $serverName;
 
     /**
@@ -89,7 +90,7 @@ abstract class <className> extends Plugin
             \loeye\base\Utils::addErrors($error, $context, $inputs, $this->outErrorsKey);
         }
     }
-    
+
     abstract protected function execute(\loeye\base\Context $context, array $inputs, $type);
 
 }
@@ -107,17 +108,17 @@ namespace <namespace>;
  */
 class <className> extends <abstractClassName>
 {
-    
+
     protected $inDataKey = '<className>_input';
     protected $outDataKey = '<className>_output';
     protected $outErrorsKey = '<className>_errors';
-    
+
     /**
      *
      * @var <serverClass>
      */
     protected $server;
-    
+
     protected $serverName = <serverClass>::class;
 
     /**
@@ -142,10 +143,9 @@ EOF;
         $<param> = \loeye\base\Utils::getData($context, '<className>_<param>');
 EOF;
 
-
     /**
      * generateFile
-     * 
+     *
      * @param \Symfony\Component\Console\Style\SymfonyStyle $ui
      * @param \Doctrine\Persistence\Mapping\ClassMetadata   $metadata
      * @param string                                        $namespace
@@ -162,11 +162,10 @@ EOF;
         $this->writePluginClass($ui, $namespace, $entityName, $abstractClassName, $serverClass, $destPath, $force);
     }
 
-
     /**
-     * 
+     *
      * @param InputInterface $input
-     * 
+     *
      * @return string
      */
     protected function getDestPath(InputInterface $input)
@@ -175,10 +174,9 @@ EOF;
         return $destPath;
     }
 
-
     /**
      * getServerClass
-     * 
+     *
      * @param string $className
      * @return type
      */
@@ -187,10 +185,9 @@ EOF;
         return '\\' . str_replace('entity', 'server', $className) . 'Server';
     }
 
-
     /**
      * getEntityName
-     * 
+     *
      * @param string $fullClassName
      * @return string
      */
@@ -199,10 +196,9 @@ EOF;
         return lcfirst(substr($fullClassName, strrpos($fullClassName, '\\') + 1));
     }
 
-
     /**
      * generateAbstractPluginClass
-     * 
+     *
      * @param string $namespace
      * @param string $className
      * @return string
@@ -217,10 +213,9 @@ EOF;
         return str_replace(array_keys($variables), array_values($variables), self::$_template);
     }
 
-
     /**
      * generatePluginClass
-     * 
+     *
      * @param string $namespace
      * @param string $className
      * @return string
@@ -232,7 +227,7 @@ EOF;
             '<className>'         => $className,
             '<abstractClassName>' => $abstractClassName,
             '<serverClass>'       => $serverClass,
-            '<method>'              => $method,
+            '<method>'            => $method,
             '<paramsStatement>'   => $paramsStatement,
             '<params>'            => $params,
             '<returnType>'        => $returnType,
@@ -241,10 +236,9 @@ EOF;
         return str_replace(array_keys($variables), array_values($variables), self::$_pluginTemplate);
     }
 
-
     /**
      * writeAbstactPluginClass
-     * 
+     *
      * @param \Symfony\Component\Console\Style\SymfonyStyle $ui
      * @param string         $namespace
      * @param string         $className
@@ -260,7 +254,17 @@ EOF;
         $this->writeFile($outputDirectory, $className, $code, $force);
     }
 
-
+    /**
+     * write plugin class
+     *
+     * @param \Symfony\Component\Console\Style\SymfonyStyle $ui
+     * @param string                                        $namespace
+     * @param string                                        $className
+     * @param string                                        $abstractClassName
+     * @param string                                        $serverClass
+     * @param string                                        $outputDirectory
+     * @param bool                                          $force
+     */
     public function writePluginClass(\Symfony\Component\Console\Style\SymfonyStyle $ui, $namespace, $className, $abstractClassName, $serverClass, $outputDirectory, $force = false)
     {
         $refClass = new \ReflectionClass($serverClass);
@@ -271,6 +275,9 @@ EOF;
             }
             $methodName = $method->getName();
             $returnType = $method->getReturnType();
+            if ($returnType == 'loeye\database\object') {
+                $returnType = str_replace('server', 'entity', substr($serverClass, 0, -6));
+            }
             $nClassName = ucfirst($className) . ucfirst($methodName) . 'Plugin';
 
             $fullClassName   = $namespace . '\\' . $nClassName;
@@ -283,7 +290,13 @@ EOF;
         }
     }
 
-
+    /**
+     * generate params statement
+     *
+     * @param \ReflectionMethod $method
+     * @param string            $className
+     * @return string
+     */
     protected function generateParamsStatement(\ReflectionMethod $method, $className)
     {
         $params = $method->getParameters();
@@ -297,7 +310,13 @@ EOF;
         return '';
     }
 
-
+    /**
+     * generate paramter statement
+     *
+     * @param \ReflectionParameter $param
+     * @param string               $className
+     * @return string
+     */
     protected function generateParamterStatement(\ReflectionParameter $param, $className)
     {
 
@@ -309,7 +328,12 @@ EOF;
         return str_replace(array_keys($variables), array_values($variables), self::$_statement);
     }
 
-
+    /**
+     * generate params
+     *
+     * @param \ReflectionMethod $method
+     * @return string
+     */
     protected function generateParams(\ReflectionMethod $method)
     {
         $params  = $method->getParameters();
@@ -319,7 +343,7 @@ EOF;
                 if ($carry) {
                     $carry .= ', $' . $item->getName();
                 } else {
-                    $carry = '$'. $item->getName();
+                    $carry = '$' . $item->getName();
                 }
                 return $carry;
             }, $initial);
