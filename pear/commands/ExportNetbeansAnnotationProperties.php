@@ -2,10 +2,10 @@
 
 /**
  * ExportNetbeansAnnotationProperties.php
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"),
  * see LICENSE for more details: http://www.apache.org/licenses/LICENSE-2.0.
- * 
+ *
  * @author  Zhang Yi <loeyae@gmail.com>
  * @version SVN: $Id: Zhang Yi $
  */
@@ -52,13 +52,20 @@ EOF;
             'root'      => 'gedmo\doctrine-extensions\lib',
             'instance'  => \Doctrine\Common\Annotations\Annotation::class,
             'short'     => 'Gedmo',
-        ]
+        ],
+        "Assert" => [
+            "namespace" => 'Symfony\Component\Validator\Constraints',
+            'root'      => 'symfony\validator\Constraints',
+            'instance'  => \Symfony\Component\Validator\Constraint::class,
+            'short'     => 'Assert',
+        ],
     ];
     private static $globalImports      = [
         'ignoreannotation' => 'Doctrine\Common\Annotations\Annotation\IgnoreAnnotation',
         'target'           => 'Doctrine\Common\Annotations\Annotation\Target',
     ];
     private static $globalIgnoredNames = [
+        'GroupSequence'              => true,
         'Gedmo\Slug'                 => true,
         'Gedmo\SlugHandler'          => true,
         'Gedmo\SlugHandlerOption'    => true,
@@ -143,7 +150,7 @@ EOF;
         $composerDir = realpath(LOEYE_DIR . '/../vendor');
         $messages    = [];
         foreach ($this->mapping as $key => $item) {
-            $dir = realpath($composerDir . D_S . $item['root'] . D_S . $item['namespace']);
+            $dir = realpath($composerDir . D_S . $item['root'] . D_S . $item['namespace']) ?: realpath($composerDir . D_S . $item['root']);
             foreach (new \IteratorIterator(new \FilesystemIterator($dir)) as $path => $fileInfo) {
                 if ($fileInfo->isFile()) {
                     $message = $this->parse($docParser, $input, $output, $fileInfo, $item);
@@ -160,7 +167,7 @@ EOF;
 
     /**
      * output
-     * 
+     *
      * @param InputInterface $input
      * @param OutputInterface $output
      * @param array           $messages
@@ -176,13 +183,12 @@ EOF;
 
     /**
      * parse
-     * 
+     *
      * @param DocParser       $docParser
      * @param InputInterface  $input
      * @param OutputInterface $output
      * @param \SplFileInfo    $fileInfo
-     * 
-     * @param type $item
+     * @param array           $item
      */
     protected function parse(DocParser $docParser, InputInterface $input, OutputInterface $output, \SplFileInfo $fileInfo, $item)
     {
@@ -190,7 +196,7 @@ EOF;
         $annotationName = $input->getOption("short") ? $item['short'] .'\\\\'.$fileInfo->getBaseName('.php') : str_replace('\\', '\\\\', ltrim($className, '\\'));
         try {
             $refClass = new \ReflectionClass($className);
-            if (!$refClass->isInterface()) {
+            if (!$refClass->isInterface() && !$refClass->isAbstract()) {
                 $annotations = $docParser->parse($refClass->getDocComment());
                 if ($annotations) {
                     foreach ($annotations as $annotation) {
@@ -212,9 +218,9 @@ EOF;
 
     /**
      * parseTarget
-     * 
+     *
      * @param array $targets
-     * 
+     *
      * @return string
      */
     protected function parseTarget($targets)
@@ -229,9 +235,9 @@ EOF;
 
     /**
      * parseProperties
-     * 
+     *
      * @param array $properties
-     * 
+     *
      * @return string
      */
     protected function parseProperties($properties)
@@ -246,11 +252,11 @@ EOF;
 
     /**
      * build
-     * 
+     *
      * @param string $annotation
      * @param string $types
      * @param string $params
-     * 
+     *
      * @return string
      */
     protected function build($annotation, $types, $params)
