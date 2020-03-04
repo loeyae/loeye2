@@ -642,7 +642,7 @@ class Validator {
      * @return array
      */
     private function _filter(array $data, ConstraintViolationList $violationList, $pkey = null) {
-        $errmsg = $this->_buildErrmsg($violationList);
+        $errmsg = self::buildErrmsg($violationList);
         foreach ($errmsg as $key => $value) {
             unset($data[$key]);
         }
@@ -655,7 +655,7 @@ class Validator {
      * @param ConstraintViolationList $violationList
      * @return type
      */
-    private function _buildErrmsg(ConstraintViolationList $violationList) {
+    static public function buildErrmsg(ConstraintViolationList $violationList) {
         $error = [];
         for ($i = 0; $i < $violationList->count(); $i++) {
             $violation = $violationList->get($i);
