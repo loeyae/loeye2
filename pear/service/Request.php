@@ -76,7 +76,7 @@ class Request extends \loeye\std\Request
      */
     public function getFormatType()
     {
-        $format = $this->get['fmt'] ?? \loeye\base\RENDER_TYPE_JSON;
+        $format = $this->getParameterGet('fmt') ?? \loeye\base\RENDER_TYPE_JSON;
         if (in_array($format, $this->_allowedFormatType)) {
             return $format;
         } else {
