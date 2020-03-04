@@ -64,7 +64,7 @@ class ValidatePlugin extends Plugin
                 $data = filter_input_array(INPUT_GET);
                 break;
             case self::INPUT_ORIGIN:
-                $data = file_get_contents("php://");
+                $data = file_get_contents("php://input");
                 $data = \json_decode($data, true);
                 break;
             default:
@@ -74,9 +74,9 @@ class ValidatePlugin extends Plugin
         $entity = Utils::getData($inputs, self::ENTITY_KEY);
         if ($entity) {
             $entityObject = Utils::source2entity($data, $entity);
-            $validator     = \Symfony\Component\Validator\Validation::createValidator();
+            $validator     = \loeye\base\Validation::createValidator();
             $violationList = $validator->validate($entityObject);
-            $errors        = Validator::buildErrmsg($violationList);
+            $errors        = Validator::buildErrmsg($violationList, Validator::initTranslator($context->getAppConfig()));
             if ($errors) {
                 Utils::addErrors($errors, $context, $inputs, self::ERROR_KEY);
             }

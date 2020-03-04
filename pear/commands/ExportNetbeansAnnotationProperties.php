@@ -244,7 +244,10 @@ EOF;
     {
         $initial = '';
         $content = array_reduce($properties, function($carry, \ReflectionProperty $property) {
-            return $carry . ', ' . $property->getName() . '="${' . $property->getName() . '}"';
+            if ($property->isPublic()) {
+                return $carry . ', ' . $property->getName() . '="${' . $property->getName() . '}"';
+            }
+            return $carry;
         }, $initial);
         return ltrim($content, ', ');
     }

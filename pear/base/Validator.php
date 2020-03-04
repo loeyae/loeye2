@@ -47,12 +47,6 @@ class Validator {
      */
     protected $config;
 
-    /**
-     *
-     * @var Symfony\Component\Translation\Translator
-     */
-    protected $translater;
-
     const LLT_PREFIX = 'LV_FIELD_';
     const KEYWORD = 'validate';
     const BUNDLE = 'validate';
@@ -71,7 +65,6 @@ class Validator {
         $definition  = [new \loeye\config\validate\RulesetConfigDefinition(), new \loeye\config\validate\DeltaConfigDefinition()];
         $this->config = $this->bundleConfig($appConfig->getPropertyName(), $bundle, $definition);
         $this->_report = array('has_error' => false, 'error_message' => []);
-        $this->_initTranslater($appConfig);
     }
 
     /**
@@ -591,14 +584,14 @@ class Validator {
     }
 
     /**
-     * _initTranslater
+     * initTranslator
      *
      * @param \loeye\base\AppConfig $appConfig AppConfig instance
      *
      * @return void
      */
-    private function _initTranslater(AppConfig $appConfig) {
-        $this->translater = new I18n\Translator($appConfig->getLocale());
+    static public function initTranslator(AppConfig $appConfig) {
+        $translator = (new Translator($appConfig))->getTranslator();
         $loader = new I18n\Loader\XliffFileLoader();
         $resourseDir = PROJECT_DIR . '/../vendor/symfony/validator/Resources/translations/';
         foreach (new \FilesystemIterator($resourseDir, \FilesystemIterator::KEY_AS_FILENAME) as $key => $item) {
@@ -608,9 +601,10 @@ class Validator {
             $lpos = strpos($key, ".");
             $rpos = strrpos($key, ".");
             $locale = substr($key, $lpos + 1, $rpos - $lpos - 1);
-            $this->translater->addResource('xlf', $item->getRealPath(), $locale);
+            $translator->addResource('xlf', $item->getRealPath(), $locale);
         }
-        $this->translater->addLoader('xlf', $loader);
+        $translator->addLoader('xlf', $loader);
+        return $translator;
     }
 
     /**
@@ -642,7 +636,7 @@ class Validator {
      * @return array
      */
     private function _filter(array $data, ConstraintViolationList $violationList, $pkey = null) {
-        $errmsg = self::buildErrmsg($violationList);
+        $errmsg = self::buildErrmsg($violationList, self::initTranslator($this->appConfig));
         foreach ($errmsg as $key => $value) {
             unset($data[$key]);
         }
@@ -651,21 +645,26 @@ class Validator {
     }
 
     /**
-     * _buildErrmsg
-     * @param ConstraintViolationList $violationList
+     * buildErrmsg
+     * 
+     * @param ConstraintViolationList                   $violationList
+     * @param \Symfony\Component\Translation\Translator $translator
      * @return type
      */
-    static public function buildErrmsg(ConstraintViolationList $violationList) {
+    static public function buildErrmsg(ConstraintViolationList $violationList, \Symfony\Component\Translation\Translator $translator) {
         $error = [];
         for ($i = 0; $i < $violationList->count(); $i++) {
             $violation = $violationList->get($i);
             $propertyPath = $violation->getPropertyPath();
-            $msg = $this->translater->trans($violation->getMessageTemplate(), $violation->getParameters());
+            $msg = $translator->trans($violation->getMessageTemplate(), $violation->getParameters());
             $offset = 0;
             $property = [];
             while (preg_match('/\[([^\]]+)\]/', $propertyPath, $matches, PREG_OFFSET_CAPTURE, $offset)) {
                 $offset = $matches[0][1] + strlen($matches[0][0]);
                 array_push($property, $matches[1][0]);
+            }
+            if (empty($property)) {
+                $property = [$propertyPath];
             }
             $err = $msg;
             $c = count($property);
@@ -674,7 +673,7 @@ class Validator {
                 if ($j == $c - 1) {
                     $error[$key] = $err;
                 } else {
-                    $err = [$key => $err];
+                    $error = [$key => $err];
                 }
             }
         }

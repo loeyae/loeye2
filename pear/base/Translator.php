@@ -1,7 +1,7 @@
 <?php
 
 /**
- * LocalTranslater.php
+ * Translator.php
  *
  * PHP version 7
  *
@@ -20,11 +20,11 @@ namespace loeye\base;
 use Symfony\Component\Translation as I18n;
 
 /**
- * LocalTranslater
+ * Translator
  *
  * @author   Zhang Yi <loeyae@gmail.com>
  */
-class Translater
+class Translator
 {
 
     private $_locale = "zh_CN";
@@ -32,9 +32,9 @@ class Translater
 
     /**
      *
-     * @var Symfony\Component\Translation\Translator
+     * @var \Symfony\Component\Translation\Translator
      */
-    protected $translater;
+    protected $translator;
 
     /**
      * __construct
@@ -47,11 +47,11 @@ class Translater
             $this->_locale = $appConfig->getLocale();
             $this->_domain = $appConfig->getSetting('locale.basename', $this->_domain);
         }
-        $this->translater = new I18n\Translator($this->_locale);
+        $this->translator = new I18n\Translator($this->_locale);
         $loader           = new I18n\Loader\YamlFileLoader();
         $this->initFrameworkResource();
         $this->initProjectResource($appConfig);
-        $this->translater->addLoader('yml', $loader);
+        $this->translator->addLoader('yml', $loader);
     }
 
     /**
@@ -72,7 +72,7 @@ class Translater
             if (count($args) > 3) {
                 $domain = $args[2];
             }
-            $this->translater->addResource('yml', $item->getRealPath(), $lang, $domain);
+            $this->translator->addResource('yml', $item->getRealPath(), $lang, $domain);
         }
     }
 
@@ -100,7 +100,7 @@ class Translater
                 if (count($args) > 3) {
                     $domain = $args[2];
                 }
-                $this->translater->addResource('yml', $item->getRealPath(), $lang, $domain);
+                $this->translator->addResource('yml', $item->getRealPath(), $lang, $domain);
             }
         }
     }
@@ -125,7 +125,7 @@ class Translater
     {
         $domain ?? $domain = $this->_domain;
         $locale ?? $locale = $this->_locale;
-        return $this->translater->trans($string, $parameters, $domain, $locale);
+        return $this->translator->trans($string, $parameters, $domain, $locale);
     }
 
     /**
@@ -160,6 +160,16 @@ class Translater
             return $pattern;
         }
         return $result;
+    }
+    
+    /**
+     * getTranslator
+     * 
+     * @return \Symfony\Component\Translation\Translator
+     */
+    public function getTranslator()
+    {
+        return $this->translator;
     }
 
 }

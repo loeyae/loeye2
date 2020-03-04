@@ -26,7 +26,7 @@ class ModuleParse
 {
 
     const MAGIC_VAR_REGEX_PATTERN = '/^\$_(GET|POST|REQUEST|SERVER|COOKIE|SESSION|CONST|CONTEXT)\[(.*?)\]$/';
-    const MAGIC_FUNC_REGEX_PATTERN = '/^__([a-z]\w*)\[([^\)]*?)\]$/';
+    const MAGIC_FUNC_REGEX_PATTERN = '/^__([a-z]\w*)\[(.*?)\]$/';
     const CONDITION_KEY = 'if';
     const PARALLEL_KEY = 'parallel';
 

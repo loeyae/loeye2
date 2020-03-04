@@ -83,8 +83,8 @@ class SetRenderPlugin extends \loeye\std\Plugin
         if (isset($inputs['error_tip'])) {
             $context->addErrors('error_tips', $inputs['error_tip']);
         } else if (isset($inputs['error_key'])) {
-            $llt = $context->get('loeye_local_translater');
-            if ($llt instanceof LocalTranslater) {
+            $llt = $context->get('loeye_translator');
+            if ($llt instanceof \loeye\base\Translator) {
                 $errors = array();
                 foreach ((array) $inputs['error_key'] as $eKey => $lKey) {
                     $errors[$eKey] = $llt->getString($lKey);

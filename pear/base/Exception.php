@@ -98,12 +98,12 @@ class Exception extends \Exception
     public function __construct(string $errorMessage = self::DEFAULT_ERROR_MSG, int $errorCode = self::DEFAULT_ERROR_CODE, array $parameter = [])
     {
         $appConfig = defined('PROJECT_PROPERTY') ? new AppConfig(PROJECT_PROPERTY) : null;
-        $translater = new Translater($appConfig);
+        $translator = new Translator($appConfig);
         $parameters = [];
         foreach ($parameter as $key => $value) {
             $$parameters['%'.$key.'%'] = $value;
         }
-        $errorMessage = $translater->getString($errorMessage, $parameters, 'error');
+        $errorMessage = $translator->getString($errorMessage, $parameters, 'error');
         parent::__construct($errorMessage, $errorCode);
         Logger::trace($errorMessage, $errorCode, __FILE__, __LINE__, Logger::LOEYE_LOGGER_TYPE_ERROR);
     }
