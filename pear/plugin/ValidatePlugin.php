@@ -35,8 +35,9 @@ class ValidatePlugin extends Plugin
     const RULE_KEY       = 'validate_rule';
     const BUNDLE_KEY     = 'bundle';
     const INPUT_TYPE_KEY = 'type';
-    const ERROR_KEY      = __CLASS__ . '_validate_error';
-    const DATA_KEY       = __CLASS__ . '_filter_data';
+    const GROUPS_KEY     = 'groups';
+    const ERROR_KEY      = 'ValidatePlugin_validate_error';
+    const DATA_KEY       = 'ValidatePlugin_filter_data';
 
     static public $inputTypes = [
         \INPUT_REQUEST,
@@ -55,27 +56,13 @@ class ValidatePlugin extends Plugin
      */
     public function process(Context $context, array $inputs)
     {
-        $type = Utils::getData($inputs, self::INPUT_TYPE_KEY, \INPUT_REQUEST);
-        switch ($type) {
-            case INPUT_POST:
-                $data = filter_input_array(INPUT_POST);
-                break;
-            case INPUT_GET:
-                $data = filter_input_array(INPUT_GET);
-                break;
-            case self::INPUT_ORIGIN:
-                $data = file_get_contents("php://input");
-                $data = \json_decode($data, true);
-                break;
-            default:
-                $data = filter_input_array(INPUT_REQUEST);
-                break;
-        }
+        $data = $this->getData($inputs);
         $entity = Utils::getData($inputs, self::ENTITY_KEY);
         if ($entity) {
+            $groups = Utils::getData($inputs, self::GROUPS_KEY);
             $entityObject = Utils::source2entity($data, $entity);
             $validator     = \loeye\base\Validation::createValidator();
-            $violationList = $validator->validate($entityObject);
+            $violationList = $validator->validate($entityObject, null, $groups);
             $errors        = Validator::buildErrmsg($violationList, Validator::initTranslator($context->getAppConfig()));
             if ($errors) {
                 Utils::addErrors($errors, $context, $inputs, self::ERROR_KEY);
@@ -92,6 +79,28 @@ class ValidatePlugin extends Plugin
             }
             Utils::setContextData(
                     $report['valid_data'], $context, $inputs, self::DATA_KEY);
+        }
+    }
+    
+    /**
+     * getData
+     * 
+     * @param array $inputs
+     * 
+     * @return array
+     */
+    protected function getData(array $inputs) {
+        $type = Utils::getData($inputs, self::INPUT_TYPE_KEY, \INPUT_REQUEST);
+        switch ($type) {
+            case INPUT_POST:
+                return filter_input_array(INPUT_POST);
+            case INPUT_GET:
+return filter_input_array(INPUT_GET);
+            case self::INPUT_ORIGIN:
+                $data = file_get_contents("php://input");
+                return \json_decode($data, true);
+            default:
+                return filter_input_array(INPUT_REQUEST);
         }
     }
 
