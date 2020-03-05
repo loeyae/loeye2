@@ -41,6 +41,7 @@ class DeltaDefinition implements \Symfony\Component\Config\Definition\Configurat
                              ->end()
                          ->end()
                      ->end()
+                     ->scalarNode('debug')->end()
                      ->arrayNode('constants')->canBeUnset()
                          ->constantPrototype()->end()
                      ->end()
