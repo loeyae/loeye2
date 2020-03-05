@@ -1,7 +1,7 @@
 <?php
 
 /**
- * CreateApplication.php
+ * CreateApp.php
  *
  * Licensed under the Apache License, Version 2.0 (the "License"),
  * see LICENSE for more details: http://www.apache.org/licenses/LICENSE-2.0.
@@ -19,11 +19,11 @@ use \Symfony\Component\Console\{
 };
 
 /**
- * CreateApplication
+ * CreateApp
  *
  * @author   Zhang Yi <loeyae@gmail.com>
  */
-class CreateApplication extends Command {
+class CreateApp extends Command {
 
     protected $name           = 'loeye:create-app';
     protected $args           = [
