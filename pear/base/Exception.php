@@ -33,8 +33,9 @@ function ExceptionHandler(\Exception $exc, Context $context)
         Logger::trace($errorMessage, $errorCode, $exc->getFile(), $exc->getLine(), Logger::LOEYE_LOGGER_TYPE_ERROR);
     }
     $format = null;
+    $appConfig = $context->getAppConfig();
     if ($context->getRequest() instanceof \loeye\web\Request) {
-        $format = $context->getRequest()->getFormatType();
+        $format = $appConfig ? $appConfig->getSetting('application.response.format', $context->getRequest()->getFormatType()) : $context->getRequest()->getFormatType();
     }
     switch ($format) {
         case 'xml':
@@ -43,7 +44,6 @@ function ExceptionHandler(\Exception $exc, Context $context)
             if (!$response instanceof \loeye\web\Response) {
                 $response = new \loeye\web\Response();
             }
-            $appConfig = $context->getAppConfig();
             $debug     = $appConfig ? $appConfig->getSetting('debug', false) : false;
             $res       = ['status' => ['code' => LOEYE_REST_STATUS_BAD_REQUEST, 'message' => 'Internal Error']];
             if ($debug) {
