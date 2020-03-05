@@ -24,8 +24,8 @@ use \loeye\error\BusinessException;
  *
  * @author   Zhang Yi <loeyae@gmail.com>
  */
-class Factory
-{
+class Factory {
+
 
     /**
      * getPlugin
@@ -50,6 +50,7 @@ class Factory
         $rec  = new \ReflectionClass($class);
         return $rec->newInstanceArgs();
     }
+
 
     /**
      * includeLayout
@@ -76,6 +77,7 @@ class Factory
         include $file;
     }
 
+
     /**
      * includeView
      *
@@ -100,6 +102,7 @@ class Factory
         include $file;
     }
 
+
     /**
      * includeHandle
      *
@@ -122,6 +125,7 @@ class Factory
             include $handle;
         }
     }
+
 
     /**
      * getRender
@@ -147,6 +151,7 @@ class Factory
         $renderObj = new \ReflectionClass($className);
         return $renderObj->newInstanceArgs();
     }
+
 
     /**
      * includeErrorPage
@@ -187,22 +192,26 @@ class Factory
         } else if (is_file($defaultErrorPage)) {
             include $defaultErrorPage;
         } else {
-            self::_getErrorPageInfo($e);
+            self::_getErrorPageInfo($context, $e);
         }
     }
+
 
     /**
      * _getErrorPageInfo
      *
-     * @param \Exception $e e
+     * @param Context    $context context
+     * @param \Exception $e       e
      *
      * @return void
      */
-    static private function _getErrorPageInfo($e)
+    static private function _getErrorPageInfo(Context $context, $e)
     {
-        $traceInfo = $e->getTraceAsString();
-        $traceInfo = str_replace(["\r\n", "\r", "\n"], '<br/>', $traceInfo);
-        $html = <<<EOF
+        $appConfig = $context->getAppConfig();
+        $debug     = $appConfig ? $appConfig->getSetting('debug', false) : false;
+        if ($debug) {
+            $traceInfo = nl2br($e->getTraceAsString());
+            $html      = <<<EOF
 <!DOCTYPE html>
 <html>
     <head>
@@ -253,8 +262,60 @@ class Factory
     </body>
 </html>
 EOF;
+        } else {
+            $html      = <<<EOF
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>出错了</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <style>
+            body {
+                width: 100%;
+                height: auto;
+                margin: 0px auto;
+            }
+            #main {
+                width: 100%;
+                height: auto;
+                margin-top: 100px;
+                margin-left: auto;
+                margin-right: auto;
+            }
+            #main div {
+                width: 90%;
+                height: auto;
+                line-height: 30px;
+                overflow: visible;
+                white-space: normal;
+                clear:both;
+                text-align:center;
+                border: 1px #0f3c54 solid;
+                font-size: 1.1em;
+                color: #ff0000;
+                padding: 10px;
+                margin: 10px auto;
+            }
+            #main div span {
+                margin-right: 10px;
+            }
+            #main .info {
+                text-align:left;
+                margin-left:20px;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="main">
+            <div><span>Internal Error</span></div>
+        </div>
+    </body>
+</html>
+EOF;
+        }
         echo $html;
     }
+
 
     /**
      * autoload
@@ -279,6 +340,7 @@ EOF;
             }
         }
     }
+
 
     /**
      * cache
