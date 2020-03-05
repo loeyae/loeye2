@@ -1124,7 +1124,7 @@ class Utils
             foreach ($source as $key => $value) {
                 self::setWriteMethodValue($object, self::camelize($key), $value);
             }
-        } else {
+        } else if (is_object($source)) {
             $sourceRefClass = new \ReflectionClass($source);
             $methodList = $sourceRefClass->getMethods(\ReflectionMethod::IS_PUBLIC);
             foreach ($methodList as $method) {
@@ -1135,6 +1135,7 @@ class Utils
                 }
             }
         }
+        return $object;
     }
 
     /**
