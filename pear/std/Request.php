@@ -747,7 +747,7 @@ class Request implements \ArrayAccess
      */
     public function getFormatType()
     {
-        $format = $this->get['fmt'] ?? \loeye\base\RENDER_TYPE_SEGMENT;
+        $format = $this['get']['fmt'] ?? \loeye\base\RENDER_TYPE_SEGMENT;
         if (in_array($format, $this->_allowedFormatType)) {
             return $format;
         } else {
