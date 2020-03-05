@@ -28,7 +28,7 @@ namespace loeye\base;
 function ExceptionHandler(\Exception $exc, Context $context)
 {
     if (!($exc instanceof Exception)) {
-        $errorCode = $exc->getCode();
+        $errorCode    = $exc->getCode();
         $errorMessage = $exc->getMessage();
         Logger::trace($errorMessage, $errorCode, $exc->getFile(), $exc->getLine(), Logger::LOEYE_LOGGER_TYPE_ERROR);
     }
@@ -43,7 +43,19 @@ function ExceptionHandler(\Exception $exc, Context $context)
             if (!$response instanceof \loeye\web\Response) {
                 $response = new \loeye\web\Response();
             }
-            $response->addOutput(['code' => $exc->getCode(), 'message' => $exc->getMessage()]);
+            $appConfig = $context->getAppConfig();
+            $debug     = $appConfig ? $appConfig->getSetting('debug', false) : false;
+            $res       = ['status' => ['code' => LOEYE_REST_STATUS_BAD_REQUEST, 'message' => 'Internal Error']];
+            if ($debug) {
+                $res['data'] = [
+                    'code'      => $exc->getCode(),
+                    'message'   => $exc->getMessage(),
+                    'traceInfo' => $exc->getTraceAsString(),
+                ];
+            } else {
+                $res['data'] = $exc->getCode();
+            }
+            $response->addOutput($res);
             $renderObj = \loeye\base\Factory::getRender($format);
 
             $renderObj->header($response);
@@ -74,8 +86,7 @@ function ExceptionHandler(\Exception $exc, Context $context)
  *
  * @author   Zhang Yi <loeyae@gmail.com>
  */
-class Exception extends \Exception
-{
+class Exception extends \Exception {
 
     /**
      * default error code
@@ -97,11 +108,11 @@ class Exception extends \Exception
      */
     public function __construct(string $errorMessage = self::DEFAULT_ERROR_MSG, int $errorCode = self::DEFAULT_ERROR_CODE, array $parameter = [])
     {
-        $appConfig = defined('PROJECT_PROPERTY') ? new AppConfig(PROJECT_PROPERTY) : null;
+        $appConfig  = defined('PROJECT_PROPERTY') ? new AppConfig(PROJECT_PROPERTY) : null;
         $translator = new Translator($appConfig);
         $parameters = [];
         foreach ($parameter as $key => $value) {
-            $$parameters['%'.$key.'%'] = $value;
+            $$parameters['%' . $key . '%'] = $value;
         }
         $errorMessage = $translator->getString($errorMessage, $parameters, 'error');
         parent::__construct($errorMessage, $errorCode);
