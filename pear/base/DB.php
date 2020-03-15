@@ -136,7 +136,7 @@ class DB
             $setting = $config->get($cacheType);
             $redis = $this->getRedisClient($setting);
             $cache->setRedis($redis);
-        } elseif (Cache::CACHE_TYPE_MEMCACHED === $cache) {
+        } elseif (Cache::CACHE_TYPE_MEMCACHED === $cacheType) {
             $cache = new \Doctrine\Common\Cache\MemcachedCache();
             $config = $this->cacheConfig($appConfig);
             $setting = $config->get($cacheType);
