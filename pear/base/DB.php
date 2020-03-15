@@ -52,8 +52,8 @@ class DB
         $settins    = $appConfig->getSetting('application.database');
         $config     = $this->databaseConfig($appConfig);
         $this->defaultType = isset($settins['default']) ? $settins['default'] : null;
-        $this->isDevMode   = $settins['is_dev_mode'] ?? false;
-        $this->encryptMode = $settins['encrypt_mode'] ?? ENCRYPT_MODE_EXPLICIT;
+        $this->isDevMode   = isset($settins['is_dev_mode']) ? $settins['is_dev_mode'] : false;
+        $this->encryptMode = isset($settins['encrypt_mode']) ? $settins['encrypt_mode'] : ENCRYPT_MODE_EXPLICIT;
         $this->_getEntityManager($appConfig, $config, $property, $type);
     }
 
