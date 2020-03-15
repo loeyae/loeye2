@@ -31,13 +31,13 @@ if ($command == 'convert:mapping') {
     array_push($_SERVER['argv'], '-f');
     array_push($_SERVER['argv'], '--namespace=app\\models\\entity\\' . $property . '\\');
     array_push($_SERVER['argv'], 'annotation');
-    array_push($_SERVER['argv'], realpath(PROJECT_DIR .'/../'));
+    array_push($_SERVER['argv'], realpath(PROJECT_DIR . '/../'));
 } else if ($command == 'generate:proxies') {
     $_SERVER['argv'][1] = 'orm:generate-proxies';
-    array_push($_SERVER['argv'], realpath(PROJECT_DIR .'/../'));
+    array_push($_SERVER['argv'], realpath(PROJECT_DIR . '/../'));
 } else if ($command == 'generate:repositories') {
     $_SERVER['argv'][1] = 'orm:generate-repositories';
-    array_push($_SERVER['argv'], realpath(PROJECT_DIR .'/../'));
+    array_push($_SERVER['argv'], realpath(PROJECT_DIR . '/../'));
 } else if ($command == 'generate:entities') {
     $_SERVER['argv'][1] = 'orm:generate-entities';
     array_push($_SERVER['argv'], '--generate-annotations=true');
@@ -45,16 +45,12 @@ if ($command == 'convert:mapping') {
     array_push($_SERVER['argv'], '--update-entities=true');
     array_push($_SERVER['argv'], '--generate-methods=true');
     array_push($_SERVER['argv'], '--no-backup');
-    array_push($_SERVER['argv'], realpath(PROJECT_DIR .'/../'));
+    array_push($_SERVER['argv'], realpath(PROJECT_DIR . '/../'));
 }
-$appConfig = new \loeye\base\AppConfig($property);
-$dbKey     = $appConfig->getSetting('application.database.' . $dbId) ?? 'default';
-$config    = new \loeye\base\Configuration($property, 'database');
-$dbSetting = $config->get($dbKey);
-if (!$dbSetting) {
-    throw new Exception('Invalid database setting: ' . $dbKey . '.');
-}
-$entityManager = \loeye\database\EntityManager::getManager($dbSetting, $property);
+$appConfig     = new \loeye\base\AppConfig($property);
+$dbKey         = $appConfig->getSetting('application.database.' . $dbId) ?? 'default';
+$db            = \loeye\base\DB::getInstance($appConfig, $dbKey);
+$entityManager = $db->em();
 $platform      = $entityManager->getConnection()->getDatabasePlatform();
 $platform->registerDoctrineTypeMapping("enum", "string");
 $platform->registerDoctrineTypeMapping("set", "string");
