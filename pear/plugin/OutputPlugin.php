@@ -161,7 +161,7 @@ class OutputPlugin extends \loeye\std\Plugin
         }
         $translator = $context->get('loeye_translator');
         if (!$translator) {
-            $translator = new \loeye\base\Translator($context->getAppConfig());
+            $translator = Factory::translator();
         }
         return $translator->getString($message, $replace);
     }

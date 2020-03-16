@@ -44,6 +44,7 @@ class AppConfig implements \ArrayAccess
         $definitions   = [new \loeye\config\app\ConfigDefinition(), new \loeye\config\app\DeltaDefinition()];
         $configuration = $this->propertyConfig($property, self::BUNDLE, $definitions);
         $this->processConfiguration($configuration);
+        $this->_propertyName = $property;
     }
 
     /**
@@ -272,6 +273,16 @@ class AppConfig implements \ArrayAccess
         $locale    = $this->getSetting('locale.default');
         $supported = (array) $this->getSetting('locale.supported_languages', ['zh_CN']);
         return in_array($locale, $supported) ? $locale : $supported[0];
+    }
+    
+    /**
+     * getActiveProfile
+     * 
+     * @return string
+     */
+    public function getActiveProfile()
+    {
+        return $this->getSetting("profile");
     }
 
 }

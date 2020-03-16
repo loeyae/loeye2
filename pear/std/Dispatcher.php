@@ -173,8 +173,7 @@ abstract class Dispatcher {
         if (!defined('PROJECT_PROPERTY')) {
             define('PROJECT_PROPERTY', $property);
         }
-        $appConfig = new \loeye\base\AppConfig($property);
-        $appConfig->setPropertyName($property);
+        $appConfig = \loeye\base\Factory::appConfig();
         $appConfig->setLocale($this->context->getRequest()->getLanguage());
         $this->context->setAppConfig($appConfig);
     }

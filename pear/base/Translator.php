@@ -89,6 +89,7 @@ class Translator
             return ;
         }
         $resourseDir = PROJECT_LOCALE_DIR . DIRECTORY_SEPARATOR . $appConfig->getPropertyName();
+                
         if (file_exists($resourseDir)) {
             foreach (new \FilesystemIterator($resourseDir, \FilesystemIterator::KEY_AS_FILENAME) as $key => $item) {
                 if (!$item->isFile()) {

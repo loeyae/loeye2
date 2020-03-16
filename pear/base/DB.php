@@ -73,7 +73,7 @@ class DB
      * @param string|null           $type      type
      * @param string|null           $sign      sign
      *
-     * @return self
+     * @return \loeye\base\DB
      */
     static public function getInstance(AppConfig $appConfig, $type = null, $sign = null)
     {

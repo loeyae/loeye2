@@ -591,7 +591,7 @@ class Validator {
      * @return void
      */
     static public function initTranslator(AppConfig $appConfig) {
-        $translator = (new Translator($appConfig))->getTranslator();
+        $translator = Factory::translator($appConfig)->getTranslator();
         $loader = new I18n\Loader\XliffFileLoader();
         $resourseDir = PROJECT_DIR . '/../vendor/symfony/validator/Resources/translations/';
         foreach (new \FilesystemIterator($resourseDir, \FilesystemIterator::KEY_AS_FILENAME) as $key => $item) {

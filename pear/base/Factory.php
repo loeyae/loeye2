@@ -26,7 +26,6 @@ use \loeye\error\BusinessException;
  */
 class Factory {
 
-
     /**
      * getPlugin
      *
@@ -50,7 +49,6 @@ class Factory {
         $rec  = new \ReflectionClass($class);
         return $rec->newInstanceArgs();
     }
-
 
     /**
      * includeLayout
@@ -77,7 +75,6 @@ class Factory {
         include $file;
     }
 
-
     /**
      * includeView
      *
@@ -102,7 +99,6 @@ class Factory {
         include $file;
     }
 
-
     /**
      * includeHandle
      *
@@ -125,7 +121,6 @@ class Factory {
             include $handle;
         }
     }
-
 
     /**
      * getRender
@@ -151,7 +146,6 @@ class Factory {
         $renderObj = new \ReflectionClass($className);
         return $renderObj->newInstanceArgs();
     }
-
 
     /**
      * includeErrorPage
@@ -195,7 +189,6 @@ class Factory {
             self::_getErrorPageInfo($context, $e);
         }
     }
-
 
     /**
      * _getErrorPageInfo
@@ -263,7 +256,7 @@ class Factory {
 </html>
 EOF;
         } else {
-            $html      = <<<EOF
+            $html = <<<EOF
 <!DOCTYPE html>
 <html>
     <head>
@@ -316,7 +309,6 @@ EOF;
         echo $html;
     }
 
-
     /**
      * autoload
      *
@@ -341,22 +333,107 @@ EOF;
         }
     }
 
+    /**
+     * 
+     * @staticvar array  $cache array of Cache's instance
+     * @param     string $type
+     * 
+     * @return \loeye\base\Cache
+     */
+    static public function cache($type = null)
+    {
+        static $cache = [];
+        if (!isset($cache[$type])) {
+            $appConfig = self::appConfig();
+            $c = Cache::init($appConfig, $type);
+            if (!$c) {
+                $c = Cache::init($appConfig, Cache::CACHE_TYPE_FILE);
+            }
+            $cache[$type] = $c;
+        }
+        return $cache[$type];
+    }
 
     /**
-     * cache
-     *
-     * @param \loeye\base\AppConfig $appConfig context
-     * @param string                $type      type
-     *
-     * @return SimpleFileCache|\Memcache|\Memcached|\Redis
+     * appConfig
+     *  
+     * @staticvar \loeye\base\AppConfig $appConfig instance of AppConfig
+     * 
+     * @return \loeye\base\AppConfig
      */
-    static public function cache(AppConfig $appConfig, $type = null)
+    static public function appConfig()
     {
-        $cache = Cache::init($appConfig, $type);
-        if (!$cache) {
-            $cache = Cache::init($appConfig, Cache::CACHE_TYPE_FILE);
+        static $appConfig = null;
+        if (null == $appConfig) {
+            if (!defined('PROJECT_PROPERTY')) {
+                throw new \RuntimeException();
+            }
+            $appConfig = new AppConfig(PROJECT_PROPERTY);
         }
-        return $cache;
+        return $appConfig;
+    }
+
+    /**
+     * 
+     * @staticvar array  $db   array of DB's instance
+     * @param     string $type
+     * @return \loeye\base\DB
+     */
+    static public function db($type = "default")
+    {
+        static $db = [];
+        if (!isset($db[$type])) {
+            $db[$type] = DB::getInstance(self::appConfig(), $type);
+        }
+        return $db[$type];
+    }
+    
+    /**
+     * translator
+     * 
+     * @staticvar \loeye\base\Translator $translator
+     * @param     \loeye\base\AppConfig  $appConfig  instance of AppConfig
+     * 
+     * @return \loeye\base\Translator
+     */
+    static public function translator(AppConfig $appConfig = null)
+    {
+        static $translator = null;
+        if (null == $translator) {
+            $translator = new Translator($appConfig ?? self::appConfig());
+        }
+        return $translator;
+    }
+
+    /**
+     * request
+     * 
+     * @staticvar \loeye\web\Request $request
+     * 
+     * @return \loeye\web\Request
+     */
+    static public function request($moduleId = null)
+    {
+        static $request = null;
+        if (null == $request) {
+            $request = new \loeye\web\Request($moduleId);
+        }
+        return $request;
+    }
+    
+    /**
+     * 
+     * @staticvar \loeye\web\Response $response
+     * 
+     * @return \loeye\web\Response
+     */
+    static public function response()
+    {
+        static $response = null;
+        if (null == $response) {
+            $response = new \loeye\web\Response();
+        }
+        return $response;
     }
 
 }

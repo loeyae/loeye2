@@ -39,7 +39,7 @@ class TranslatorPlugin extends \loeye\std\Plugin
      */
     public function process(\loeye\base\Context $context, array $inputs)
     {
-        $translator = new \loeye\base\Translator($context->getAppConfig());
+        $translator = \loeye\base\Factory::translator($context->getAppConfig());
         $inputs['expire'] = 0;
         \loeye\base\Utils::setContextData($translator, $context, $inputs, 'loeye_translator');
     }

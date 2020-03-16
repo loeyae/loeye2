@@ -146,11 +146,11 @@ class Dispatcher extends \loeye\std\Dispatcher {
      */
     protected function initIOObject($moduleId)
     {
-        $request = new \loeye\web\Request($moduleId);
+        $request = \loeye\base\Factory::request($moduleId);
 
         $this->context->setRequest($request);
 
-        $response = new \loeye\web\Response();
+        $response = \loeye\base\Factory::response();
         if (defined('MOBILE_RENDER_ENABLE') && MOBILE_RENDER_ENABLE) {
             if ($request->device) {
                 $response->setRenderId(\loeye\web\Response::DEFAULT_MOBILE_RENDER_ID);

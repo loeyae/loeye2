@@ -108,8 +108,7 @@ class Exception extends \Exception {
      */
     public function __construct(string $errorMessage = self::DEFAULT_ERROR_MSG, int $errorCode = self::DEFAULT_ERROR_CODE, array $parameter = [])
     {
-        $appConfig  = defined('PROJECT_PROPERTY') ? new AppConfig(PROJECT_PROPERTY) : null;
-        $translator = new Translator($appConfig);
+        $translator = defined('PROJECT_PROPERTY') ? Factory::translator() : new Translator() ;
         $parameters = [];
         foreach ($parameter as $key => $value) {
             $$parameters['%' . $key . '%'] = $value;
