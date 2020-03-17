@@ -61,8 +61,8 @@ class OutputPlugin extends \loeye\std\Plugin
         if (!empty($outDataKey)) {
             $data = \loeye\base\Utils::getData($context, $outDataKey);
         } else if (isset($inputs['error'])) {
-            $this->reponseCode = 500;
-            $this->responseMsg = LOEYE_REST_STATUS_BAD_REQUEST;
+            $this->reponseCode = LOEYE_REST_STATUS_BAD_REQUEST;
+            $this->responseMsg = "error";
             $data = \loeye\base\Utils::getErrors($context, $inputs, $inputs['error']);
         }
         $redirect  = null;
