@@ -36,6 +36,10 @@ class OutputPlugin extends \loeye\std\Plugin
      * @var string
      */
     protected $dataKey = 'output_data';
+    
+    protected $reponseCode = LOEYE_REST_STATUS_OK;
+    
+    protected $responseMsg = 'OK';
 
     /**
      * process
@@ -57,6 +61,8 @@ class OutputPlugin extends \loeye\std\Plugin
         if (!empty($outDataKey)) {
             $data = \loeye\base\Utils::getData($context, $outDataKey);
         } else if (isset($inputs['error'])) {
+            $this->reponseCode = 500;
+            $this->responseMsg = LOEYE_REST_STATUS_BAD_REQUEST;
             $data = \loeye\base\Utils::getErrors($context, $inputs, $inputs['error']);
         }
         $redirect  = null;
@@ -81,7 +87,7 @@ class OutputPlugin extends \loeye\std\Plugin
                 header($header);
             }
             if (!empty($redirect)) {
-                header('Location: ' . $redirect, true, 302);
+                header('Location: ' . $redirect, true, LOEYE_REST_STATUS_REDIRECT);
             }
             $message = \loeye\base\Utils::getData($inputs, 'msg');
             if ($message !== null && $data !== null && is_string($message) && is_string($data)) {
@@ -103,9 +109,9 @@ class OutputPlugin extends \loeye\std\Plugin
                 header($header);
             }
             $context->getResponse()->setFormat($format);
-            $status  = \loeye\base\Utils::getData($inputs, 'code', 200);
+            $status  = \loeye\base\Utils::getData($inputs, 'code', $this->reponseCode);
             $context->getResponse()->addOutput($status, 'status');
-            $message = \loeye\base\Utils::getData($inputs, 'msg', 'OK');
+            $message = \loeye\base\Utils::getData($inputs, 'msg', $this->responseMsg);
             if ($message !== null) {
                 if (is_array($message)) {
                     $moduleParse = new ModuleParse();
