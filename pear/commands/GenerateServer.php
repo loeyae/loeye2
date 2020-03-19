@@ -36,6 +36,7 @@ class GenerateServer extends Command {
         ['force', null, 'required' => false, 'help' => 'force update file', 'default' => false],
     ];
     protected $name             = 'loeye:generate-server';
+    protected $desc             = 'generate server with entity';
     protected static $_template = '<?php
 
 namespace <namespace>;

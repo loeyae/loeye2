@@ -26,6 +26,7 @@ class SetKeyDB extends Command
 {
 
     protected $name   = 'loeye:setkeydb';
+    protected $desc   = 'set key db value';
     protected $args   = [
         ['property', 'required' => true, 'help' => 'property name', 'default' => null],
         ['keydb', 'required' => true, 'help' => 'keydb name', 'default' => null],

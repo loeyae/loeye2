@@ -37,6 +37,7 @@ class GenerateEntityPlugins extends Command
         ['force', null, 'required' => false, 'help' => 'force update file', 'default' => false],
     ];
     protected $name                   = 'loeye:generate-entity-plugins';
+    protected $desc                   = 'generate plugin with entity';
     protected static $_template       = <<<'EOF'
 <?php
 

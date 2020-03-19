@@ -26,6 +26,7 @@ class GetKeyDB extends Command
 {
 
     protected $name   = 'loeye:getkeydb';
+    protected $desc   = 'get value from key db';
     protected $args   = [
         ['property', 'required' => true, 'help' => 'property name', 'default' => null],
         ['key', 'required' => true, 'help' => 'keydb name', 'default' => null],

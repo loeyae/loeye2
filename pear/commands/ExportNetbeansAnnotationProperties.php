@@ -27,6 +27,7 @@ use \Doctrine\Common\Annotations\DocParser;
 class ExportNetbeansAnnotationProperties extends Command {
 
     private $index                     = 0;
+    protected $desc                    = 'export annotation.propertyies for netbeans';
     protected $name                    = 'loeye:export-nb-ap';
     protected $args                    = [
         ['file', 'required' => true, 'help' => 'file name', 'default' => null]

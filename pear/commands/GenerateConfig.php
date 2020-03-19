@@ -26,6 +26,7 @@ use \Symfony\Component\Console\{
 class GenerateConfig extends Command {
 
     protected $name   = 'loeye:generate-config';
+    protected $desc   = 'generate configuation file';
     protected $args   = [
         ['property', 'required' => true, 'help' => 'property name', 'default' => null],
         ['type', 'required' => true, 'help' => 'configuration type: app-master,app-delta,cache,database,module,router,valid-rule,valid-delta,ruleset,delta', 'default' => null],

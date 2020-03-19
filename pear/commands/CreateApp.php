@@ -26,6 +26,7 @@ use \Symfony\Component\Console\{
 class CreateApp extends Command {
 
     protected $name           = 'loeye:create-app';
+    protected $desc           = 'create application';
     protected $args           = [
         ['property', 'required' => true, 'help' => 'property name']
     ];

@@ -27,6 +27,7 @@ class Lang2mo extends Command
 {
 
     protected $name   = 'loeye:lang2mo';
+    protected $desc   = 'generate .mo file from language setting';
     protected $args   = [
         ['property', 'required' => true, 'help' => 'property name', 'default' => null]
     ];
