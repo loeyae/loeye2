@@ -47,7 +47,7 @@ trait RepositoryTrait {
      *
      * @return object|null
      */
-    public function one(array $criteria, $orderBy = null): ?object
+    public function one(array $criteria, $orderBy = null): ?Entity
     {
         return $this->db->one($this->entityClass, $criteria, $orderBy);
     }

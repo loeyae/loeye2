@@ -276,7 +276,7 @@ EOF;
             }
             $methodName = $method->getName();
             $returnType = $method->getReturnType();
-            if ($returnType == 'loeye\database\object') {
+            if ($returnType == 'loeye\database\Entity') {
                 $returnType = str_replace('server', 'entity', substr($serverClass, 0, -6));
             }
             $nClassName = ucfirst($className) . ucfirst($methodName) . 'Plugin';
