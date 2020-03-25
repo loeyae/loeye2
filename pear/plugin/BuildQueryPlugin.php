@@ -82,6 +82,10 @@ class BuildQueryPlugin extends Plugin {
             $sort  = $this->pop($data, $sortKey);
         }
         $query = $data;
+        if (!is_int($page) || is_int($hits)) {
+            $context->addErrors($this->outErrorsKey, new \loeye\error\RequestParameterException());
+            return false;
+        }
         $context->set($prefix . '_query', $query);
         $context->set($prefix . '_start', ($page - 1) * $hits);
         $context->set($prefix . '_offset', $hits);

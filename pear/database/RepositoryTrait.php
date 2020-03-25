@@ -87,6 +87,9 @@ trait RepositoryTrait {
      */
     public function page($query, $start = 0, $offset = 10, $orderBy = null, $groupBy = null, $having = null): ?array
     {
+        if (is_array($orderBy)) {
+            $orderBy = new Expr\OrderBy(...$orderBy);
+        }
         if ($query instanceof \Doctrine\ORM\Query) {
             $query->setFirstResult($start)->setMaxResults($offset);
         } else if ($query instanceof \Doctrine\Common\Collections\Criteria) {

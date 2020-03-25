@@ -20,7 +20,7 @@ class TranslaterTest extends \loeye\unit\TestCase
     protected function setUp()
     {
         $appConfig = new \loeye\base\AppConfig('unit');
-        $this->object = new \loeye\base\Translater($appConfig);
+        $this->object = new \loeye\base\Translator($appConfig);
     }
 
     /**
