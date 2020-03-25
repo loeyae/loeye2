@@ -26,57 +26,59 @@ use Doctrine\Common\Collections\ExpressionBuilder;
  *
  * @author   Zhang Yi <loeyae@gmail.com>
  */
-class ExpressionFactory
-{
+class ExpressionFactory {
+
     const IS_NULL = 'IS NULL';
 
     static public $compositeExpressionTypeMapping = [
         CompositeExpression::TYPE_AND => [ExpressionBuilder::class, "andX"],
-        CompositeExpression::TYPE_OR => [ExpressionBuilder::class, "orX"],
+        CompositeExpression::TYPE_OR  => [ExpressionBuilder::class, "orX"],
     ];
-
-    static public $comparisonTypeMapping = [
-        Comparison::EQ => [ExpressionBuilder::class, 'eq'],
-        Comparison::NEQ => [ExpressionBuilder::class, 'neq'],
-        Comparison::GT => [ExpressionBuilder::class, 'gt'],
-        Comparison::LT => [ExpressionBuilder::class, 'lt'],
-        Comparison::GTE => [ExpressionBuilder::class, 'gte'],
-        Comparison::LTE => [ExpressionBuilder::class, 'lte'],
-        Comparison::IN => [ExpressionBuilder::class, 'in'],
-        Comparison::NIN => [ExpressionBuilder::class, 'notIn'],
-        Comparison::CONTAINS => [ExpressionBuilder::class, 'contains'],
-        Comparison::MEMBER_OF => [ExpressionBuilder::class, 'memberOf'],
+    static public $comparisonTypeMapping          = [
+        Comparison::EQ          => [ExpressionBuilder::class, 'eq'],
+        Comparison::NEQ         => [ExpressionBuilder::class, 'neq'],
+        Comparison::GT          => [ExpressionBuilder::class, 'gt'],
+        Comparison::LT          => [ExpressionBuilder::class, 'lt'],
+        Comparison::GTE         => [ExpressionBuilder::class, 'gte'],
+        Comparison::LTE         => [ExpressionBuilder::class, 'lte'],
+        Comparison::IN          => [ExpressionBuilder::class, 'in'],
+        Comparison::NIN         => [ExpressionBuilder::class, 'notIn'],
+        Comparison::CONTAINS    => [ExpressionBuilder::class, 'contains'],
+        Comparison::MEMBER_OF   => [ExpressionBuilder::class, 'memberOf'],
         Comparison::STARTS_WITH => [ExpressionBuilder::class, 'startsWith'],
-        Comparison::ENDS_WITH => [ExpressionBuilder::class, 'endsWith'],
+        Comparison::ENDS_WITH   => [ExpressionBuilder::class, 'endsWith'],
     ];
 
+    /**
+     * createExpr
+     * 
+     * @param array $data
+     * @return Expression
+     */
     static public function createExpr(array $data)
     {
-        $count = count($data);
-        switch ($count) {
-        case 0:
+        if (empty($data)) {
             return null;
-        case 1:
+        }
+        if (isset($data[0])) {
             if (is_array($data[0])) {
-                $exprs = static::createExprByArray($data[0]);
-                return new CompositeExpression(CompositeExpression::TYPE_AND, $exprs);
+                $expres = [];
+                foreach ($data as $value) {
+                    $expres[] = self::createExpr($value);
+                }
+                return new CompositeExpression(CompositeExpression::TYPE_AND, $expres);
             }
-            return null;
-        case 2:
-            if (is_array($data[0])) {
-                $exprs = static::createExprByArray($data);
-                return new CompositeExpression(CompositeExpression::TYPE_AND, $exprs);
+            $count = count($data);
+            if ($count > 2) {
+                return self::createComparison($data[0], $data[2], $data[1]);
             }
-            return static::createExprByKv($data[0], $data[1]);
-        case 3:
-            if (is_array($data[0])) {
-                $exprs = static::createExprByArray($data);
-                return new CompositeExpression(CompositeExpression::TYPE_AND, $exprs);
+            if ($count > 1) {
+                return self::createExprByKv($data[0], $data[1]);
             }
-            return static::createComparison($data[0], $data[2], $data[1]);
-        default:
-            $exprs = static::createExprByArray($data);
-            return new CompositeExpression(CompositeExpression::TYPE_AND, $exprs);
+            throw new \loeye\error\DAOException();
+        } else {
+            $expres = self::createExprByArray($data);
+            return new CompositeExpression(CompositeExpression::TYPE_AND, $expres);
         }
     }
 
@@ -108,7 +110,7 @@ class ExpressionFactory
             return new Comparison($key, Comparison::EQ, $value);
         }
         if (\is_numeric($key)) {
-            return static::createExpr($value);
+            throw new \loeye\error\DAOException();
         }
         if (\array_key_exists(\strtoupper($key), static::$compositeExpressionTypeMapping)) {
             return static::createCompositeExpression(\strtoupper($key), static::createExpr($value));

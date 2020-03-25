@@ -106,7 +106,11 @@ trait RepositoryTrait {
         } else if (is_array($query)) {
             $qb   = $this->db->repository($this->entityClass)->createQueryBuilder(static::$alias);
             $expr = ExpressionFactory::createExpr($query);
-            $qb->where($expr);
+            if ($expr) {
+                $criteria = \Doctrine\Common\Collections\Criteria::create()->andWhere($expr);
+                $qb->addCriteria($criteria);
+            }
+            $qb->setFirstResult($start)->setMaxResults($offset);
             if ($orderBy) {
                 $qb->orderBy($orderBy);
             }

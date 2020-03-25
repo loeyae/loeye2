@@ -65,6 +65,9 @@ class OutputPlugin extends \loeye\std\Plugin
             $this->responseMsg = "error";
             $data = \loeye\base\Utils::getErrors($context, $inputs, $inputs['error']);
         }
+        if ($data instanceof \loeye\database\Entity) {
+            $data = Utils::entity2array(Factory::db()->em(), $data);
+        }
         $redirect  = null;
         $routerKey = \loeye\base\Utils::getData($inputs, 'router_key');
         if (!empty($routerKey)) {
