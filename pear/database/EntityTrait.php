@@ -71,7 +71,7 @@ trait EntityTrait
      */
     public function update($id, $data): Entity
     {
-        $entity = $this->entity($id);
+        $entity = $this->get($id);
         \loeye\base\Utils::checkNotNull($entity);
         \loeye\base\Utils::copyProperties($data, $entity);
         $this->db->save($entity);
@@ -87,7 +87,7 @@ trait EntityTrait
      */
     public function delete($id): bool
     {
-        $entity = $this->entity($id);
+        $entity = $this->get($id);
         \loeye\base\Utils::checkNotNull($entity);
         return $this->db->remove($entity);
     }

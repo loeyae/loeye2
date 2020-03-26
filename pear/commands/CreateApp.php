@@ -52,6 +52,7 @@ class CreateApp extends Command {
             'models'      => [
                 'entity'     => 'property',
                 'repository' => 'property',
+                'proxy'      => null,
                 'server'     => 'property',
             ],
             'plugins'     => 'property',

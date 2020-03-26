@@ -34,7 +34,7 @@ if ($command == 'convert:mapping') {
     array_push($_SERVER['argv'], realpath(PROJECT_DIR . '/../'));
 } else if ($command == 'generate:proxies') {
     $_SERVER['argv'][1] = 'orm:generate-proxies';
-    array_push($_SERVER['argv'], realpath(PROJECT_DIR . '/../'));
+    array_push($_SERVER['argv'], realpath(PROJECT_DIR . '/models/proxy'));
 } else if ($command == 'generate:repositories') {
     $_SERVER['argv'][1] = 'orm:generate-repositories';
     array_push($_SERVER['argv'], realpath(PROJECT_DIR . '/../'));
