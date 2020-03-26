@@ -1131,9 +1131,7 @@ class Utils
                 $methodName = $method->getName();
                 if (self::startwith($methodName, "get")) {
                     $value = $method->invokeArgs($source, []);
-                    if (null != $value) {
-                        self::setWriteMethodValue($object, substr($methodName, 3), $value);
-                    }
+                    self::setWriteMethodValue($object, substr($methodName, 3), $value);
                 }
             }
         }
