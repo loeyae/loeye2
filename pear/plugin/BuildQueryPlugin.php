@@ -45,7 +45,8 @@ class BuildQueryPlugin extends Plugin {
     const DEFAULT_PAGE = 1;
     const ORDER_ASC    = 'ASC';
     const ORDER_DESC   = 'DESC';
-
+    const PARAMETER_ERROR_MSG = 'Page and Hits must be number';
+    
     /**
      * process
      *
@@ -82,9 +83,9 @@ class BuildQueryPlugin extends Plugin {
             $sort  = $this->pop($data, $sortKey);
         }
         $query = $data;
-        if (!is_int($page) || is_int($hits)) {
-            $context->addErrors($this->outErrorsKey, new \loeye\error\RequestParameterException());
-            return false;
+        if (!is_int($page) || !is_int($hits)) {
+            $context->addErrors($this->outErrorsKey, \loeye\base\Factory::translator($context->getAppConfig())->getString(self::PARAMETER_ERROR_MSG));
+            return \loeye\base\PROJECT_SUCCESS;
         }
         $context->set($prefix . '_query', $query);
         $context->set($prefix . '_start', ($page - 1) * $hits);
