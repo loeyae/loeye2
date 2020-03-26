@@ -35,6 +35,7 @@ class BuildQueryPlugin extends Plugin {
     protected $orderKey     = 'order';
     protected $groupKey     = 'group';
     protected $havingKey    = 'having';
+    protected $denyQueryKey = 'deny';
 
     const PAGE_NAME    = 'p';
     const HITS_NAME    = 'h';
@@ -66,6 +67,7 @@ class BuildQueryPlugin extends Plugin {
         $group    = Utils::getData($inputs, $this->groupKey);
         $having   = Utils::getData($inputs, $this->havingKey);
         $method   = Utils::getData($inputs, self::INPUT_TYPE, null);
+        $deny     = (bool)Utils::getData($inputs, $this->denyQueryKey, false);
         $data     = null;
         if (null == $method) {
             $data = Utils::getContextData($context, $inputs, $this->inDataKey);
@@ -77,13 +79,17 @@ class BuildQueryPlugin extends Plugin {
         $sort  = null;
         $order = null;
         if (null != $data) {
-            $page  = $this->pop($data, $pageKey, self::DEFAULT_PAGE);
-            $hits  = $this->pop($data, $hitsKey, self::DEFAULT_HITS);
+            $page  = (int)$this->pop($data, $pageKey, self::DEFAULT_PAGE);
+            $hits  = (int)$this->pop($data, $hitsKey, self::DEFAULT_HITS);
             $order = $this->pop($data, $orderKey);
             $sort  = $this->pop($data, $sortKey);
         }
-        $query = $data;
-        if (!is_int($page) || !is_int($hits)) {
+        if ($deny) {
+            $query = null;
+        } else {
+            $query = $data;
+        }
+        if ($page <= 0 || $hits <= 0) {
             $context->addErrors($this->outErrorsKey, \loeye\base\Factory::translator($context->getAppConfig())->getString(self::PARAMETER_ERROR_MSG));
             return \loeye\base\PROJECT_SUCCESS;
         }
