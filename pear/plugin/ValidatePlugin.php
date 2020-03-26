@@ -67,7 +67,7 @@ class ValidatePlugin extends Plugin
             if ($errors) {
                 Utils::addErrors($errors, $context, $inputs, self::ERROR_KEY);
             }
-            Utils::setContextData($entityObject, $context, $inputs, self::DATA_KEY);
+            Utils::setContextData($data, $context, $inputs, self::DATA_KEY);
         } else {
             $rule       = Utils::checkNotEmpty($inputs, self::RULE_KEY);
             $custBundle = Utils::getData($inputs, self::BUNDLE_KEY, null);
