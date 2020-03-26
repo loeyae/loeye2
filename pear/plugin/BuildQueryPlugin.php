@@ -25,29 +25,30 @@ use \loeye\{
  */
 class BuildQueryPlugin extends Plugin {
 
-    protected $inDataKey    = 'BuildQueryPlugin_input';
-    protected $outDataKey   = 'BuildQueryPlugin_output';
-    protected $outErrorsKey = 'BuildQueryPlugin_errors';
-    protected $prefixKey    = 'prefix';
-    protected $pageKey      = 'page';
-    protected $hitsKey      = 'hits';
-    protected $sortKey      = 'sort';
-    protected $orderKey     = 'order';
-    protected $groupKey     = 'group';
-    protected $havingKey    = 'having';
-    protected $denyQueryKey = 'deny';
+    protected $inDataKey     = 'BuildQueryPlugin_input';
+    protected $outDataKey    = 'BuildQueryPlugin_output';
+    protected $outErrorsKey  = 'BuildQueryPlugin_errors';
+    protected $prefixKey     = 'prefix';
+    protected $pageKey       = 'page';
+    protected $hitsKey       = 'hits';
+    protected $sortKey       = 'sort';
+    protected $orderKey      = 'order';
+    protected $groupKey      = 'group';
+    protected $havingKey     = 'having';
+    protected $denyQueryKey  = 'deny';
+    protected $allowedFields = 'fields';
 
-    const PAGE_NAME    = 'p';
-    const HITS_NAME    = 'h';
-    const ORDER_NAME   = 'o';
-    const SORT_NAME    = 's';
-    const INPUT_TYPE   = 'type';
-    const DEFAULT_HITS = 10;
-    const DEFAULT_PAGE = 1;
-    const ORDER_ASC    = 'ASC';
-    const ORDER_DESC   = 'DESC';
+    const PAGE_NAME           = 'p';
+    const HITS_NAME           = 'h';
+    const ORDER_NAME          = 'o';
+    const SORT_NAME           = 's';
+    const INPUT_TYPE          = 'type';
+    const DEFAULT_HITS        = 10;
+    const DEFAULT_PAGE        = 1;
+    const ORDER_ASC           = 'ASC';
+    const ORDER_DESC          = 'DESC';
     const PARAMETER_ERROR_MSG = 'Page and Hits must be number';
-    
+
     /**
      * process
      *
@@ -67,7 +68,8 @@ class BuildQueryPlugin extends Plugin {
         $group    = Utils::getData($inputs, $this->groupKey);
         $having   = Utils::getData($inputs, $this->havingKey);
         $method   = Utils::getData($inputs, self::INPUT_TYPE, null);
-        $deny     = (bool)Utils::getData($inputs, $this->denyQueryKey, false);
+        $deny     = (bool) Utils::getData($inputs, $this->denyQueryKey, false);
+        $fields   = Utils::getData($inputs, $this->allowedFields);
         $data     = null;
         if (null == $method) {
             $data = Utils::getContextData($context, $inputs, $this->inDataKey);
@@ -79,15 +81,20 @@ class BuildQueryPlugin extends Plugin {
         $sort  = null;
         $order = null;
         if (null != $data) {
-            $page  = (int)$this->pop($data, $pageKey, self::DEFAULT_PAGE);
-            $hits  = (int)$this->pop($data, $hitsKey, self::DEFAULT_HITS);
+            $page  = (int) $this->pop($data, $pageKey, self::DEFAULT_PAGE);
+            $hits  = (int) $this->pop($data, $hitsKey, self::DEFAULT_HITS);
             $order = $this->pop($data, $orderKey);
             $sort  = $this->pop($data, $sortKey);
         }
         if ($deny) {
             $query = null;
         } else {
-            $query = $data;
+            if($fields) {
+                $fields = array_fill_keys($fields, null);
+                $query = array_intersect_key($data, $fields); 
+            } else {
+                $query = $data;
+            }
         }
         if ($page <= 0 || $hits <= 0) {
             $context->addErrors($this->outErrorsKey, \loeye\base\Factory::translator($context->getAppConfig())->getString(self::PARAMETER_ERROR_MSG));
