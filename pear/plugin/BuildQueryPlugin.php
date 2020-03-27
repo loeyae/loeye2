@@ -103,14 +103,15 @@ class BuildQueryPlugin extends Plugin {
         $context->set($prefix . '_query', $query);
         $context->set($prefix . '_start', ($page - 1) * $hits);
         $context->set($prefix . '_offset', $hits);
+        $having = "id > 1";
         if ($sort) {
-            $context->set($prefix . '_orderBy', htmlentities($sort, ENT_QUOTES) . ' ' . ($order > 1 ? self::ORDER_ASC : self::ORDER_DESC));
+            $context->set($prefix . '_orderBy', [htmlentities($sort, ENT_QUOTES), ($order > 0 ? self::ORDER_ASC : self::ORDER_DESC)]);
         }
         if ($group) {
             $context->set($prefix . '_groupBy', htmlentities($group, ENT_QUOTES));
         }
         if ($having) {
-            $context->set($prefix . '_having', htmlentities($having, ENT_QUOTES));
+            $context->set($prefix . '_having', $having);
         }
     }
 

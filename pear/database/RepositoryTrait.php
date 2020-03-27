@@ -38,7 +38,6 @@ trait RepositoryTrait {
      */
     protected $entityClass;
 
-
     /**
      * one
      *
@@ -51,7 +50,6 @@ trait RepositoryTrait {
     {
         return $this->db->one($this->entityClass, $criteria, $orderBy);
     }
-
 
     /**
      * all
@@ -72,7 +70,6 @@ trait RepositoryTrait {
         return $this->db->repository($this->entityClass)->findBy($criteria, $orderBy, $offset, $start);
     }
 
-
     /**
      *
      * @param mixed $query
@@ -87,23 +84,14 @@ trait RepositoryTrait {
      */
     public function page($query, $start = 0, $offset = 10, $orderBy = null, $groupBy = null, $having = null): ?array
     {
-        if (is_array($orderBy)) {
-            $orderBy = new Expr\OrderBy(...$orderBy);
-        }
         if ($query instanceof \Doctrine\ORM\Query) {
             $query->setFirstResult($start)->setMaxResults($offset);
         } else if ($query instanceof \Doctrine\Common\Collections\Criteria) {
             $qb = $this->db->repository($this->entityClass)->createQueryBuilder(static::$alias);
             $qb->setFirstResult($start)->setMaxResults($offset);
-            if ($orderBy) {
-                $qb->orderBy($orderBy);
-            }
-            if ($groupBy) {
-                $qb->groupBy($groupBy);
-            }
-            if ($having) {
-                $qb->having($having);
-            }
+            $this->parseOrderBy($qb, $orderBy);
+            $this->parseGroupBy($qb, $groupBy);
+            $this->parseHaving($qb, $having);
             $qb->addCriteria($query)->addSelect(static::$alias);
             $query = $qb->getQuery();
         } else if (is_array($query)) {
@@ -114,34 +102,86 @@ trait RepositoryTrait {
                 $qb->addCriteria($criteria);
             }
             $qb->setFirstResult($start)->setMaxResults($offset);
-            if ($orderBy) {
-                $qb->orderBy($orderBy);
-            }
-            if ($groupBy) {
-                $qb->groupBy($groupBy);
-            }
-            if ($having) {
-                $qb->having($having);
-            }
+            $this->parseOrderBy($qb, $orderBy);
+            $this->parseGroupBy($qb, $groupBy);
+            $this->parseHaving($qb, $having);
             $query = $qb->getQuery();
         } else if (is_null($query)) {
             $qb = $this->db->repository($this->entityClass)->createQueryBuilder(static::$alias);
             $qb->addSelect(static::$alias)->setFirstResult($start)->setMaxResults($offset);
-            if ($orderBy) {
-                $qb->orderBy($orderBy);
-            }
-            if ($groupBy) {
-                $qb->groupBy($groupBy);
-            }
-            if ($having) {
-                $qb->having($having);
-            }
+            $this->parseOrderBy($qb, $orderBy);
+            $this->parseGroupBy($qb, $groupBy);
+            $this->parseHaving($qb, $having);
             $query = $qb->getQuery();
         } else {
             throw new \loeye\error\BusinessException(\loeye\error\BusinessException::INVALID_PARAMETER_MSG, \loeye\error\BusinessException::INVALID_PARAMETER_CODE);
         }
         $paginator = new \Doctrine\ORM\Tools\Pagination\Paginator($query);
         return \loeye\base\Utils::paginator2array($this->db->em(), $paginator);
+    }
+
+    /**
+     * 
+     * @param \Doctrine\ORM\QueryBuilder $qb      QueryBuilder
+     * @param mixed                      $orderBy orderBy
+     * 
+     * @return \Doctrine\ORM\QueryBuilder
+     */
+    private function parseOrderBy(\Doctrine\ORM\QueryBuilder $qb, $orderBy)
+    {
+        if ($orderBy) {
+            $expr = new \Doctrine\ORM\Query\Expr\OrderBy();
+            if (is_array($orderBy)) {
+                if (isset($orderBy[0])) {
+                    $expr->add(self::$alias . '.' . strval($orderBy[0]), isset($orderBy[1]) ? $orderBy[1] : null);
+                } else {
+                    foreach ($orderBy as $key => $value) {
+                        $expr->add(self::$alias . '.' . $key, $value);
+                    }
+                }
+            } else {
+                $expr->add(self::$alias . '.' . strval($orderBy));
+            }
+            $qb->orderBy($expr);
+        }
+        return $qb;
+    }
+
+    /**
+     * parseGroupBy
+     * 
+     * @param \Doctrine\ORM\QueryBuilder $qb      QueryBuilder
+     * @param mixed                      $groupBy groupBy
+     * @return \Doctrine\ORM\QueryBuilder
+     */
+    private function parseGroupBy(\Doctrine\ORM\QueryBuilder $qb, $groupBy)
+    {
+        if ($groupBy) {
+            $expr = new \Doctrine\ORM\Query\Expr\GroupBy();
+            if (is_array($groupBy)) {
+                foreach ($groupBy as $value) {
+                    $expr->add(self::$alias .'.'. $value);
+                }
+            } else {
+                $expr->add(self::$alias .'.'. strval($groupBy));
+            }
+        }
+        return $qb;
+    }
+    
+    /**
+     * parseHaving
+     * 
+     * @param \Doctrine\ORM\QueryBuilder $qb     QueryBuilder
+     * @param mixed                      $having having
+     * @return \Doctrine\ORM\QueryBuilder
+     */
+    private function parseHaving(\Doctrine\ORM\QueryBuilder $qb, $having)
+    {
+        if ($having) {
+            $qb->having(self::$alias .'.'. strval($having));
+        }
+        return $qb;
     }
 
 }
