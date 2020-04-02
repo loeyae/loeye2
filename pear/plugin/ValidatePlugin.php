@@ -100,7 +100,7 @@ return filter_input_array(INPUT_GET);
                 $data = file_get_contents("php://input");
                 return \json_decode($data, true);
             default:
-                return filter_input_array(INPUT_REQUEST);
+                return $_REQUEST;
         }
     }
 
