@@ -95,7 +95,7 @@ class ValidatePlugin extends Plugin
             case INPUT_POST:
                 return filter_input_array(INPUT_POST);
             case INPUT_GET:
-return filter_input_array(INPUT_GET);
+                return filter_input_array(INPUT_GET);
             case self::INPUT_ORIGIN:
                 $data = file_get_contents("php://input");
                 return \json_decode($data, true);
