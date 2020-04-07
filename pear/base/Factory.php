@@ -53,7 +53,7 @@ class Factory {
     /**
      * includeLayout
      *
-     * @param \LOEYE\Context $context context
+     * @param \loeye\base\Context $context context
      * @param string              $content content
      * @param array               $setting view setting
      *
@@ -78,7 +78,7 @@ class Factory {
     /**
      * includeView
      *
-     * @param \LOEYE\Context $context context
+     * @param \loeye\base\Context $context context
      * @param array               $setting view setting
      *
      * @return void
@@ -102,7 +102,7 @@ class Factory {
     /**
      * includeHandle
      *
-     * @param \LOEYE\Context $context context
+     * @param \loeye\base\Context $context context
      * @param array               $setting setting
      *
      * @return void
@@ -127,7 +127,7 @@ class Factory {
      *
      * @param string $format format
      *
-     * @return \LOEYE\Render
+     * @return \loeye\std\Render
      * @throws Exception
      */
     static public function getRender($format = 'segment')
@@ -150,7 +150,7 @@ class Factory {
     /**
      * includeErrorPage
      *
-     * @param \LOEYE\Context $context   context
+     * @param \loeye\base\Context $context   context
      * @param \Exception          $e         exception
      * @param string              $errorPage error page
      *
@@ -193,7 +193,7 @@ class Factory {
     /**
      * _getErrorPageInfo
      *
-     * @param Context    $context context
+     * @param \loeye\base\Context $context context
      * @param \Exception $e       e
      *
      * @return void
