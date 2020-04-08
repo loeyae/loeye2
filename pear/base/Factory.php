@@ -18,21 +18,28 @@
 namespace loeye\base;
 
 use \loeye\error\BusinessException;
+use loeye\std\ParallelPlugin;
+use loeye\std\Plugin;
+use loeye\web\Request;
+use loeye\web\Response;
+use ReflectionException;
 
 /**
  * Description of Factory
  *
  * @author   Zhang Yi <loeyae@gmail.com>
  */
-class Factory {
+class Factory
+{
 
     /**
      * getPlugin
      *
      * @param array $pluginSetting plugin setting
      *
-     * @return \LOEYE\class
+     * @return Plugin|object
      * @throws Exception
+     * @throws ReflectionException
      */
     public static function getPlugin($pluginSetting)
     {
@@ -46,16 +53,16 @@ class Factory {
         }
         $file = AutoLoadRegister::realAliasFile($pluginSetting['src']);
         AutoLoadRegister::loadFile($file);
-        $rec  = new \ReflectionClass($class);
+        $rec = new \ReflectionClass($class);
         return $rec->newInstanceArgs();
     }
 
     /**
      * includeLayout
      *
-     * @param \loeye\base\Context $context context
-     * @param string              $content content
-     * @param array               $setting view setting
+     * @param Context $context context
+     * @param string $content content
+     * @param array $setting view setting
      *
      * @return void
      * @throws Exception
@@ -68,9 +75,9 @@ class Factory {
         }
         $file = AutoLoadRegister::realAliasFile($setting['layout']);
         if (!is_file($file)) {
-            $dno  = strrpos($file, ".");
+            $dno = strrpos($file, ".");
             $file = PROJECT_VIEWS_BASE_DIR . '/'
-                    . strtr(substr($file, 0, $dno), ".", "/") . substr($file, $dno);
+                . strtr(substr($file, 0, $dno), ".", "/") . substr($file, $dno);
         }
         include $file;
     }
@@ -78,8 +85,8 @@ class Factory {
     /**
      * includeView
      *
-     * @param \loeye\base\Context $context context
-     * @param array               $setting view setting
+     * @param Context $context context
+     * @param array $setting view setting
      *
      * @return void
      * @throws Exception
@@ -91,9 +98,9 @@ class Factory {
         }
         $file = AutoLoadRegister::realAliasFile($setting['src']);
         if (!is_file($file)) {
-            $dno  = strrpos($file, ".");
+            $dno = strrpos($file, ".");
             $file = PROJECT_VIEWS_DIR . '/'
-                    . strtr(substr($file, 0, $dno), ".", "/") . substr($file, $dno);
+                . strtr(substr($file, 0, $dno), ".", "/") . substr($file, $dno);
         }
         self::includeHandle($context, $setting);
         include $file;
@@ -102,21 +109,19 @@ class Factory {
     /**
      * includeHandle
      *
-     * @param \loeye\base\Context $context context
-     * @param array               $setting setting
+     * @param Context $context context
+     * @param array $setting setting
      *
      * @return void
-     * @throws Exception
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
-    static public function includeHandle(Context $context, $setting)
+    public static function includeHandle(Context $context, $setting): void
     {
         if (isset($setting['handle'])) {
             $handle = AutoLoadRegister::realAliasFile($setting['handle']);
             if (!is_file($handle)) {
-                $dno    = strrpos($handle, ".");
+                $dno = strrpos($handle, '.');
                 $handle = PROJECT_HANDLES_BASE_DIR . '/'
-                        . strtr(substr($handle, 0, $dno), ".", "/") . substr($handle, $dno);
+                    . str_replace('.', '/', substr($handle, 0, $dno)) . substr($handle, $dno);
             }
             include $handle;
         }
@@ -127,10 +132,10 @@ class Factory {
      *
      * @param string $format format
      *
-     * @return \loeye\std\Render
-     * @throws Exception
+     * @return object
+     * @throws ReflectionException
      */
-    static public function getRender($format = 'segment')
+    public static function getRender($format = 'segment')
     {
         $renderFormat = array(
             RENDER_TYPE_HTML,
@@ -138,10 +143,10 @@ class Factory {
             RENDER_TYPE_JSON,
             RENDER_TYPE_XML,
         );
-        if (!in_array($format, $renderFormat)) {
+        if (!in_array($format, $renderFormat, true)) {
             $format = 'segment';
         }
-        $class     = '' . ucfirst($format) . 'Render';
+        $class = '' . ucfirst($format) . 'Render';
         $className = '\\loeye\\render\\' . $class;
         $renderObj = new \ReflectionClass($className);
         return $renderObj->newInstanceArgs();
@@ -150,22 +155,23 @@ class Factory {
     /**
      * includeErrorPage
      *
-     * @param \loeye\base\Context $context   context
-     * @param \Exception          $e         exception
-     * @param string              $errorPage error page
+     * @param Context $context context
+     * @param \Exception $e exception
+     * @param string $errorPage error page
      *
-     * @return void
+     * @return string
+     * @throws Exception
      */
-    static public function includeErrorPage(
-            Context $context, \Exception $e, $errorPage = null
-    )
+    public static function includeErrorPage(
+        Context $context, \Exception $e, $errorPage = null
+    ): ?string
     {
-        $defaultError = "General";
-        $property     = null;
+        $defaultError = 'General';
+        $property = null;
         if ($context->getAppConfig() instanceof AppConfig) {
             $property = $context->getAppConfig()->getPropertyName();
         }
-        $errorPath        = PROJECT_ERRORPAGE_DIR . '/';
+        $errorPath = PROJECT_ERRORPAGE_DIR . '/';
         $defaultErrorPage = $errorPath . $defaultError . 'Error.php';
         if (!empty($property)) {
             $propertyErrorPath = PROJECT_ERRORPAGE_DIR . '/' . $property . '/';
@@ -180,33 +186,38 @@ class Factory {
             }
         }
         if (is_file($errorPage)) {
-            include $errorPage;
-        } else if (isset($propertyErrorPage) && is_file($propertyErrorPage)) {
-            include $propertyErrorPage;
-        } else if (is_file($defaultErrorPage)) {
-            include $defaultErrorPage;
-        } else {
-            self::_getErrorPageInfo($context, $e);
+            return include $errorPage;
         }
+
+        if (isset($propertyErrorPage) && is_file($propertyErrorPage)) {
+            return include $propertyErrorPage;
+        }
+
+        if (is_file($defaultErrorPage)) {
+            return include $defaultErrorPage;
+        }
+
+        return self::_getErrorPageInfo($context, $e);
     }
 
     /**
      * _getErrorPageInfo
      *
-     * @param \loeye\base\Context $context context
-     * @param \Exception $e       e
+     * @param Context $context context
+     * @param \Exception $e e
      *
-     * @return void
+     * @return string
+     * @throws Exception
      */
-    static private function _getErrorPageInfo(Context $context, $e)
+    private static function _getErrorPageInfo(Context $context, $e): string
     {
         $appConfig = $context->getAppConfig();
-        $debug     = $appConfig ? $appConfig->getSetting('debug', false) : false;
+        $debug = $appConfig ? $appConfig->getSetting('debug', false) : false;
         if ($debug) {
             $traceInfo = nl2br($e->getTraceAsString());
-            $html      = <<<EOF
+            $html = <<<EOF
 <!DOCTYPE html>
-<html>
+<html lang="zh_CN">
     <head>
         <title>出错了</title>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
@@ -258,7 +269,7 @@ EOF;
         } else {
             $html = <<<EOF
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
     <head>
         <title>出错了</title>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
@@ -306,18 +317,18 @@ EOF;
 </html>
 EOF;
         }
-        echo $html;
+        return $html;
     }
 
     /**
      * autoload
      *
-     * @param string $dir    dir
-     * @param bool   $ignore ignore children dir
+     * @param string $dir dir
+     * @param bool $ignore ignore children dir
      *
      * @return void
      */
-    static public function autoload($dir, $ignore = true)
+    public static function autoload($dir, $ignore = true): void
     {
         $dir = AutoLoadRegister::realAliasFile($dir);
         if (!file_exists($dir)) {
@@ -334,13 +345,13 @@ EOF;
     }
 
     /**
-     * 
+     *
      * @staticvar array  $cache array of Cache's instance
-     * @param     string $type
-     * 
-     * @return \loeye\base\Cache
+     * @param string $type
+     *
+     * @return Cache
      */
-    static public function cache($type = null)
+    public static function cache($type = null): Cache
     {
         static $cache = [];
         if (!isset($cache[$type])) {
@@ -356,17 +367,17 @@ EOF;
 
     /**
      * appConfig
-     *  
+     *
      * @staticvar \loeye\base\AppConfig $appConfig instance of AppConfig
-     * 
-     * @return \loeye\base\AppConfig
+     *
+     * @return AppConfig
      */
-    static public function appConfig()
+    public static function appConfig(): AppConfig
     {
         static $appConfig = null;
-        if (null == $appConfig) {
+        if (null === $appConfig) {
             if (!defined('PROJECT_PROPERTY')) {
-                throw new \RuntimeException();
+                throw new \RuntimeException('project property not exists');
             }
             $appConfig = new AppConfig(PROJECT_PROPERTY);
         }
@@ -374,12 +385,12 @@ EOF;
     }
 
     /**
-     * 
+     *
      * @staticvar array  $db   array of DB's instance
-     * @param     string $type
-     * @return \loeye\base\DB
+     * @param string $type
+     * @return DB
      */
-    static public function db($type = "default")
+    public static function db($type = 'default'): DB
     {
         static $db = [];
         if (!isset($db[$type])) {
@@ -387,19 +398,19 @@ EOF;
         }
         return $db[$type];
     }
-    
+
     /**
      * translator
-     * 
+     *
      * @staticvar \loeye\base\Translator $translator
-     * @param     \loeye\base\AppConfig  $appConfig  instance of AppConfig
-     * 
-     * @return \loeye\base\Translator
+     * @param AppConfig $appConfig instance of AppConfig
+     *
+     * @return Translator
      */
-    static public function translator(AppConfig $appConfig = null)
+    public static function translator(AppConfig $appConfig = null): Translator
     {
         static $translator = null;
-        if (null == $translator) {
+        if (null === $translator) {
             $translator = new Translator($appConfig ?? self::appConfig());
         }
         return $translator;
@@ -407,31 +418,32 @@ EOF;
 
     /**
      * request
-     * 
+     *
      * @staticvar \loeye\web\Request $request
-     * 
-     * @return \loeye\web\Request
+     *
+     * @param null $moduleId
+     * @return Request
      */
-    static public function request($moduleId = null)
+    public static function request($moduleId = null): Request
     {
         static $request = null;
-        if (null == $request) {
-            $request = new \loeye\web\Request($moduleId);
+        if (null === $request) {
+            $request = new Request($moduleId);
         }
         return $request;
     }
-    
+
     /**
-     * 
+     *
      * @staticvar \loeye\web\Response $response
-     * 
-     * @return \loeye\web\Response
+     *
+     * @return Response
      */
-    static public function response()
+    public static function response(): Response
     {
         static $response = null;
-        if (null == $response) {
-            $response = new \loeye\web\Response();
+        if (null === $response) {
+            $response = new Response();
         }
         return $response;
     }

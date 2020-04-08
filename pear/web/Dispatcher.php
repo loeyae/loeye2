@@ -17,6 +17,21 @@
 
 namespace loeye\web;
 
+use loeye\base\AutoLoadRegister;
+use loeye\base\Exception;
+use loeye\base\Factory;
+use loeye\base\ModuleDefinition;
+use loeye\base\Router;
+use loeye\base\UrlManager;
+use loeye\base\Utils;
+use loeye\client\ParallelClientManager;
+use loeye\error\BusinessException;
+use loeye\error\ResourceException;
+use loeye\lib\ModuleParse;
+use loeye\std\ParallelPlugin;
+use ReflectionException;
+use function loeye\base\ExceptionHandler;
+
 define('LOEYE_PLUGIN_HAS_ERROR', 'lyHasError');
 
 /**
@@ -24,44 +39,55 @@ define('LOEYE_PLUGIN_HAS_ERROR', 'lyHasError');
  *
  * @author   Zhang Yi <loeyae@gmail.com>
  */
-class Dispatcher extends \loeye\std\Dispatcher {
+class Dispatcher extends \loeye\std\Dispatcher
+{
 
+    /**
+     * @var ModuleDefinition
+     */
     private $_mDfnObj;
 
 
     /**
-     * dispatche
+     * dispatch
      *
      * @param mixed $moduleId module id
      *
      * @return void
      */
-    public function dispatche($moduleId = null)
+    public function dispatch($moduleId = null): void
     {
         try {
-            $moduleId       = $this->parseUrl($moduleId);
+            $moduleId = $this->parseUrl($moduleId);
             $this->initIOObject($moduleId);
+            if (empty($moduleId)) {
+                $moduleId = $this->context->getRequest()->getModuleId();
+            }
+
+            if (empty($moduleId)) {
+                throw new ResourceException(ResourceException::PAGE_NOT_FOUND_MSG, ResourceException::PAGE_NOT_FOUND_CODE);
+            }
             $this->initAppConfig();
             $this->initConfigConstants();
             $this->initLogger();
             $this->setTimezone();
             $this->initComponent();
-            $this->_mDfnObj = new \loeye\base\ModuleDefinition($this->context->getAppConfig(), $moduleId);
+            $this->_mDfnObj = new ModuleDefinition($this->context->getAppConfig(), $moduleId);
 
-            $this->excuteModule($moduleId);
+            $this->executeModule();
 
             $this->redirectUrl();
             $view = $this->getView();
-            $this->excuteView($view);
-            $this->excuteOutput();
-        } catch (\loeye\base\Exception $exc) {
-            \loeye\base\ExceptionHandler($exc, $this->context);
+            $this->executeView($view);
+            $this->executeOutput();
+        } catch (Exception $exc) {
+            ExceptionHandler($exc, $this->context);
         } catch (\Exception $exc) {
-            \loeye\base\ExceptionHandler($exc, $this->context);
+            ExceptionHandler($exc, $this->context);
         } finally {
-            if ($this->proccessMode > LOEYE_PROCESS_MODE__NORMAL) {
+            if ($this->processMode > LOEYE_PROCESS_MODE__NORMAL) {
                 $this->setTraceDataIntoContext(array());
-                \loeye\base\Utils::logContextTrace($this->context, null, false);
+                Utils::logContextTrace($this->context, null, false);
             }
         }
     }
@@ -75,40 +101,37 @@ class Dispatcher extends \loeye\std\Dispatcher {
      * $setting = ['/<property_name:\w+>/<module:\w+>/<id:\w>/' => '{property_name}.{module}.{id}']
      * </p>
      */
-    public function setUrlManager(array $setting)
+    public function setUrlManager(array $setting): void
     {
-        $router = new \loeye\base\UrlManager($setting);
+        $router = new UrlManager($setting);
         $this->context->setUrlManager($router);
     }
 
 
     /**
-     * excute_module
-     *
-     * @param string $moduleId module id
+     * execute module
      *
      * @return void
+     * @throws Exception
+     * @throws ReflectionException
      */
-    protected function excuteModule($moduleId)
+    protected function executeModule(): void
     {
-        if (empty($moduleId)) {
-            $moduleId = $this->context->getRequest()->getModuleId();
-        };
         $this->context->setModule($this->_mDfnObj);
 
-        $clientManager = new \loeye\client\ParallelClientManager();
+        $clientManager = new ParallelClientManager();
         $this->context->setParallelClientManager($clientManager);
 
-        $inputs          = $this->_mDfnObj->getInputs();
+        $inputs = $this->_mDfnObj->getInputs();
         $this->_setArrayInContext($inputs);
-        $setting         = \loeye\lib\ModuleParse::parseInput($this->_mDfnObj->getSetting(), $this->context);
+        $setting = ModuleParse::parseInput($this->_mDfnObj->getSetting(), $this->context);
         $continueOnError = false;
         if (isset($setting['continue_on_error']) && $setting['continue_on_error'] === 'true') {
             $continueOnError = true;
         }
         $cacheAble = true;
         if (isset($setting['cache_able'])) {
-            $cacheAble = \loeye\lib\ModuleParse::conditionResult($setting['cache_able'], $this->context);
+            $cacheAble = ModuleParse::conditionResult($setting['cache_able'], $this->context);
         }
         if ($cacheAble && isset($setting['cache'])) {
             $this->context->setExpire($setting['cache']);
@@ -117,16 +140,16 @@ class Dispatcher extends \loeye\std\Dispatcher {
             $this->context->loadCacheData();
         }
 
-        if ($this->proccessMode > LOEYE_PROCESS_MODE__NORMAL) {
+        if ($this->processMode > LOEYE_PROCESS_MODE__NORMAL) {
             $this->setTraceDataIntoContext(array());
         }
         $mockMode = $this->context->getRequest()->getParameterGet('ly_p_m');
-        if ($this->proccessMode > LOEYE_PROCESS_MODE__NORMAL && $mockMode === 'mock') {
+        if ($this->processMode > LOEYE_PROCESS_MODE__NORMAL && $mockMode === 'mock') {
             $mockPlugins = $this->_mDfnObj->getMockPlugins();
-            list($returnStatus) = $this->_excutePlugin($mockPlugins, false, true);
+            list($returnStatus) = $this->_executePlugin($mockPlugins, false, true);
         } else {
             $plugins = $this->_mDfnObj->getPlugins();
-            list($returnStatus) = $this->_excutePlugin($plugins, false, $continueOnError);
+            list($returnStatus) = $this->_executePlugin($plugins, false, $continueOnError);
         }
         if ($cacheAble) {
             $this->context->cacheData();
@@ -144,17 +167,15 @@ class Dispatcher extends \loeye\std\Dispatcher {
      *
      * @return void
      */
-    protected function initIOObject($moduleId)
+    protected function initIOObject($moduleId): void
     {
-        $request = \loeye\base\Factory::request($moduleId);
+        $request = Factory::request($moduleId);
 
         $this->context->setRequest($request);
 
-        $response = \loeye\base\Factory::response();
-        if (defined('MOBILE_RENDER_ENABLE') && MOBILE_RENDER_ENABLE) {
-            if ($request->device) {
-                $response->setRenderId(\loeye\web\Response::DEFAULT_MOBILE_RENDER_ID);
-            }
+        $response = Factory::response();
+        if (defined('MOBILE_RENDER_ENABLE') && MOBILE_RENDER_ENABLE && $request->getDevice()) {
+            $response->setRenderId(Response::DEFAULT_MOBILE_RENDER_ID);
         }
         $this->context->setResponse($response);
     }
@@ -167,16 +188,16 @@ class Dispatcher extends \loeye\std\Dispatcher {
      *
      * @return string|null
      */
-    private function _excuteRouter($routerDir)
+    private function _executeRouter($routerDir): ?string
     {
         $moduleId = null;
-        $router   = new \loeye\base\Router($routerDir);
+        $router = new Router($routerDir);
         $this->context->setRouter($router);
         if (filter_has_var(INPUT_GET, 'm_id')) {
             $moduleId = filter_input(INPUT_GET, 'm_id', FILTER_SANITIZE_STRING);
         } else {
             $requestUrl = filter_input(INPUT_SERVER, 'REQUEST_URI');
-            $moduleId   = $router->match($requestUrl);
+            $moduleId = $router->match($requestUrl);
         }
         return $moduleId;
     }
@@ -186,11 +207,12 @@ class Dispatcher extends \loeye\std\Dispatcher {
      * getView
      *
      * @return array|null
+     * @throws Exception
      */
-    protected function getView()
+    protected function getView(): ?array
     {
         $renderId = $this->context->getResponse()->getRenderId();
-        $views    = $this->_mDfnObj->getViews();
+        $views = $this->_mDfnObj->getViews();
         if (!empty($renderId) && !empty($views)) {
             if ($renderId === Response::DEFAULT_MOBILE_RENDER_ID && !isset($views[$renderId])) {
                 $renderId = Response::DEFAULT_RENDER_ID;
@@ -204,26 +226,26 @@ class Dispatcher extends \loeye\std\Dispatcher {
     /**
      * CacheContent
      *
-     * @param array $view     view setting
+     * @param array $view view setting
      * @param string $content content
      *
      * @return void
      */
-    protected function CacheContent($view, $content)
+    protected function CacheContent($view, $content): void
     {
         if (isset($view['cache'])) {
             if (isset($view['expire'])) {
                 $expire = $view['expire'];
             } else if (is_string($view['cache']) or is_numeric($view['cache'])) {
-                $expire = intval($view['cache']);
+                $expire = (int)$view['cache'];
             } else {
                 $expire = 0;
             }
             $cacheParams = [];
             if (is_array($view['cache'])) {
-                $cacheParams = \loeye\lib\ModuleParse::parseInput($view['cache'], $this->context);
+                $cacheParams = ModuleParse::parseInput($view['cache'], $this->context);
             }
-            \loeye\base\Utils::setPageCache($this->context->getAppConfig(), $this->context->getRequest()->getModuleId(), $content, $expire, $cacheParams);
+            Utils::setPageCache($this->context->getAppConfig(), $this->context->getRequest()->getModuleId(), $content, $expire, $cacheParams);
         }
     }
 
@@ -235,15 +257,15 @@ class Dispatcher extends \loeye\std\Dispatcher {
      *
      * @return string|null
      */
-    protected function getContent($view)
+    protected function getContent($view): ?string
     {
         $content = null;
         if (isset($view['cache'])) {
             $cacheParams = [];
             if (is_array($view['cache'])) {
-                $cacheParams = \loeye\lib\ModuleParse::parseInput($view['cache'], $this->context);
+                $cacheParams = ModuleParse::parseInput($view['cache'], $this->context);
             }
-            $content = \loeye\base\Utils::getPageCache($this->context->getAppConfig(), $this->context->getRequest()->getModuleId(), $cacheParams);
+            $content = Utils::getPageCache($this->context->getAppConfig(), $this->context->getRequest()->getModuleId(), $cacheParams);
         }
         return $content;
     }
@@ -256,7 +278,7 @@ class Dispatcher extends \loeye\std\Dispatcher {
      *
      * @return string
      */
-    protected function getCacheId($view)
+    protected function getCacheId($view): string
     {
         $cacheId = $this->_mDfnObj->getModuleId();
         if (isset($view['id'])) {
@@ -267,54 +289,53 @@ class Dispatcher extends \loeye\std\Dispatcher {
 
 
     /**
-     * _excutePlugin
+     * _executePlugin
      *
-     * @param array   $pluginSetting   plugin setting
-     * @param boolean $isParallel      is parallel
+     * @param array $pluginSetting plugin setting
+     * @param boolean $isParallel is parallel
      * @param boolean $continueOnError continue on error
      *
-     * @return type
-     * @throws \loeye\base\Exception
+     * @return array
+     * @throws Exception
+     * @throws ReflectionException
      */
-    private function _excutePlugin($pluginSetting, $isParallel = false, $continueOnError = false)
+    private function _executePlugin($pluginSetting, $isParallel = false, $continueOnError = false): array
     {
-        $pluginList   = array();
+        $pluginList = array();
         $returnStatus = true;
         if (is_array($pluginSetting)) {
             foreach ($pluginSetting as $plugin) {
                 reset($plugin);
-                if (!empty($plugin[\loeye\lib\ModuleParse::CONDITION_KEY]) && (\loeye\lib\ModuleParse::conditionResult(
-                                $plugin[\loeye\lib\ModuleParse::CONDITION_KEY],
-                                $this->context) == false)) {
+                if (!empty($plugin[ModuleParse::CONDITION_KEY]) && (ModuleParse::conditionResult(
+                            $plugin[ModuleParse::CONDITION_KEY],
+                            $this->context) === false)) {
                     continue;
                 }
                 $key = key($plugin);
-                if (\loeye\lib\ModuleParse::isCondition($key)) {
-                    if (\loeye\lib\ModuleParse::groupConditionResult($key, $this->context) == false) {
+                if (ModuleParse::isCondition($key)) {
+                    if (ModuleParse::groupConditionResult($key, $this->context) === false) {
                         continue;
                     }
-                    $result       = $this->_excutePlugin(current($plugin), $isParallel);
-                    $returnStatus = $result[0];
-                    $opluginList  = $result[1];
-                    $pluginList   = $this->_mergePluginList($pluginList, $opluginList);
-                    if ($this->proccessMode == LOEYE_PROCESS_MODE__ERROR_EXIT) {
+                    $result = $this->_executePlugin(current($plugin), $isParallel);
+                    [$returnStatus, $oPluginList] = $result;
+                    $pluginList = $this->_mergePluginList($pluginList, $oPluginList);
+                    if ($this->processMode === LOEYE_PROCESS_MODE__ERROR_EXIT) {
                         return array(
                             $returnStatus,
                             $pluginList,
                         );
                     }
-                } else if (\loeye\lib\ModuleParse::isParallel($key)) {
+                } else if (ModuleParse::isParallel($key)) {
                     if ($isParallel === true) {
-                        throw new \loeye\base\Exception(
-                                'parallel can not nest',
-                                \loeye\error\BusinessException::INVALID_CONFIG_SET_CODE);
+                        throw new Exception(
+                            'parallel can not nest',
+                            BusinessException::INVALID_CONFIG_SET_CODE);
                     }
-                    $result       = $this->_excutePlugin(current($plugin), true);
-                    $returnStatus = $result[0];
-                    $opluginList  = $result[1];
-                    $returnStatus = $this->_excuteParallelPlugin($opluginList);
-                    $pluginList   = $this->_mergePluginList($pluginList, $opluginList);
-                    if ($this->proccessMode == LOEYE_PROCESS_MODE__ERROR_EXIT) {
+                    $result = $this->_executePlugin(current($plugin), true);
+                    [, $oPluginList] = $result;
+                    $returnStatus = $this->_executeParallelPlugin($oPluginList);
+                    $pluginList = $this->_mergePluginList($pluginList, $oPluginList);
+                    if ($this->processMode === LOEYE_PROCESS_MODE__ERROR_EXIT) {
                         return array(
                             $returnStatus,
                             $pluginList,
@@ -322,28 +343,22 @@ class Dispatcher extends \loeye\std\Dispatcher {
                     }
                 } else {
                     $pluginList[] = $plugin;
-                    if ($isParallel == false) {
-                        $setting = \loeye\lib\ModuleParse::parseInput($plugin, $this->context);
+                    if ($isParallel === false) {
+                        $setting = ModuleParse::parseInput($plugin, $this->context);
                         if (isset($setting['inputs'])) {
                             $this->_setArrayInContext($setting['inputs']);
                         }
-                        if (isset($setting['check_cache'])) {
-                            if (\loeye\base\Utils::checkContenxtCacheData($this->context, [], $setting['check_cache'])) {
-                                continue;
-                            }
-                        } else {
-                            if (\loeye\base\Utils::checkContenxtCacheData($this->context, $setting)) {
-                                continue;
-                            }
+                        if ($this->checkContextCacheData($setting)) {
+                            continue;
                         }
-                        $pluginObj = \loeye\base\Factory::getPlugin($plugin);
-                        if ($pluginObj instanceof \loeye\std\ParallelPlugin) {
+                        $pluginObj = Factory::getPlugin($plugin);
+                        if ($pluginObj instanceof ParallelPlugin) {
                             $pluginObj->prepare($this->context, $setting);
                             $this->context->getParallelClientManager()->excute();
                             $this->context->getParallelClientManager()->reset();
                         }
                         $returnStatus = $pluginObj->process($this->context, $setting);
-                        if ($this->proccessMode > LOEYE_PROCESS_MODE__NORMAL) {
+                        if ($this->processMode > LOEYE_PROCESS_MODE__NORMAL) {
                             $this->setTraceDataIntoContext($plugin);
                         }
                     }
@@ -357,13 +372,11 @@ class Dispatcher extends \loeye\std\Dispatcher {
                 }
 
 
-                if ($returnStatus === false) {
-                    if ($continueOnError === false) {
-                        return array(
-                            $returnStatus,
-                            $pluginList,
-                        );
-                    }
+                if (($returnStatus === false) && $continueOnError === false) {
+                    return array(
+                        $returnStatus,
+                        $pluginList,
+                    );
                 }
             }
         }
@@ -375,50 +388,45 @@ class Dispatcher extends \loeye\std\Dispatcher {
 
 
     /**
-     * _excuteParallelPlugin
+     * _executeParallelPlugin
      *
-     * @param array   $pluginList      plugin list
+     * @param array $pluginList plugin list
      * @param boolean $continueOnError continue on error
      *
      * @return boolean
-     * @throws \loeye\base\Exception
+     * @throws Exception
+     * @throws ReflectionException
      */
-    private function _excuteParallelPlugin($pluginList, $continueOnError = false)
+    private function _executeParallelPlugin($pluginList, $continueOnError = false): bool
     {
-        $returnStatus  = true;
+        $returnStatus = true;
         $pluginObjList = array();
-        $settingList   = array();
+        $settingList = array();
         foreach ($pluginList as $id => $plugin) {
-            $setting = \loeye\lib\ModuleParse::parseInput($plugin, $this->context);
+            $setting = ModuleParse::parseInput($plugin, $this->context);
             if (isset($setting['inputs'])) {
                 $this->_setArrayInContext($setting['inputs']);
             }
-            if (isset($setting['check_cache'])) {
-                if (\loeye\base\Utils::checkContenxtCacheData($this->context, [], $setting['check_cache'])) {
-                    continue;
-                }
-            } else {
-                if (\loeye\base\Utils::checkContenxtCacheData($this->context, $setting)) {
-                    continue;
-                }
+            if ($this->checkContextCacheData($setting)) {
+                continue;
             }
-            $pluginObj = \loeye\base\Factory::getPlugin($plugin);
-            if (!($pluginObj instanceof \loeye\std\ParallelPlugin)) {
-                throw new \loeye\base\Exception(
-                        'plugin of parallel must ParallelPlugin instance',
-                        \loeye\error\BusinessException::INVALID_PLUGIN_INSTANCE_CODE
+            $pluginObj = Factory::getPlugin($plugin);
+            if (!($pluginObj instanceof ParallelPlugin)) {
+                throw new Exception(
+                    'plugin of parallel must ParallelPlugin instance',
+                    BusinessException::INVALID_PLUGIN_INSTANCE_CODE
                 );
             }
             $pluginObj->prepare($this->context, $setting);
             $pluginObjList[$id] = $pluginObj;
-            $settingList[$id]   = $setting;
+            $settingList[$id] = $setting;
         }
 
         $this->context->getParallelClientManager()->excute();
         $this->context->getParallelClientManager()->reset();
 
         foreach ($pluginObjList as $id => $pluginObj) {
-            $setting      = $settingList[$id];
+            $setting = $settingList[$id];
             $returnStatus = $pluginObj->process($this->context, $setting);
 
             $breakStatus = $this->_handleError($pluginList[$id]);
@@ -426,17 +434,33 @@ class Dispatcher extends \loeye\std\Dispatcher {
                 return false;
             }
 
-            if ($returnStatus === false) {
-                if ($continueOnError === false) {
-                    return false;
-                }
+            if (($returnStatus === false) && $continueOnError === false) {
+                return false;
             }
         }
 
-        if ($this->proccessMode > LOEYE_PROCESS_MODE__NORMAL) {
+        if ($this->processMode > LOEYE_PROCESS_MODE__NORMAL) {
             $this->setTraceDataIntoContext($pluginList);
         }
         return $returnStatus;
+    }
+
+    /**
+     * checkContextCacheData
+     *
+     * @param $setting
+     * @return bool
+     */
+    protected function checkContextCacheData($setting): bool
+    {
+        if (isset($setting['check_cache'])) {
+            if (Utils::checkContextCacheData($this->context, [], $setting['check_cache'])) {
+                return true;
+            }
+        } else if (Utils::checkContextCacheData($this->context, $setting)) {
+            return true;
+        }
+        return false;
     }
 
 
@@ -448,7 +472,7 @@ class Dispatcher extends \loeye\std\Dispatcher {
      *
      * @return array
      */
-    private function _mergePluginList($pluginList1, $pluginList2)
+    private function _mergePluginList($pluginList1, $pluginList2): array
     {
         foreach ($pluginList2 as $plugin) {
             $pluginList1[] = $plugin;
@@ -464,7 +488,7 @@ class Dispatcher extends \loeye\std\Dispatcher {
      *
      * @return void
      */
-    private function _setArrayInContext($inputs)
+    private function _setArrayInContext($inputs): void
     {
         if (is_array($inputs)) {
             foreach ($inputs as $key => $value) {
@@ -479,13 +503,15 @@ class Dispatcher extends \loeye\std\Dispatcher {
      *
      * @param array $plugin plugin setting
      *
-     * @return void
+     * @return bool
+     * @throws BusinessException
+     * @throws Exception
      */
-    private function _handleError($plugin)
+    private function _handleError($plugin): bool
     {
         if (isset($plugin[LOEYE_PLUGIN_HAS_ERROR])) {
             foreach ($plugin[LOEYE_PLUGIN_HAS_ERROR] as $key => $errorSetting) {
-                if ($key == 'default') {
+                if ($key === 'default') {
                     $errors = $this->context->getErrors();
                 } else {
                     $errors = $this->context->getErrors($key);
@@ -506,9 +532,9 @@ class Dispatcher extends \loeye\std\Dispatcher {
                         if (!empty($url)) {
                             $this->context->getResponse()->setRedirectUrl($url);
                         } else {
-                            throw new \loeye\error\BusinessException(
-                                    \loeye\error\BusinessException::INVALID_RENDER_SET_MSG,
-                                    \loeye\error\BusinessException::INVALID_RENDER_SET_CODE);
+                            throw new BusinessException(
+                                BusinessException::INVALID_RENDER_SET_MSG,
+                                BusinessException::INVALID_RENDER_SET_CODE);
                         }
                         break;
                     case 'json':
@@ -518,10 +544,10 @@ class Dispatcher extends \loeye\std\Dispatcher {
                         break;
                     default :
                         $error = current($errors);
-                        $code  = 500;
+                        $code = 500;
                         if ($error instanceof \Exception) {
                             $message = $error->getMessage();
-                            $code    = $error->getCode();
+                            $code = $error->getCode();
                         } else {
                             $message = is_array($error) ? print_r($errors, true) : $error;
                         }
@@ -531,14 +557,14 @@ class Dispatcher extends \loeye\std\Dispatcher {
                         if (isset($errorSetting['message'])) {
                             $message = $errorSetting['message'];
                         }
-                        $error        = new \Exception($message, $code);
-                        $file         = !empty($errorSetting['page']) ? $errorSetting['page'] : null;
-                        $errorContent = \loeye\base\Factory::includeErrorPage($this->context, $error, $file);
+                        $error = new \Exception($message, $code);
+                        $file = !empty($errorSetting['page']) ? $errorSetting['page'] : null;
+                        $errorContent = Factory::includeErrorPage($this->context, $error, $file);
                         $this->context->getResponse()->addOutput($errorContent);
                         $this->context->getResponse()->setRenderId(null);
                         break;
                 }
-                $this->proccessMode = LOEYE_PROCESS_MODE__ERROR_EXIT;
+                $this->processMode = LOEYE_PROCESS_MODE__ERROR_EXIT;
                 return true;
             }
         }
@@ -552,18 +578,19 @@ class Dispatcher extends \loeye\std\Dispatcher {
      * @param array $errorSetting error setting
      *
      * @return void
+     * @throws Exception
      */
-    private function _output($errorSetting)
+    private function _output($errorSetting): void
     {
         $this->context->getResponse()->setFormat($errorSetting['type']);
-        $status     = \loeye\base\Utils::getData($errorSetting, 'code', 200);
+        $status = Utils::getData($errorSetting, 'code', 200);
         $this->context->getResponse()->addOutput($status, 'status');
-        $message    = \loeye\base\Utils::getData($errorSetting, 'msg', 'OK');
+        $message = Utils::getData($errorSetting, 'msg', 'OK');
         $this->context->getResponse()->addOutput($message, 'message');
-        $data       = array();
-        $outDataKey = \loeye\base\Utils::getData($errorSetting, 'data', null);
+        $data = array();
+        $outDataKey = Utils::getData($errorSetting, 'data', null);
         if (!empty($outDataKey)) {
-            $data = \loeye\base\Utils::getData($this->context, $outDataKey);
+            $data = Utils::getData($this->context, $outDataKey);
         } else if (isset($errorSetting['error'])) {
             $data = $this->context->getErrors($errorSetting['error']);
         }
@@ -581,17 +608,18 @@ class Dispatcher extends \loeye\std\Dispatcher {
      * @param array $errorSetting error setting
      *
      * @return string
+     * @throws Exception
      */
-    private function _getRedirectUrl($errorSetting)
+    private function _getRedirectUrl($errorSetting): string
     {
-        $url       = null;
-        $routerKey = \loeye\base\Utils::getData($errorSetting, 'router_key');
+        $url = null;
+        $routerKey = Utils::getData($errorSetting, 'router_key');
         if (!empty($routerKey) && $this->context->getRouter() instanceof Router) {
-            $parameter = \loeye\base\Utils::getData($errorSetting, 'params', array());
-            $router    = $this->context->getRouter();
-            $url       = $router->generate($routerKey, $parameter);
+            $parameter = Utils::getData($errorSetting, 'params', array());
+            $router = $this->context->getRouter();
+            $url = $router->generate($routerKey, $parameter);
         } else {
-            $url = \loeye\base\Utils::getData($errorSetting, 'url');
+            $url = Utils::getData($errorSetting, 'url');
         }
         return $url;
     }
@@ -601,6 +629,7 @@ class Dispatcher extends \loeye\std\Dispatcher {
      * _setTimezone
      *
      * @return void
+     * @throws Exception
      */
     private function _setTimezone()
     {
@@ -614,41 +643,43 @@ class Dispatcher extends \loeye\std\Dispatcher {
      * _initComponent
      *
      * @return void
+     * @throws Exception
      */
     private function _initComponent()
     {
         $component = $this->context->getAppConfig()->getSetting('component');
         if (!empty($component)) {
-            foreach ((array) $component as $item => $list) {
-                if ($item == 'namespace') {
+            foreach ((array)$component as $item => $list) {
+                if ($item === 'namespace') {
                     foreach ($list as $ns => $path) {
                         if (is_array($path)) {
-                            array_reduce($path, function ($ns, $item) {
-                                \loeye\base\AutoLoadRegister::addNamespace($ns, $item);
+                            array_reduce($path, static function ($ns, $item) {
+                                AutoLoadRegister::addNamespace($ns, $item);
                                 return $ns;
                             }, $ns);
                         } else {
-                            \loeye\base\AutoLoadRegister::addNamespace($ns, $path);
+                            AutoLoadRegister::addNamespace($ns, $path);
                         }
                     }
-                } else if ($item == 'alias') {
+                } else if ($item === 'alias') {
                     foreach ($list as $as => $path) {
                         if (is_array($path)) {
-                            array_reduce($path, function ($as, $item) {
-                                \loeye\base\AutoLoadRegister::addAlias($as, $item);
+                            $ns = null;
+                            array_reduce($path, static function ($as, $item) {
+                                AutoLoadRegister::addAlias($as, $item);
                                 return $as;
                             }, $ns);
                         } else {
-                            \loeye\base\AutoLoadRegister::addNamespace($as, $path);
+                            AutoLoadRegister::addNamespace($as, $path);
                         }
                     }
                 } else {
                     if (is_array($list)) {
                         foreach ($list as $dir => $ignore) {
-                            \loeye\base\Factory::autoload($dir, $ignore);
+                            Factory::autoload($dir, $ignore);
                         }
                     } else {
-                        \loeye\base\AutoLoadRegister::addDir($list);
+                        AutoLoadRegister::addDir($list);
                     }
                 }
             }
@@ -661,12 +692,12 @@ class Dispatcher extends \loeye\std\Dispatcher {
      *
      * @param string $moduleId module id
      *
-     * @return void
+     * @return string
      */
-    protected function parseUrl($moduleId = null)
+    protected function parseUrl($moduleId = null): string
     {
         if (empty($moduleId)) {
-            if ($this->context->getUrlManager() instanceof \loeye\base\UrlManager) {
+            if ($this->context->getUrlManager() instanceof UrlManager) {
                 $moduleId = $this->context->getUrlManager()->match(filter_input(INPUT_SERVER, 'REQUEST_URI'));
             } else {
                 if (filter_has_var(INPUT_SERVER, 'REDIRECT_routerDir')) {
@@ -678,12 +709,8 @@ class Dispatcher extends \loeye\std\Dispatcher {
                 } else {
                     $routerDir = defined('PROJECT_PROPERTY') ? PROJECT_PROPERTY : PROJECT_NAMESPACE;
                 }
-                $moduleId = $this->_excuteRouter($routerDir);
+                $moduleId = $this->_executeRouter($routerDir);
             }
-        }
-        if (empty($moduleId)) {
-            $uri = (isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '');
-            throw new \loeye\error\ResourceException(\loeye\error\ResourceException::PAGE_NOT_FOUND_MSG, \loeye\error\ResourceException::PAGE_NOT_FOUND_CODE);
         }
         return $moduleId;
     }
@@ -692,12 +719,13 @@ class Dispatcher extends \loeye\std\Dispatcher {
     /**
      * _addResource
      *
-     * @param string $type     type
-     * @param mixed  $resource resource
+     * @param string $type type
+     * @param mixed $resource resource
      *
      * @return void
+     * @throws BusinessException
      */
-    private function _addResource($type, $resource)
+    protected function _addResource($type, $resource): void
     {
         $res = new Resource($type, $resource);
         $this->context->getResponse()->addResource($res);

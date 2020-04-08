@@ -17,6 +17,13 @@
 
 namespace loeye\service;
 
+use loeye\base\AppConfig;
+use loeye\base\Factory;
+use loeye\base\UrlManager;
+use loeye\base\Utils;
+use loeye\error\ResourceException;
+use ReflectionException;
+
 /**
  * Dispatcher
  *
@@ -24,10 +31,10 @@ namespace loeye\service;
  */
 class Dispatcher extends \loeye\std\Dispatcher
 {
-    const KEY_MODULE = 'module';
-    const KEY_SERVICE = 'service';
-    const KEY_HANDLER = 'handler';
-    const KEY_REWRITE = 'rewrite';
+    public const KEY_MODULE = 'module';
+    public const KEY_SERVICE = 'service';
+    public const KEY_HANDLER = 'handler';
+    public const KEY_REWRITE = 'rewrite';
 
     /**
      * config
@@ -39,16 +46,18 @@ class Dispatcher extends \loeye\std\Dispatcher
     protected $module;
     protected $service;
     protected $handler;
-    protected $rewirte;
+    protected $rewrite;
 
     /**
-     * dispatche
+     * dispatch
      *
      * @params string $moduleId
      *
+     * @param null $moduleId
      * @return void
+     * @throws ReflectionException
      */
-    public function dispatche($moduleId=null)
+    public function dispatch($moduleId = null): void
     {
         try {
             $this->parseUrl();
@@ -62,16 +71,16 @@ class Dispatcher extends \loeye\std\Dispatcher
             if (!$handlerNamespace) {
                 $handlerNamespace = PROJECT_NAMESPACE . '\\services\\handler\\' . mb_convert_case($this->context->getAppConfig()->getPropertyName(), MB_CASE_LOWER);
             }
-            $handler = $handlerNamespace .'\\'. $this->service .'\\'. ucfirst($this->handler) . ucfirst(self::KEY_HANDLER);
+            $handler = $handlerNamespace . '\\' . $this->service . '\\' . ucfirst($this->handler) . ucfirst(self::KEY_HANDLER);
             if (!class_exists($handler)) {
-                throw new \loeye\error\ResourceException(\loeye\error\ResourceException::PAGE_NOT_FOUND_MSG, \loeye\error\ResourceException::PAGE_NOT_FOUND_CODE);
+                throw new ResourceException(ResourceException::PAGE_NOT_FOUND_MSG, ResourceException::PAGE_NOT_FOUND_CODE);
             }
             $ref = new \ReflectionClass($handler);
             $handlerObject = $ref->newInstance($this->context);
             $handlerObject->handle();
-            $this->excuteOutput();
+            $this->executeOutput();
         } catch (\Exception $exc) {
-            \loeye\base\Utils::errorLog($exc);
+            Utils::errorLog($exc);
             $request = ($this->getContext()->getRequest() ?? new Request());
             $response = ($this->getContext()->getResponse() ?? new Response($request));
             $format = ($request->getFormatType());
@@ -82,14 +91,14 @@ class Dispatcher extends \loeye\std\Dispatcher
             $response->setStatusMessage('Internal Error');
             $response->addOutput(
                 ['code' => $exc->getCode(), 'message' => $exc->getMessage()], 'status');
-            $renderObj = \loeye\base\Factory::getRender($response->getFormat());
+            $renderObj = Factory::getRender($response->getFormat());
 
             $renderObj->header($response);
             $renderObj->output($response);
         } finally {
-            if ($this->proccessMode > LOEYE_PROCESS_MODE__NORMAL) {
+            if ($this->processMode > LOEYE_PROCESS_MODE__NORMAL) {
                 $this->setTraceDataIntoContext(array());
-                \loeye\base\Utils::logContextTrace($this->context, null, false);
+                Utils::logContextTrace($this->context, null, false);
             }
         }
     }
@@ -109,10 +118,10 @@ class Dispatcher extends \loeye\std\Dispatcher
      *
      * @return void
      */
-    public function init(array $setting)
+    public function init(array $setting): void
     {
         isset($setting[self::KEY_MODULE]) && $this->module = $setting[self::KEY_MODULE];
-        isset($setting[self::KEY_SERVICE]) && $this->service= $setting[self::KEY_SERVICE];
+        isset($setting[self::KEY_SERVICE]) && $this->service = $setting[self::KEY_SERVICE];
         isset($setting[self::KEY_HANDLER]) && $this->handler = $setting[self::KEY_HANDLER];
         isset($setting[self::KEY_REWRITE]) && $this->rewrite = $setting[self::KEY_REWRITE];
     }
@@ -125,11 +134,12 @@ class Dispatcher extends \loeye\std\Dispatcher
      * @return void
      *
      */
-    protected function initIOObject($moduleId) {
-        $request = new \loeye\service\Request($moduleId);
+    protected function initIOObject($moduleId): void
+    {
+        $request = new Request($moduleId);
 
         $this->context->setRequest($request);
-        $response = new \loeye\service\Response($request);
+        $response = new Response($request);
         $response->setFormat($request->getFormatType());
         $this->context->setResponse($response);
     }
@@ -137,39 +147,39 @@ class Dispatcher extends \loeye\std\Dispatcher
     /**
      * parseUrlPath
      *
-     * @return array
-     * @throws \loeye\base\Exception
+     * @return void
+     * @throws ResourceException
      */
-    protected function parseUrl()
+    protected function parseUrl(): void
     {
         $requestUrl = filter_input(INPUT_SERVER, 'REQUEST_URI', FILTER_UNSAFE_RAW);
         $path = null;
         if ($this->rewrite) {
-            $router = new \loeye\base\UrlManager($this->rewrite);
+            $router = new UrlManager($this->rewrite);
             $path = $router->match($requestUrl);
             if ($path === false) {
-                throw new \loeye\error\ResourceException(\loeye\error\ResourceException::PAGE_NOT_FOUND_MSG, \loeye\error\ResourceException::PAGE_NOT_FOUND_CODE);
+                throw new ResourceException(ResourceException::PAGE_NOT_FOUND_MSG, ResourceException::PAGE_NOT_FOUND_CODE);
             }
         }
-        if ($path == null) {
+        if ($path === null) {
             $path = parse_url($requestUrl, PHP_URL_PATH);
         }
         $parts = explode('/', trim($path, '/'));
         if (isset($parts[2])) {
             $this->module = $parts[0];
             $this->service = $parts[1];
-            $this->handler = \loeye\base\Utils::camelize($parts[2]);
+            $this->handler = Utils::camelize($parts[2]);
         } else if (isset($parts[1])) {
             $this->service = $parts[0];
-            $this->handler = \loeye\base\Utils::camelize($parts[1]);
+            $this->handler = Utils::camelize($parts[1]);
         } else {
-            $this->handler = \loeye\base\Utils::camelize($parts[0]);
+            $this->handler = Utils::camelize($parts[0]);
         }
-        if (empty($this->module)|| empty($this->service) || empty($this->handler)) {
-                throw new \loeye\error\ResourceException(\loeye\error\ResourceException::PAGE_NOT_FOUND_MSG, \loeye\error\ResourceException::PAGE_NOT_FOUND_CODE);
+        if (empty($this->module) || empty($this->service) || empty($this->handler)) {
+            throw new ResourceException(ResourceException::PAGE_NOT_FOUND_MSG, ResourceException::PAGE_NOT_FOUND_CODE);
         }
-        $moduleKey  = \loeye\base\UrlManager::REWRITE_KEY_PREFIX . \loeye\service\Dispatcher::KEY_MODULE;
-        $serviceKey = \loeye\base\UrlManager::REWRITE_KEY_PREFIX . \loeye\service\Dispatcher::KEY_SERVICE;
+        $moduleKey = UrlManager::REWRITE_KEY_PREFIX . self::KEY_MODULE;
+        $serviceKey = UrlManager::REWRITE_KEY_PREFIX . self::KEY_SERVICE;
         $_GET[$moduleKey] = $this->module;
         $_GET[$serviceKey] = $this->service;
     }

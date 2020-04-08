@@ -15,6 +15,9 @@
 
 namespace loeye\base;
 
+use loeye\std\Request;
+use loeye\std\Response;
+
 /**
  * Context
  *
@@ -502,11 +505,11 @@ class Context implements \ArrayAccess
     /**
      * setRequest
      *
-     * @param \loeye\std\Request $request request
+     * @param Request $request request
      *
      * @return void
      */
-    public function setRequest(\loeye\std\Request $request)
+    public function setRequest(Request $request): void
     {
         $this->_request = $request;
     }
@@ -514,9 +517,9 @@ class Context implements \ArrayAccess
     /**
      * getRequest
      *
-     * @return \loeye\std\Request
+     * @return Request
      */
-    public function getRequest()
+    public function getRequest(): Request
     {
         return $this->_request;
     }
@@ -524,11 +527,11 @@ class Context implements \ArrayAccess
     /**
      * setResponse
      *
-     * @param \loeye\std\Response $response response
+     * @param Response $response response
      *
      * @return void
      */
-    public function setResponse(\loeye\std\Response $response)
+    public function setResponse(Response $response): void
     {
         $this->_response = $response;
     }
@@ -536,7 +539,7 @@ class Context implements \ArrayAccess
     /**
      * getResponse
      *
-     * @return \loeye\std\Response $response response
+     * @return Response $response response
      */
     public function getResponse()
     {

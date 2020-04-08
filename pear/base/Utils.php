@@ -318,7 +318,7 @@ class Utils
      *
      * @return boolean
      */
-    static public function checkContenxtCacheData(Context $context, $setting, $default = null)
+    static public function checkContextCacheData(Context $context, $setting, $default = null): bool
     {
         $key = null;
         if (!empty($setting['out'])) {
@@ -421,8 +421,8 @@ class Utils
      * getData
      *
      * @param mixed $data    data
-     * @param type  $key     key
-     * @param type  $default default
+     * @param string  $key     key
+     * @param mixed  $default default
      *
      * @return mixed
      */
@@ -641,9 +641,9 @@ class Utils
      * @param string                $moduleId  module id
      * @param array                 $params    params
      *
-     * @return void
+     * @return string|null
      */
-    static public function getPageCache(AppConfig $appConfig, $moduleId, $params = [])
+    public static function getPageCache(AppConfig $appConfig, $moduleId, $params = []): ?string
     {
         $fileKey = $moduleId;
         if (!empty($params)) {
@@ -696,7 +696,7 @@ class Utils
             }
         }
         $dispatcher = new \loeye\web\Dispatcher();
-        $dispatcher->dispatche($moduleId);
+        $dispatcher->dispatch($moduleId);
     }
 
     /**

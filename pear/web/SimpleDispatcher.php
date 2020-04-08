@@ -17,6 +17,8 @@
 
 namespace loeye\web;
 
+use loeye\lib\ModuleParse;
+
 /**
  * SimpleDispatcher
  *
@@ -25,14 +27,14 @@ namespace loeye\web;
 class SimpleDispatcher extends \loeye\std\Dispatcher
 {
 
-    const KEY_MODULE             = 'module';
-    const KEY_CONTROLLER         = 'controller';
-    const KEY_ACTION             = 'action';
-    const KEY_REWRITE            = 'rewrite';
-    const KEY_REQUEST_URI        = 'u';
-    const KEY_REQUEST_MODULE     = 'm';
-    const KEY_REQUEST_CONTROLLER = 'c';
-    const KEY_REQUEST_ACTION     = 'a';
+    public const KEY_MODULE             = 'module';
+    public const KEY_CONTROLLER         = 'controller';
+    public const KEY_ACTION             = 'action';
+    public const KEY_REWRITE            = 'rewrite';
+    public const KEY_REQUEST_URI        = 'u';
+    public const KEY_REQUEST_MODULE     = 'm';
+    public const KEY_REQUEST_CONTROLLER = 'c';
+    public const KEY_REQUEST_ACTION     = 'a';
 
     protected $module;
     protected $controller;
@@ -44,7 +46,7 @@ class SimpleDispatcher extends \loeye\std\Dispatcher
      *
      * @return void
      */
-    public function dispatche($moduleId = null)
+    public function dispatch($moduleId = null)
     {
         try {
             $this->parseUrl();
@@ -58,14 +60,14 @@ class SimpleDispatcher extends \loeye\std\Dispatcher
             $this->redirectUrl();
 
             $view = $this->getView($object);
-            $this->excuteView($view);
-            $this->excuteOutput();
+            $this->executeView($view);
+            $this->executeOutput();
         } catch (\loeye\base\Exception $exc) {
             \loeye\base\ExceptionHandler($exc, $this->context);
         } catch (\Exception $exc) {
             \loeye\base\ExceptionHandler($exc, $this->context);
         }
-        if ($this->proccessMode == LOEYE_PROCESS_MODE__TEST) {
+        if ($this->processMode == LOEYE_PROCESS_MODE__TEST) {
             $this->setTraceDataIntoContext(array());
             \loeye\base\Utils::logContextTrace($this->context);
         }
@@ -235,7 +237,7 @@ class SimpleDispatcher extends \loeye\std\Dispatcher
             }
             $cacheParams = [];
             if (is_array($view['cache'])) {
-                $cacheParams = \loeye\lib\ModuleParse::parseInput($view['cache'], $this->context);
+                $cacheParams = ModuleParse::parseInput($view['cache'], $this->context);
             }
             \loeye\base\Utils::setPageCache($this->context->getAppConfig(), $this->context->getRequest()->getModuleId(), $content, $expire, $cacheParams);
         }
@@ -254,7 +256,7 @@ class SimpleDispatcher extends \loeye\std\Dispatcher
         if (isset($view['cache'])) {
             $cacheParams = [];
             if (is_array($view['cache'])) {
-                $cacheParams = \loeye\lib\ModuleParse::parseInput($view['cache'], $this->context);
+                $cacheParams = ModuleParse::parseInput($view['cache'], $this->context);
             }
             $content = \loeye\base\Utils::getPageCache($this->context->getAppConfig(), $this->context->getRequest()->getModuleId(), $cacheParams);
         }

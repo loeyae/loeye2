@@ -34,23 +34,23 @@ class AutoLoadRegister
     /**
      * addNamespace
      *
-     * @param string $ns      namespace
-     * @param string $path    dir path
-     * @param bool   $prepend prepend
+     * @param string $ns namespace
+     * @param string $path dir path
+     * @param bool $prepend prepend
      *
      * @return boolean
      */
     static public function addNamespace($ns, $path, $prepend = false)
     {
         $path = static::realAliasFile($path);
-        $maps = isset(static::$namespaceMap[$ns]) ? static::$namespaceMap[$ns] : [];
-        if (in_array($path, $maps) || !is_dir($path)) {
+        $maps = static::$namespaceMap[$ns] ?? [];
+        if (in_array($path, $maps, true) || !is_dir($path)) {
             return false;
         }
         if ($prepend) {
             array_unshift($maps, $path);
         } else {
-            array_push($maps, $path);
+            $maps[] = $path;
         }
         static::$namespaceMap[$ns] = $maps;
         return true;
@@ -59,21 +59,21 @@ class AutoLoadRegister
     /**
      * addFile
      *
-     * @param string $file    file path
-     * @param bool   $prepend prepend
+     * @param string $file file path
+     * @param bool $prepend prepend
      *
      * @return boolean
      */
-    static public function addFile($file, $prepend = false)
+    public static function addFile($file, $prepend = false): bool
     {
         $file = static::realAliasFile($file);
-        if (in_array($file, static::$fileMap) || !file_exists($file)) {
+        if (in_array($file, static::$fileMap, true) || !file_exists($file)) {
             return false;
         }
         if ($prepend) {
             array_unshift(static::$fileMap, $file);
         } else {
-            array_push(static::$fileMap, $file);
+            static::$fileMap[] = $file;
         }
         return true;
     }
@@ -81,21 +81,21 @@ class AutoLoadRegister
     /**
      * addFile
      *
-     * @param string $dir     dir path
-     * @param bool   $prepend prepend
+     * @param string $dir dir path
+     * @param bool $prepend prepend
      *
      * @return boolean
      */
-    static public function addDir($dir, $prepend = false)
+    public static function addDir($dir, $prepend = false)
     {
         $dir = static::realAliasFile($dir);
-        if (in_array($dir, static::$dirMap) || !is_dir($dir)) {
+        if (in_array($dir, static::$dirMap, true) || !is_dir($dir)) {
             return false;
         }
         if ($prepend) {
             array_unshift(static::$dirMap, $dir);
         } else {
-            array_push(static::$dirMap, $dir);
+            static::$dirMap[] = $dir;
         }
         return true;
     }
@@ -103,23 +103,23 @@ class AutoLoadRegister
     /**
      * addAlias
      *
-     * @param string $alias   alias name
-     * @param string $path    dir path
-     * @param bool   $prepend prepend
+     * @param string $alias alias name
+     * @param string $path dir path
+     * @param bool $prepend prepend
      *
      * @return boolean
      */
-    static public function addAlias($alias, $path, $prepend = false)
+    public static function addAlias($alias, $path, $prepend = false): bool
     {
         $path = static::realAliasFile($path);
-        $maps = isset(static::$aliasMap[$alias]) ? static::$aliasMap[$alias] : [];
-        if (in_array($path, $maps) || !is_dir($path)) {
+        $maps = static::$aliasMap[$alias] ?? [];
+        if (in_array($path, $maps, true) || !is_dir($path)) {
             return false;
         }
         if ($prepend) {
             array_unshift($maps, $path);
         } else {
-            array_push($maps, $path);
+            $maps[] = $path;
         }
         static::$aliasMap[$alias] = $maps;
         return true;
@@ -129,15 +129,15 @@ class AutoLoadRegister
      * addSingle
      *
      * @param string $className class name
-     * @param string $file      file path
+     * @param string $file file path
      *
      * @return boolean
      */
-    static public function addSingle($className, $file)
+    public static function addSingle($className, $file): bool
     {
-        $file      = static::realAliasFile($file);
+        $file = static::realAliasFile($file);
         $className = trim($className, '\\');
-        if (in_array($className, static::$singleMap) || !file_exists($file)) {
+        if (in_array($className, static::$singleMap, true) || !file_exists($file)) {
             return false;
         }
         static::$singleMap[$className] = $file;
@@ -151,7 +151,7 @@ class AutoLoadRegister
      *
      * @return boolean
      */
-    static public function loadAlias($file)
+    public static function loadAlias($file): bool
     {
         $realFile = static::realAliasFile($file);
         if ($realFile) {
@@ -165,15 +165,15 @@ class AutoLoadRegister
      *
      * @param string $file alias path
      *
-     * @return boolean
+     * @return string|bool
      */
-    static public function realAliasFile($file)
+    public static function realAliasFile($file)
     {
-        $file = strtr($file, '\\', '/');
+        $file = str_replace('\\', '/', $file);
         if (mb_strpos($file, '@') !== 0) {
             return $file;
         }
-        $s     = mb_strpos($file, '/');
+        $s = mb_strpos($file, '/');
         $alias = mb_substr($file, 1, $s - 1);
         if (isset(static::$aliasMap[$alias])) {
             $relativeFile = mb_substr($file, $s);
@@ -192,7 +192,7 @@ class AutoLoadRegister
      *
      * @return void
      */
-    static public function autoLoad()
+    public static function autoLoad(): void
     {
         foreach (static::$fileMap as $file) {
             static::loadFile($file);
@@ -203,12 +203,12 @@ class AutoLoadRegister
      * initApp
      * @return void
      */
-    static public function initApp()
+    public static function initApp(): void
     {
         if (!defined('PROJECT_DIR')) {
             $debugTrace = debug_backtrace();
             if (isset($debugTrace[1])) {
-                $appBaseDir = realpath(dirname($debugTrace[1]['file']), PROJECT_NAMESPACE);
+                $appBaseDir = realpath(dirname($debugTrace[1]['file']) . D_S . PROJECT_NAMESPACE);
                 define('PROJECT_DIR', $appBaseDir);
             }
         }
@@ -226,28 +226,28 @@ class AutoLoadRegister
      *
      * @return boolean
      */
-    static public function load($className)
+    public static function load($className): bool
     {
-        $file      = '';
+        $file = '';
         $className = trim($className, '\\');
-        if (in_array($className, static::$singleMap)) {
+        if (in_array($className, static::$singleMap, true)) {
             $file = realpath(static::$singleMap[$className]);
         }
-        $arr  = explode('\\', $className);
+        $arr = explode('\\', $className);
         $name = array_pop($arr);
         if (!empty($arr)) {
-            $nsArr     = $arr;
+            $nsArr = $arr;
             $namespace = '';
-            while ($ns        = array_shift($nsArr)) {
-                if ($namespace == '') {
+            while ($ns = array_shift($nsArr)) {
+                if ($namespace === '') {
                     $namespace = $ns;
                 } else {
                     $namespace .= '\\' . $ns;
                 }
                 if (isset(static::$namespaceMap[$namespace])) {
                     foreach (static::$namespaceMap[$namespace] as $dir) {
-                        $cdir     = implode(DIRECTORY_SEPARATOR, $nsArr);
-                        $path     = $dir . DIRECTORY_SEPARATOR . mb_strtolower($cdir) . DIRECTORY_SEPARATOR . $name . '.php';
+                        $cdir = implode(DIRECTORY_SEPARATOR, $nsArr);
+                        $path = $dir . DIRECTORY_SEPARATOR . mb_strtolower($cdir) . DIRECTORY_SEPARATOR . $name . '.php';
                         $realPath = realpath($path);
                         if ($realPath) {
                             $file = $realPath;
@@ -280,7 +280,7 @@ class AutoLoadRegister
      *
      * @return boolean
      */
-    static public function loadFile($file)
+    public static function loadFile($file): bool
     {
         if (!file_exists($file)) {
             return false;

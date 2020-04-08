@@ -17,35 +17,29 @@
 
 namespace loeye\std;
 
+use loeye\base\Context;
+use const loeye\base\PROJECT_SUCCESS;
+
 /**
  * ParallelPlugin
  *
  * @author   Zhang Yi <loeyae@gmail.com>
  */
-abstract class ParallelPlugin
+abstract class ParallelPlugin extends Plugin
 {
 
     /**
      * prepare
      *
-     * @param \loeye\base\Context $context  Context
+     * @param Context $context  Context
      * @param array               $inputs  array
      *
-     * @return void
+     * @return string
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
-    public function prepare(\loeye\base\Context $context, array $inputs)
+    public function prepare(Context $context, array $inputs): ?string
     {
-        return \loeye\base\PROJECT_SUCCESS;
+        return PROJECT_SUCCESS;
     }
 
-    /**
-     * process
-     *
-     * @param \loeye\base\Context $context  Context
-     * @param array               $inputs  array
-     *
-     * @return void
-     */
-    abstract public function process(\loeye\base\Context $context, array $inputs);
 }

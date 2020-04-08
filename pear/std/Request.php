@@ -236,7 +236,7 @@ class Request implements \ArrayAccess
      *
      * @return void
      */
-    private function _findModuleId($moduleId = null)
+    private function _findModuleId($moduleId = null): void
     {
         if (!empty($moduleId)) {
             $this->_moduleId = $moduleId;
@@ -712,7 +712,7 @@ class Request implements \ArrayAccess
      *
      * @return string
      */
-    public function getModuleId()
+    public function getModuleId(): string
     {
         $this->_moduleId ?: $this->_findModuleId();
         return $this->_moduleId;

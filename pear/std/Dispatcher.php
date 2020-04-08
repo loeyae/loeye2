@@ -17,6 +17,18 @@
 
 namespace loeye\std;
 
+use loeye\base\AutoLoadRegister;
+use loeye\base\Context;
+use loeye\base\Exception;
+use loeye\base\Factory;
+use loeye\base\Logger;
+use loeye\base\Utils;
+use loeye\error\ResourceException;
+use loeye\lib\Cookie;
+use loeye\web\Resource;
+use loeye\web\Template;
+use Smarty;
+
 if (!defined('LOEYE_PROCESS_MODE__NORMAL')) {
     define('LOEYE_PROCESS_MODE__NORMAL', 0);
 }
@@ -42,11 +54,12 @@ if (!defined('LOEYE_CONTEXT_TRACE_KEY')) {
  *
  * @author   Zhang Yi <loeyae@gmail.com>
  */
-abstract class Dispatcher {
+abstract class Dispatcher
+{
 
     /**
      *
-     * @var \loeye\base\Context
+     * @var Context
      */
     protected $context;
 
@@ -57,11 +70,11 @@ abstract class Dispatcher {
     protected $traceCount = 0;
 
     /**
-     * proccess mode
+     * process mode
      *
      * @var int
      */
-    protected $proccessMode;
+    protected $processMode;
 
     /**
      *
@@ -73,28 +86,28 @@ abstract class Dispatcher {
     /**
      * __construct
      *
-     * @param int $proccessMode proccess mode
+     * @param int $processMode process mode
      *
      * @return void
      */
-    public function __construct($proccessMode = LOEYE_PROCESS_MODE__NORMAL)
+    public function __construct($processMode = LOEYE_PROCESS_MODE__NORMAL)
     {
-        $this->context      = new \loeye\base\Context();
-        $this->proccessMode = $proccessMode;
-        if ($this->proccessMode > LOEYE_PROCESS_MODE__NORMAL) {
+        $this->context = new Context();
+        $this->processMode = $processMode;
+        if ($this->processMode > LOEYE_PROCESS_MODE__NORMAL) {
             $this->setTraceDataIntoContext(array());
         }
-        \loeye\base\AutoLoadRegister::initApp();
-        set_error_handler(array('\loeye\base\Utils', 'errorHandle'));
+        AutoLoadRegister::initApp();
+        set_error_handler(array(Utils::class, 'errorHandle'));
     }
 
 
     /**
      * getContext
      *
-     * @return \loeye\base\Context
+     * @return Context
      */
-    public function getContext()
+    public function getContext(): Context
     {
         return $this->context;
     }
@@ -113,7 +126,7 @@ abstract class Dispatcher {
     }
 
 
-    abstract public function dispatche($moduleId = null);
+    abstract public function dispatch($moduleId = null);
 
 
     abstract protected function initIOObject($moduleId);
@@ -122,12 +135,12 @@ abstract class Dispatcher {
     /**
      * cacheContent
      *
-     * @param array  $view    view setting
+     * @param array $view view setting
      * @param string $content content
      *
      * @return void
      */
-    protected function cacheContent($view, $content)
+    protected function cacheContent($view, $content): void
     {
 
     }
@@ -140,7 +153,7 @@ abstract class Dispatcher {
      *
      * @return string|null
      */
-    protected function getContent($view)
+    protected function getContent($view): ?string
     {
         return null;
     }
@@ -153,7 +166,7 @@ abstract class Dispatcher {
      *
      * @return string|null
      */
-    protected function getCacheId($view)
+    protected function getCacheId($view): ?string
     {
         return null;
     }
@@ -162,18 +175,16 @@ abstract class Dispatcher {
     /**
      * initGenericObj
      *
-     * @param type $moduleId
-     *
      * @return void
      */
-    protected function initAppConfig()
+    protected function initAppConfig(): void
     {
 
         $property = $this->context->getRequest()['property'];
         if (!defined('PROJECT_PROPERTY')) {
             define('PROJECT_PROPERTY', $property);
         }
-        $appConfig = \loeye\base\Factory::appConfig();
+        $appConfig = Factory::appConfig();
         $appConfig->setLocale($this->context->getRequest()->getLanguage());
         $this->context->setAppConfig($appConfig);
     }
@@ -183,8 +194,9 @@ abstract class Dispatcher {
      * initConfigConstants
      *
      * @return void
+     * @throws Exception
      */
-    protected function initConfigConstants()
+    protected function initConfigConstants(): void
     {
         $constants = $this->context->getAppConfig()->getSetting('constants', array());
         foreach ($constants as $key => $value) {
@@ -200,10 +212,11 @@ abstract class Dispatcher {
      * initLogLevel
      *
      * @return void
+     * @throws Exception
      */
-    protected function initLogger()
+    protected function initLogger(): void
     {
-        $logLevel = $this->context->getAppConfig()->getSetting('application.logger.level', \loeye\base\Logger::LOEYE_LOGGER_TYPE_DEBUG);
+        $logLevel = $this->context->getAppConfig()->getSetting('application.logger.level', Logger::LOEYE_LOGGER_TYPE_DEBUG);
         define('RUNTIME_LOGGER_LEVEL', $logLevel);
     }
 
@@ -212,8 +225,9 @@ abstract class Dispatcher {
      * setTimezone
      *
      * @return void
+     * @throws Exception
      */
-    protected function setTimezone()
+    protected function setTimezone(): void
     {
         $timezone = $this->context->getAppConfig()->getSetting('configuration.timezone', 'UTC');
         $this->context->getAppConfig()->setTimezone($timezone);
@@ -225,38 +239,41 @@ abstract class Dispatcher {
      * initComponent
      *
      * @return void
+     * @throws Exception
      */
-    protected function initComponent()
+    protected function initComponent(): void
     {
         $component = $this->context->getAppConfig()->getSetting('application.component');
         if (!empty($component)) {
-            foreach ((array) $component as $item => $list) {
-                if ($item == 'namespace') {
-                    foreach ((array) $list as $ns => $path) {
-                        array_reduce((array) $path, function ($ns, $item) {
-                            \loeye\base\AutoLoadRegister::addNamespace($ns, $item);
+            foreach ((array)$component as $item => $list) {
+                if ($item === 'namespace') {
+                    foreach ((array)$list as $ns => $path) {
+                        array_reduce((array)$path, static function ($ns, $item) {
+                            AutoLoadRegister::addNamespace($ns, $item);
                             return $ns;
                         }, $ns);
                     }
-                } else if ($item == 'alias') {
+                } else if ($item === 'alias') {
                     foreach ($list as $as => $path) {
-                        array_reduce((array) $path, function ($as, $item) {
-                            \loeye\base\AutoLoadRegister::addAlias($as, $item);
+                        array_reduce((array)$path, static function ($as, $item) {
+                            AutoLoadRegister::addAlias($as, $item);
                             return $as;
                         }, $as);
                     }
-                } else if ($item == 'folders') {
-                    foreach ((array) $list as $dir) {
-                        \loeye\base\AutoLoadRegister::addDir($dir);
+                } else if ($item === 'folders') {
+                    foreach ((array)$list as $dir) {
+                        AutoLoadRegister::addDir($dir);
                     }
-                } {
-                    foreach ((array) $list as $fiAutoLoadRegisterle) {
-                        \loeye\base\AutoLoadRegister::addFile($dir, $ignore);
+                }
+                {
+                    foreach ((array)$list as $file) {
+                        $ignore = false;
+                        AutoLoadRegister::addFile($file, $ignore);
                     }
                 }
             }
         }
-        \loeye\base\AutoLoadRegister::autoLoad();
+        AutoLoadRegister::autoLoad();
     }
 
 
@@ -267,18 +284,18 @@ abstract class Dispatcher {
      *
      * @return void
      */
-    protected function setTraceDataIntoContext($pluginSetting = [])
+    protected function setTraceDataIntoContext($pluginSetting = []): void
     {
         $trace = $this->context->getTraceData(LOEYE_CONTEXT_TRACE_KEY);
         if ($trace) {
-            $time  = microtime(true);
+            $time = microtime(true);
         } else {
-            $time  = !empty($_SERVER['REQUEST_TIME_FLOAT']) ? $_SERVER['REQUEST_TIME_FLOAT'] : microtime(true);
+            $time = !empty($_SERVER['REQUEST_TIME_FLOAT']) ? $_SERVER['REQUEST_TIME_FLOAT'] : microtime(true);
         }
 
         $trace[$this->traceCount] = array(
-            'trace_time'     => $time,
-            'context_data'   => $this->getCurrentContextData() ,
+            'trace_time' => $time,
+            'context_data' => $this->getCurrentContextData(),
             'plugin_setting' => $pluginSetting,
         );
         $this->traceCount++;
@@ -292,10 +309,10 @@ abstract class Dispatcher {
      *
      * @return array
      */
-    protected function getCurrentContextData()
+    protected function getCurrentContextData(): array
     {
         $data = [];
-        if (LOEYE_PROCESS_MODE__TRACE !== $this->proccessMode) {
+        if (LOEYE_PROCESS_MODE__TRACE !== $this->processMode) {
             return $data;
         }
         if ($this->tracedContextData) {
@@ -317,12 +334,12 @@ abstract class Dispatcher {
      *
      * @return void
      */
-    protected function redirectUrl()
+    protected function redirectUrl(): void
     {
         $redirectUrl = $this->context->getResponse()->getRedirectUrl();
 
         if (!empty($redirectUrl)) {
-            if ($this->proccessMode > LOEYE_PROCESS_MODE__NORMAL) {
+            if ($this->processMode > LOEYE_PROCESS_MODE__NORMAL) {
                 $this->setTraceDataIntoContext(array());
                 \loeye\base\Utils::logContextTrace($this->context);
             }
@@ -332,42 +349,44 @@ abstract class Dispatcher {
 
 
     /**
-     * excuteView
+     * executeView
      *
      * @param array $view view setting
      *
      * @return void
+     * @throws Exception
+     * @throws ResourceException
      */
-    protected function excuteView($view)
+    protected function executeView($view): void
     {
         if ($view) {
             $content = $this->getContent($view);
             if (!$content) {
                 if (isset($view['src'])) {
                     ob_start();
-                    \loeye\base\Factory::includeView($this->context, $view);
+                    Factory::includeView($this->context, $view);
                     $content = ob_get_clean();
                 } else if (isset($view['tpl'])) {
                     $loeyeTemplate = $this->context->getTemplate();
-                    if (!($loeyeTemplate instanceof \loeye\web\Template)) {
-                        $loeyeTemplate = new \loeye\web\Template($this->context);
+                    if (!($loeyeTemplate instanceof Template)) {
+                        $loeyeTemplate = new Template($this->context);
 
-                        $caching       = \Smarty::CACHING_OFF;
+                        $caching = Smarty::CACHING_OFF;
                         $cacheLifeTime = 0;
                         if (isset($view['cache'])) {
                             if ($view['cache']) {
-                                $caching = \Smarty::CACHING_LIFETIME_CURRENT;
+                                $caching = Smarty::CACHING_LIFETIME_CURRENT;
                                 if (is_numeric($view['cache'])) {
                                     $cacheLifeTime = $view['cache'];
                                 } else {
                                     $cacheLifeTime = 0;
                                 }
                             } else {
-                                $caching       = \Smarty::CACHING_OFF;
+                                $caching = Smarty::CACHING_OFF;
                                 $cacheLifeTime = 0;
                             }
                         } else if (defined('LOEYE_TEMPLATE_CACHE') && LOEYE_TEMPLATE_CACHE) {
-                            $caching = \Smarty::CACHING_LIFETIME_CURRENT;
+                            $caching = Smarty::CACHING_LIFETIME_CURRENT;
                             if (is_numeric(LOEYE_TEMPLATE_CACHE)) {
                                 $cacheLifeTime = LOEYE_TEMPLATE_CACHE;
                             }
@@ -378,51 +397,51 @@ abstract class Dispatcher {
                         $loeyeTemplate->setCacheId($cacheId);
                         $this->context->setTemplate($loeyeTemplate);
                     }
-                    $loeyeTemplate->smarty()->registerClass('Cookie', '\loeye\lib\Cookie');
-                    $loeyeTemplate->smarty()->registerClass('Utils', '\loeye\base\Utils');
-                    \loeye\base\Factory::includeHandle($this->context, $view);
+                    $loeyeTemplate->smarty()->registerClass('Cookie', Cookie::class);
+                    $loeyeTemplate->smarty()->registerClass('Utils', Utils::class);
+                    Factory::includeHandle($this->context, $view);
                     $params = array();
                     if (isset($view['data'])) {
-                        $params = (array) $view['data'];
+                        $params = (array)$view['data'];
                     }
                     $errors = array();
                     if (isset($view['error'])) {
-                        $errors = (array) $view['error'];
+                        $errors = (array)$view['error'];
                     }
                     $loeyeTemplate->assign($params, $errors);
                     $content = $loeyeTemplate->fetch($view['tpl']);
                 } else if (isset($view['body'])) {
-                    $viewsetting = array('src' => $view['body']);
+                    $viewSetting = array('src' => $view['body']);
                     ob_start();
-                    Factory::includeView($this->context, $viewsetting);
-                    $content     = ob_get_clean();
+                    Factory::includeView($this->context, $viewSetting);
+                    $content = ob_get_clean();
                 }
                 $this->cacheContent($view, $content);
             }
             if (isset($view['head'])) {
-                $headsetting = array('src' => $view['head']);
+                $headSetting = array('src' => $view['head']);
                 ob_start();
-                \loeye\base\Factory::includeView($this->context, $headsetting);
-                $head        = ob_get_clean();
+                Factory::includeView($this->context, $headSetting);
+                $head = ob_get_clean();
 
                 $this->context->getResponse()->addHtmlHead($head);
             }
             if (isset($view['layout'])) {
                 ob_start();
-                \loeye\base\Factory::includeLayout($this->context, $content, $view);
+                Factory::includeLayout($this->context, $content, $view);
                 $pageContent = ob_get_clean();
                 $this->context->getResponse()->addOutput($pageContent, 'view');
             } else {
                 $this->context->getResponse()->addOutput($content, 'view');
             }
             if (!empty($view['head_key'])) {
-                $headers = (array) $view['head_key'];
+                $headers = (array)$view['head_key'];
                 foreach ($headers as $key) {
                     $this->context->getResponse()->addHtmlHead($this->context->get($key));
                 }
             }
             if (!empty($view['content_key'])) {
-                $contents = (array) $view['content_key'];
+                $contents = (array)$view['content_key'];
                 foreach ($contents as $key) {
                     $this->context->getResponse()->addOutput($this->context->get($key), 'data');
                 }
@@ -438,18 +457,19 @@ abstract class Dispatcher {
 
 
     /**
-     * excuteOutput
+     * executeOutput
      *
      * @return void
+     * @throws \ReflectionException
      */
-    protected function excuteOutput()
+    protected function executeOutput(): void
     {
         $format = $this->context->getResponse()->getFormat();
         if ($format === null) {
             $format = $this->context->getRequest()->getFormatType();
         }
 
-        $renderObj = \loeye\base\Factory::getRender($format);
+        $renderObj = Factory::getRender($format);
 
         $renderObj->header($this->context->getResponse());
         $renderObj->output($this->context->getResponse());

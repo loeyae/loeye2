@@ -18,7 +18,7 @@
 namespace loeye\base;
 
 define('D_S', DIRECTORY_SEPARATOR);
-define('LOEYE_DIR', dirname(dirname(__FILE__)));
+define('LOEYE_DIR', dirname(__FILE__, 2));
 
 if (!defined('LOEYE_MODE_DEV')) {
     define('LOEYE_MODE_DEV', 'dev');
@@ -40,7 +40,7 @@ if (!defined('PROJECT_NAMESPACE')) {
     define('PROJECT_NAMESPACE', 'app');
 }
 
-if (!defined("PROJECT_DIR")) {
+if (!defined('PROJECT_DIR')) {
     $projectDir = realpath(LOEYE_DIR . D_S.'..'.D_S . PROJECT_NAMESPACE) ? realpath(LOEYE_DIR . D_S.'..'.D_S . PROJECT_NAMESPACE) : realpath(LOEYE_DIR .D_S.'..'.D_S.'..'.D_S.'..'.D_S.'..'.D_S . PROJECT_NAMESPACE);
     if (false === $projectDir) {
         $projectDir = realpath(LOEYE_DIR.D_S.'..'.D_S.'tests');
@@ -50,47 +50,47 @@ if (!defined("PROJECT_DIR")) {
     define('PROJECT_DIR', $projectDir);
 }
 
-if (!defined("PROJECT_CONFIG_DIR")) {
+if (!defined('PROJECT_CONFIG_DIR')) {
     define('PROJECT_CONFIG_DIR', PROJECT_DIR . D_S.'conf');
 }
 
-if (!defined("PROJECT_KEYDB_DIR")) {
+if (!defined('PROJECT_KEYDB_DIR')) {
     define('PROJECT_KEYDB_DIR', PROJECT_DIR . D_S.'keydb');
 }
 
-if (!defined("PROJECT_LOCALE_DIR")) {
+if (!defined('PROJECT_LOCALE_DIR')) {
     define('PROJECT_LOCALE_DIR', PROJECT_DIR . D_S.'resource');
 }
 
-if (!defined("PROJECT_ERRORPAGE_DIR")) {
+if (!defined('PROJECT_ERRORPAGE_DIR')) {
     define('PROJECT_ERRORPAGE_DIR', PROJECT_DIR . D_S.'errors');
 }
 
-if (!defined("PROJECT_VIEWS_DIR")) {
+if (!defined('PROJECT_VIEWS_DIR')) {
     define('PROJECT_VIEWS_DIR', PROJECT_DIR . D_S.'views');
 }
 
-if (!defined("PROJECT_MODELS_DIR")) {
+if (!defined('PROJECT_MODELS_DIR')) {
     define('PROJECT_MODELS_DIR', PROJECT_DIR . D_S.'models');
 }
 
-if (!defined("PROJECT_DATA_DIR")) {
+if (!defined('PROJECT_DATA_DIR')) {
     define('PROJECT_DATA_DIR', PROJECT_DIR . D_S.'data');
 }
 
-if (!defined("RUNTIME_DIR")) {
+if (!defined('RUNTIME_DIR')) {
     define('RUNTIME_DIR', realpath(PROJECT_DIR .D_S.'..'.D_S.'runtime'));
 }
 
-if (!defined("RUNTIME_CACHE_DIR")) {
+if (!defined('RUNTIME_CACHE_DIR')) {
     define('RUNTIME_CACHE_DIR', RUNTIME_DIR .D_S.'cache');
 }
 
-if (!defined("RUNTIME_LOG_DIR")) {
+if (!defined('RUNTIME_LOG_DIR')) {
     define('RUNTIME_LOG_DIR', RUNTIME_DIR . D_S.'log');
 }
 
-const PROJECT_SUCCESS = "";
+const PROJECT_SUCCESS = '';
 const RENDER_TYPE_SEGMENT = 'segment';
 const RENDER_TYPE_HTML = 'html';
 const RENDER_TYPE_XML = 'xml';

@@ -31,7 +31,7 @@ abstract class Plugin
      * @param \loeye\base\Context $context  Context
      * @param array               $inputs  array
      *
-     * @return void
+     * @return mixed
      */
     abstract public function process(\loeye\base\Context $context, array $inputs);
 }
