@@ -17,12 +17,15 @@
 
 namespace loeye\base;
 
+use FilesystemIterator;
 use \loeye\error\BusinessException;
 use loeye\std\ParallelPlugin;
 use loeye\std\Plugin;
 use loeye\web\Request;
 use loeye\web\Response;
+use ReflectionClass;
 use ReflectionException;
+use RuntimeException;
 
 /**
  * Description of Factory
@@ -48,12 +51,12 @@ class Factory
         }
         $class = $pluginSetting['name'];
         if (!isset($pluginSetting['src'])) {
-            $rec = new \ReflectionClass($class);
+            $rec = new ReflectionClass($class);
             return $rec->newInstanceArgs();
         }
         $file = AutoLoadRegister::realAliasFile($pluginSetting['src']);
         AutoLoadRegister::loadFile($file);
-        $rec = new \ReflectionClass($class);
+        $rec = new ReflectionClass($class);
         return $rec->newInstanceArgs();
     }
 
@@ -68,16 +71,16 @@ class Factory
      * @throws Exception
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
-    public static function includeLayout(Context $context, $content, $setting)
+    public static function includeLayout(Context $context, $content, $setting): void
     {
         if (!isset($setting['layout'])) {
             throw new BusinessException(BusinessException::INVALID_RENDER_SET_MSG, BusinessException::INVALID_RENDER_SET_CODE);
         }
         $file = AutoLoadRegister::realAliasFile($setting['layout']);
         if (!is_file($file)) {
-            $dno = strrpos($file, ".");
-            $file = PROJECT_VIEWS_BASE_DIR . '/'
-                . strtr(substr($file, 0, $dno), ".", "/") . substr($file, $dno);
+            $dno = strrpos($file, '.');
+            $file = PROJECT_VIEWS_DIR . '/'
+                . str_replace(".", "/", substr($file, 0, $dno)) . substr($file, $dno);
         }
         include $file;
     }
@@ -91,16 +94,16 @@ class Factory
      * @return void
      * @throws Exception
      */
-    public static function includeView(Context $context, $setting)
+    public static function includeView(Context $context, $setting): void
     {
         if (!isset($setting['src'])) {
             throw new BusinessException(BusinessException::INVALID_RENDER_SET_MSG, BusinessException::INVALID_RENDER_SET_CODE);
         }
         $file = AutoLoadRegister::realAliasFile($setting['src']);
         if (!is_file($file)) {
-            $dno = strrpos($file, ".");
+            $dno = strrpos($file, '.');
             $file = PROJECT_VIEWS_DIR . '/'
-                . strtr(substr($file, 0, $dno), ".", "/") . substr($file, $dno);
+                . str_replace('.', '/', substr($file, 0, $dno)) . substr($file, $dno);
         }
         self::includeHandle($context, $setting);
         include $file;
@@ -120,7 +123,7 @@ class Factory
             $handle = AutoLoadRegister::realAliasFile($setting['handle']);
             if (!is_file($handle)) {
                 $dno = strrpos($handle, '.');
-                $handle = PROJECT_HANDLES_BASE_DIR . '/'
+                $handle = PROJECT_HANDLE_DIR . '/'
                     . str_replace('.', '/', substr($handle, 0, $dno)) . substr($handle, $dno);
             }
             include $handle;
@@ -148,7 +151,7 @@ class Factory
         }
         $class = '' . ucfirst($format) . 'Render';
         $className = '\\loeye\\render\\' . $class;
-        $renderObj = new \ReflectionClass($className);
+        $renderObj = new ReflectionClass($className);
         return $renderObj->newInstanceArgs();
     }
 
@@ -225,7 +228,7 @@ class Factory
             body {
                 width: 100%;
                 height: auto;
-                margin: 0px auto;
+                margin: 0 auto;
             }
             #main {
                 width: 100%;
@@ -277,7 +280,7 @@ EOF;
             body {
                 width: 100%;
                 height: auto;
-                margin: 0px auto;
+                margin: 0 auto;
             }
             #main {
                 width: 100%;
@@ -336,7 +339,7 @@ EOF;
         }
         AutoLoadRegister::addDir($dir);
         if (!$ignore) {
-            foreach (new \FilesystemIterator($dir) as $fs) {
+            foreach (new FilesystemIterator($dir) as $fs) {
                 if ($fs->isDir()) {
                     static::autoload($fs->getRealPath());
                 }
@@ -377,7 +380,7 @@ EOF;
         static $appConfig = null;
         if (null === $appConfig) {
             if (!defined('PROJECT_PROPERTY')) {
-                throw new \RuntimeException('project property not exists');
+                throw new RuntimeException('project property not exists');
             }
             $appConfig = new AppConfig(PROJECT_PROPERTY);
         }
@@ -389,6 +392,7 @@ EOF;
      * @staticvar array  $db   array of DB's instance
      * @param string $type
      * @return DB
+     * @throws Exception
      */
     public static function db($type = 'default'): DB
     {

@@ -4,10 +4,10 @@
  * Validation.php
  *
  * PHP version 7
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"),
  * see LICENSE for more details: http://www.apache.org/licenses/LICENSE-2.0.
- * 
+ *
  * @category PHP
  * @package  LOEYE
  * @author   Zhang Yi <loeyae@gmail.com>
@@ -25,7 +25,8 @@ use \Symfony\Component\Validator\ValidatorBuilder;
  *
  * @author   Zhang Yi <loeyae@gmail.com>
  */
-final class Validation {
+final class Validation
+{
 
     /**
      * Creates a new validator.
@@ -35,7 +36,7 @@ final class Validation {
      */
     public static function createValidator(): ValidatorInterface
     {
-        \Doctrine\Common\Annotations\AnnotationRegistry::registerLoader(function($class){
+        \Doctrine\Common\Annotations\AnnotationRegistry::registerLoader(function ($class) {
             return class_exists($class);
         });
         return self::createValidatorBuilder()->enableAnnotationMapping()->getValidator();

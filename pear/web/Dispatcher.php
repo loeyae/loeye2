@@ -146,10 +146,10 @@ class Dispatcher extends \loeye\std\Dispatcher
         $mockMode = $this->context->getRequest()->getParameterGet('ly_p_m');
         if ($this->processMode > LOEYE_PROCESS_MODE__NORMAL && $mockMode === 'mock') {
             $mockPlugins = $this->_mDfnObj->getMockPlugins();
-            list($returnStatus) = $this->_executePlugin($mockPlugins, false, true);
+            [$returnStatus] = $this->_executePlugin($mockPlugins, false, true);
         } else {
             $plugins = $this->_mDfnObj->getPlugins();
-            list($returnStatus) = $this->_executePlugin($plugins, false, $continueOnError);
+            [$returnStatus] = $this->_executePlugin($plugins, false, $continueOnError);
         }
         if ($cacheAble) {
             $this->context->cacheData();
@@ -236,7 +236,7 @@ class Dispatcher extends \loeye\std\Dispatcher
         if (isset($view['cache'])) {
             if (isset($view['expire'])) {
                 $expire = $view['expire'];
-            } else if (is_string($view['cache']) or is_numeric($view['cache'])) {
+            } else if (is_string($view['cache']) || is_numeric($view['cache'])) {
                 $expire = (int)$view['cache'];
             } else {
                 $expire = 0;
@@ -622,68 +622,6 @@ class Dispatcher extends \loeye\std\Dispatcher
             $url = Utils::getData($errorSetting, 'url');
         }
         return $url;
-    }
-
-
-    /**
-     * _setTimezone
-     *
-     * @return void
-     * @throws Exception
-     */
-    private function _setTimezone()
-    {
-        $timezone = $this->context->getAppConfig()->getSetting('configuration.timezone', 'UTC');
-        $this->context->getAppConfig()->setTimezone($timezone);
-        date_default_timezone_set($timezone);
-    }
-
-
-    /**
-     * _initComponent
-     *
-     * @return void
-     * @throws Exception
-     */
-    private function _initComponent()
-    {
-        $component = $this->context->getAppConfig()->getSetting('component');
-        if (!empty($component)) {
-            foreach ((array)$component as $item => $list) {
-                if ($item === 'namespace') {
-                    foreach ($list as $ns => $path) {
-                        if (is_array($path)) {
-                            array_reduce($path, static function ($ns, $item) {
-                                AutoLoadRegister::addNamespace($ns, $item);
-                                return $ns;
-                            }, $ns);
-                        } else {
-                            AutoLoadRegister::addNamespace($ns, $path);
-                        }
-                    }
-                } else if ($item === 'alias') {
-                    foreach ($list as $as => $path) {
-                        if (is_array($path)) {
-                            $ns = null;
-                            array_reduce($path, static function ($as, $item) {
-                                AutoLoadRegister::addAlias($as, $item);
-                                return $as;
-                            }, $ns);
-                        } else {
-                            AutoLoadRegister::addNamespace($as, $path);
-                        }
-                    }
-                } else {
-                    if (is_array($list)) {
-                        foreach ($list as $dir => $ignore) {
-                            Factory::autoload($dir, $ignore);
-                        }
-                    } else {
-                        AutoLoadRegister::addDir($list);
-                    }
-                }
-            }
-        }
     }
 
 

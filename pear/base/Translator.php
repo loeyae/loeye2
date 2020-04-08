@@ -17,6 +17,7 @@
 
 namespace loeye\base;
 
+use MessageFormatter;
 use Symfony\Component\Translation as I18n;
 
 /**
@@ -27,19 +28,20 @@ use Symfony\Component\Translation as I18n;
 class Translator
 {
 
-    private $_locale = "zh_CN";
-    private $_domain = "lang";
+    private $_locale = 'zh_CN';
+    private $_domain = 'lang';
 
     /**
      *
-     * @var \Symfony\Component\Translation\Translator
+     * @var I18n\Translator
      */
     protected $translator;
 
     /**
      * __construct
      *
-     * @param \loeye\base\AppConfig $appConfig AppConfig instance
+     * @param AppConfig $appConfig AppConfig instance
+     * @throws Exception
      */
     public function __construct(AppConfig $appConfig = null)
     {
@@ -59,10 +61,42 @@ class Translator
      *
      * @return void
      */
-    protected function initFrameworkResource()
+    protected function initFrameworkResource(): void
     {
-        $resourseDir = LOEYE_DIR . DIRECTORY_SEPARATOR . 'resource';
-        foreach (new \FilesystemIterator($resourseDir, \FilesystemIterator::KEY_AS_FILENAME) as $key => $item) {
+        $resourceDir = LOEYE_DIR . DIRECTORY_SEPARATOR . 'resource';
+        $this->initResourceDir($resourceDir);
+    }
+
+    /**
+     * initProjectResource
+     *
+     * @param AppConfig $appConfig AppConfig instance
+     *
+     * @return void
+     * @throws Exception
+     */
+    protected function initProjectResource(AppConfig $appConfig = null): void
+    {
+        if (!$appConfig) {
+            return ;
+        }
+        $resourceDir = PROJECT_LOCALE_DIR . DIRECTORY_SEPARATOR . $appConfig->getPropertyName();
+                
+        if (file_exists($resourceDir)) {
+            $this->initResourceDir($resourceDir);
+        }
+    }
+
+    /**
+     * initResourceDir
+     *
+     * @param string $resourceDir resource dir
+     *
+     * @return void
+     */
+    protected function initResourceDir($resourceDir): void
+    {
+        foreach (new \FilesystemIterator($resourceDir, \FilesystemIterator::KEY_AS_FILENAME) as $key => $item) {
             if (!$item->isFile()) {
                 continue;
             }
@@ -77,40 +111,10 @@ class Translator
     }
 
     /**
-     * initProjectResource
      *
-     * @param \loeye\base\AppConfig $appConfig AppConfig instance
-     *
-     * @return void
+     * @return string
      */
-    protected function initProjectResource(AppConfig $appConfig = null)
-    {
-        if (!$appConfig) {
-            return ;
-        }
-        $resourseDir = PROJECT_LOCALE_DIR . DIRECTORY_SEPARATOR . $appConfig->getPropertyName();
-                
-        if (file_exists($resourseDir)) {
-            foreach (new \FilesystemIterator($resourseDir, \FilesystemIterator::KEY_AS_FILENAME) as $key => $item) {
-                if (!$item->isFile()) {
-                    continue;
-                }
-                $args   = explode('.', $key);
-                $lang   = $args[1];
-                $domain = $this->_domain;
-                if (count($args) > 3) {
-                    $domain = $args[2];
-                }
-                $this->translator->addResource('yml', $item->getRealPath(), $lang, $domain);
-            }
-        }
-    }
-
-    /**
-     *
-     * @return type
-     */
-    public function getLocale()
+    public function getLocale(): string
     {
         return $this->_locale;
     }
@@ -119,13 +123,16 @@ class Translator
      * getString
      *
      * @param string $string source $string
+     * @param array $parameters parameters
+     * @param string $domain domain
+     * @param string $locale locale
      *
      * @return string
      */
-    public function getString($string, array $parameters = [], $domain = null, $locale = null)
+    public function getString($string, array $parameters = [], $domain = null, $locale = null): string
     {
-        $domain ?? $domain = $this->_domain;
-        $locale ?? $locale = $this->_locale;
+        $domain = $domain ?? $this->_domain;
+        $locale = $locale ?? $this->_locale;
         return $this->translator->trans($string, $parameters, $domain, $locale);
     }
 
@@ -139,7 +146,7 @@ class Translator
      *
      * @return string
      */
-    public function getReplacedString($key, $search, $replace, $count = null)
+    public function getReplacedString($key, $search, $replace, $count = null): string
     {
         $string = $this->getString($key, [], $this->_domain, $this->_locale);
         return str_replace($search, $replace, $string, $count);
@@ -153,11 +160,12 @@ class Translator
      *
      * @return string
      */
-    public function getFormatString($key, $args)
+    public function getFormatString($key, $args): string
     {
         $pattern = $this->getString($key, [], $this->_domain, $this->_locale);
-        $result  = msgfmt_format_message($this->_locale, $pattern, $args);
-        if ($result == false) {
+        $fmt = new MessageFormatter($this->_locale, $pattern);
+        $result  = msgfmt_format_message($fmt, $this->_locale, $pattern, $args);
+        if ($result === false) {
             return $pattern;
         }
         return $result;
@@ -166,9 +174,9 @@ class Translator
     /**
      * getTranslator
      * 
-     * @return \Symfony\Component\Translation\Translator
+     * @return I18n\Translator
      */
-    public function getTranslator()
+    public function getTranslator(): I18n\Translator
     {
         return $this->translator;
     }

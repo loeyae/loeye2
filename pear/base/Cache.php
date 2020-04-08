@@ -17,7 +17,7 @@
 
 namespace loeye\base;
 
-use Symfony\Component\Cache\Adapter\{
+use Symfony\Component\Cache\Adapter\{AdapterInterface,
     ApcuAdapter,
     FilesystemAdapter,
     MemcachedAdapter,
@@ -26,6 +26,14 @@ use Symfony\Component\Cache\Adapter\{
     PhpArrayAdapter,
     PhpFilesAdapter
 };
+use loeye\std\CacheTrait;
+use loeye\std\ConfigTrait;
+use Psr\Cache\InvalidArgumentException;
+use ReflectionException;
+use ReflectionMethod;
+use Symfony\Component\Cache\CacheItem;
+use Symfony\Component\Cache\Exception\CacheException;
+use Traversable;
 
 /**
  * Cache
@@ -35,43 +43,45 @@ use Symfony\Component\Cache\Adapter\{
 class Cache
 {
 
-    use \loeye\std\ConfigTrait;
-    use \loeye\std\CacheTrait;
+    use ConfigTrait;
+    use CacheTrait;
 
-    const BUNDLE               = 'cache';
-    const CACHE_TYPE_APC       = 'apc';
-    const CACHE_TYPE_FILE      = 'file';
-    const CACHE_TYPE_MEMCACHED = 'memcached';
-    const CACHE_TYPE_REDIS     = 'redis';
-    const CACHE_TYPE_ARRAY     = 'array';
-    const CACHE_TYPE_PHP_ARRAY = 'parray';
-    const CACHE_TYPE_PHP_FILE  = 'pfile';
+    public const BUNDLE = 'cache';
+    public const CACHE_TYPE_APC = 'apc';
+    public const CACHE_TYPE_FILE = 'file';
+    public const CACHE_TYPE_MEMCACHED = 'memcached';
+    public const CACHE_TYPE_REDIS = 'redis';
+    public const CACHE_TYPE_ARRAY = 'array';
+    public const CACHE_TYPE_PHP_ARRAY = 'parray';
+    public const CACHE_TYPE_PHP_FILE = 'pfile';
 
-    protected $defaultType     = self::CACHE_TYPE_FILE;
+    protected $defaultType = self::CACHE_TYPE_FILE;
     protected $defaultLifetime = 0;
+
+    /**
+     * @var AdapterInterface
+     */
     protected $instance;
     protected static $_instance = [];
 
     /**
      * __construct
      *
-     * @param string $type          cache type
-     * @param string $key           if not file: config key; else: file index
-     * @param string $key        if not file: config bundle; else: property name
-     * @param string $configBaseDir if not file: config base dir; else: null
-     *
+     * @param AppConfig $appConfig
+     * @param string $type cache type
      * @throws Exception
+     * @throws CacheException
      */
     public function __construct(AppConfig $appConfig, $type = null)
     {
         $property = $appConfig->getPropertyName();
-        $settins  = $appConfig->getSetting('application.cache');
+        $settins = $appConfig->getSetting('application.cache');
         if (is_string($settins)) {
             $this->defaultType = $settins;
         } else if (is_numeric($settins)) {
-            $this->defaultLifetime = int($settins);
+            $this->defaultLifetime = (int)$settins;
         } else {
-            $this->defaultType     = $settins['default'] ?? self::CACHE_TYPE_FILE;
+            $this->defaultType = $settins['default'] ?? self::CACHE_TYPE_FILE;
             $this->defaultLifetime = $settins['lifetime'] ?? 0;
         }
         $config = $this->cacheConfig($appConfig);
@@ -81,17 +91,18 @@ class Cache
     /**
      * _buildInstance
      *
-     * @param string                    $property property name
-     * @param string                    $type     type name
-     * @param \loeye\base\Configuration $config   Configuration
+     * @param string $property property name
+     * @param string $type type name
+     * @param Configuration $config Configuration
      *
      * @throws Exception
+     * @throws CacheException
      */
-    private function _buildInstance($property, $type, Configuration $config)
+    private function _buildInstance($property, $type, Configuration $config): void
     {
-        $type            = $type ?? $this->defaultType;
-        $setting         = $config->get($type) ?? [];
-        $namespace       = PROJECT_NAMESPACE . '.' . $property . '.' . ($setting['namespace'] ?? $type);
+        $type = $type ?? $this->defaultType;
+        $setting = $config->get($type) ?? [];
+        $namespace = PROJECT_NAMESPACE . '.' . $property . '.' . ($setting['namespace'] ?? $type);
         $defaultLifetime = $setting['lifetime'] ?? $this->defaultLifetime;
         switch ($type) {
             case self::CACHE_TYPE_APC:
@@ -101,22 +112,26 @@ class Cache
                 $this->instance = new ApcuAdapter($namespace, $defaultLifetime);
                 break;
             case self::CACHE_TYPE_MEMCACHED:
-                $client         = $this->getMeachedClient($setting);
+                $client = $this->getMeachedClient($setting);
                 $this->instance = new MemcachedAdapter($client, $namespace, $defaultLifetime);
                 break;
             case self::CACHE_TYPE_REDIS:
-                $redisClient    = $this->getRedisClient($setting);
+                $redisClient = $this->getRedisClient($setting);
                 $this->instance = new RedisAdapter($redisClient, $namespace, $defaultLifetime);
+                break;
             case self::CACHE_TYPE_ARRAY:
                 $this->instance = new ArrayAdapter($this->defaultLifetime);
+                break;
             case self::CACHE_TYPE_PHP_ARRAY:
-                $file           = $setting['file'] ?? RUNTIME_CACHE_DIR . D_S . PROJECT_NAMESPACE . D_S . 'app.cache';
+                $file = $setting['file'] ?? RUNTIME_CACHE_DIR . D_S . PROJECT_NAMESPACE . D_S . 'app.cache';
                 $this->instance = new PhpArrayAdapter($file, new FilesystemAdapter($namespace, $defaultLifetime, RUNTIME_CACHE_DIR));
+                break;
             case self::CACHE_TYPE_PHP_FILE:
-                $directory      = $setting['directory'] ?? RUNTIME_CACHE_DIR;
+                $directory = $setting['directory'] ?? RUNTIME_CACHE_DIR;
                 $this->instance = new PhpFilesAdapter($namespace, $defaultLifetime, $directory);
+                break;
             default:
-                $directory      = $setting['directory'] ?? RUNTIME_CACHE_DIR;
+                $directory = $setting['directory'] ?? RUNTIME_CACHE_DIR;
                 $this->instance = new FilesystemAdapter($namespace, $defaultLifetime, $directory);
                 break;
         }
@@ -126,11 +141,13 @@ class Cache
     /**
      * getInstance
      *
-     * @param type $property
-     *
+     * @param AppConfig $appConfig app config
+     * @param string|null $type type
      * @return self
+     * @throws Exception
+     * @throws CacheException
      */
-    static public function getInstance(AppConfig $appConfig, $type = null)
+    public static function getInstance(AppConfig $appConfig, $type = null): self
     {
         $type = $type ?? self::CACHE_TYPE_FILE;
         if (!isset(self::$_instance[$type])) {
@@ -139,30 +156,64 @@ class Cache
         return self::$_instance[$type];
     }
 
+    /**
+     * __destruct
+     */
     public function __destruct()
     {
         $this->instance->commit();
     }
 
-    public function set($key, $settins, $lifeTime = null)
+    /**
+     * @param string $key cache key
+     * @param mixed $settings cache value
+     * @param int|null $lifeTime expire time
+     *
+     * @return void
+     */
+    public function set($key, $settings, $lifeTime = null): void
     {
-        $item = $this->instance->getItem($key);
-        $item->set($settins);
-        $item->expiresAfter($lifeTime);
-        $this->instance->saveDeferred($item);
+        try {
+            $item = $this->instance->getItem($key);
+            $item->set($settings);
+            $item->expiresAfter($lifeTime);
+            $this->instance->saveDeferred($item);
+        } catch (InvalidArgumentException $e) {
+            Utils::errorLog($e);
+        }
     }
 
-    public function append($key, $settins)
+    /**
+     * append
+     *
+     * @param string $key cache key
+     * @param mixed $settings cache value
+     *
+     * @return void
+     */
+    public function append($key, $settings): void
     {
-        $item   = $this->instance->getItem($key);
-        $values = $item->get();
-        $item->set(array_merge_recursive((array) $values, (array) $settins));
-        $this->instance->saveDeferred($item);
+        try {
+            $item = $this->instance->getItem($key);
+            $values = $item->get();
+            $item->set(array_merge_recursive((array)$values, (array)$settings));
+            $this->instance->saveDeferred($item);
+        } catch (InvalidArgumentException $e) {
+            Utils::errorLog($e);
+        }
     }
 
-    public function setMulti(array $values)
+    /**
+     * setMulti
+     *
+     * @param array $values array of cache data
+     * @return void
+     * @throws InvalidArgumentException
+     *
+     */
+    public function setMulti(array $values): void
     {
-        $keys  = array_keys($values);
+        $keys = array_keys($values);
         $items = $this->instance->getItems($keys);
         foreach ($items as $item) {
             $key = $item->getKey();
@@ -172,41 +223,79 @@ class Cache
         $this->instance->commit();
     }
 
+    /**
+     * get
+     *
+     * @param string $key cache key
+     *
+     * @return mixed
+     * @throws InvalidArgumentException
+     */
     public function get($key)
     {
         $item = $this->instance->getItem($key);
         return $item->get();
     }
 
+    /**
+     * getMulti
+     *
+     * @param array $keys array of cache key
+     *
+     * @return CacheItem[]|Traversable
+     * @throws InvalidArgumentException
+     */
     public function getMulti(array $keys)
     {
-        $items = $this->instance->getItems($keys);
-        return $items;
+        return $this->instance->getItems($keys);
     }
 
-    public function has($key)
+    /**
+     * has
+     *
+     * @param string $key cache key
+     *
+     * @return bool
+     * @throws InvalidArgumentException
+     */
+    public function has($key): bool
     {
         return $this->instance->hasItem($key);
     }
 
-    public function delete($key)
+    /**
+     * delete
+     *
+     * @param string $key cache key
+     *
+     * @return bool
+     * @throws InvalidArgumentException
+     */
+    public function delete($key): bool
     {
         return $this->instance->deleteItem($key);
     }
 
-    public function remove($key, $item)
+    /**
+     * remove
+     *
+     * @param string $key cache key
+     * @param $item
+     * @throws InvalidArgumentException
+     */
+    public function remove($key, $item): void
     {
-        $item   = $this->instance->getItem($key);
-        $values = $item->get();
-        if (array_key_exists($item, (array) $values)) {
+        $cacheItem = $this->instance->getItem($key);
+        $values = $cacheItem->get();
+        if (array_key_exists($item, (array)$values)) {
             unset($values[$item]);
         } else {
-            $k = array_search($item, (array) $values);
+            $k = array_search($item, (array)$values, true);
             unset($values[$k]);
         }
         if (count($values) > 0) {
-            $item->set($values);
-            $this->instance->saveDeferred($item);
+            $cacheItem->set($values);
+            $this->instance->saveDeferred($cacheItem);
         } else {
             $this->instance->deleteItem($key);
         }
@@ -215,28 +304,30 @@ class Cache
     /**
      * __call
      *
-     * @param string $name      method name
-     * @param mixed  $arguments argv
+     * @param string $name method name
+     * @param mixed $arguments argv
      *
      * @return mixed
+     * @throws ReflectionException
      */
     public function __call($name, $arguments)
     {
         if (method_exists($this->instance, $name)) {
-            $ref = new \ReflectionMethod($this->instance, $name);
+            $ref = new ReflectionMethod($this->instance, $name);
             return $ref->invokeArgs($this->instance, $arguments);
         }
+        return null;
     }
 
     /**
      * init
      *
-     * @param \loeye\base\AppConfig $appConfig appConfig
-     * @param string                $type      type
+     * @param AppConfig $appConfig appConfig
+     * @param string $type type
      *
-     * @return boolean
+     * @return mixed
      */
-    static public function init(AppConfig $appConfig, $type = self::CACHE_TYPE_FILE)
+    public static function init(AppConfig $appConfig, $type = self::CACHE_TYPE_FILE)
     {
         try {
             return self::getInstance($appConfig, $type);

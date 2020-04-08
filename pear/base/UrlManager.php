@@ -27,8 +27,13 @@ class UrlManager
 
     private $_rule;
 
-    const REWRITE_KEY_PREFIX = 'rwt:';
+    public const REWRITE_KEY_PREFIX = 'rwt:';
 
+    /**
+     * UrlManager constructor.
+     *
+     * @param $setting
+     */
     public function __construct($setting)
     {
         $this->_rule = $setting;
@@ -43,7 +48,7 @@ class UrlManager
      */
     public function match($url)
     {
-        if (defined("BASE_SERVER_URL")) {
+        if (defined('BASE_SERVER_URL')) {
             $url = str_replace(BASE_SERVER_URL, '', $url);
         }
         $path = parse_url($url, PHP_URL_PATH) or $path = '/';
@@ -51,16 +56,16 @@ class UrlManager
             if (strpos($key, '#') !== false) {
                 $key = '#' . str_replace('#', '\#', $key);
             }
-            $pattern = '#^' . preg_replace('#<([\w\d-\_]+):([^>]+)>#', '(?\'$1\'$2)', $key) . '$#';
+            $pattern = '#^' . preg_replace('#<([\w-_]+):([^>]+)>#', '(?\'$1\'$2)', $key) . '$#';
             $matches = [];
             if (preg_match($pattern, $path, $matches)) {
-                $imatches   = [];
-                $search     = [];
-                $replace    = [];
+                $iMatches = [];
+                $search = [];
+                $replace = [];
                 $replaceKey = [];
-                if (preg_match_all('(\{[\w\d\-\_]+\})', $item, $imatches)) {
-                    foreach ($imatches[0] as $match) {
-                        $search[]     = $match;
+                if (preg_match_all('({[\w\-_]+})', $item, $iMatches)) {
+                    foreach ($iMatches[0] as $match) {
+                        $search[] = $match;
                         $replaceKey[] = mb_substr($match, 1, -1, '7bit');
                     }
                 }
@@ -69,16 +74,16 @@ class UrlManager
                         if (is_numeric($pkey)) {
                             continue;
                         }
-                        $rkeys = array_keys($replaceKey, $pkey);
-                        if (!empty($rkeys)) {
-                            $replace[$rkeys[0]]                        = $value;
+                        $rKeys = array_keys($replaceKey, $pkey);
+                        if (!empty($rKeys)) {
+                            $replace[$rKeys[0]] = $value;
                             $_REQUEST[self::REWRITE_KEY_PREFIX . $pkey] = $value;
-                            unset($replaceKey[$rkeys[0]]);
+                            unset($replaceKey[$rKeys[0]]);
                         } else {
                             $_REQUEST[$pkey] = $value;
                         }
                     }
-                    if (!empty($replaceKey)) {
+                    if (count($replaceKey) > 1) {
                         return null;
                     }
                     return str_replace($search, $replace, $item);
@@ -86,7 +91,7 @@ class UrlManager
                 return $item;
             }
         }
-        if ($path == '/') {
+        if ($path === '/') {
             return null;
         }
         return false;
@@ -99,10 +104,10 @@ class UrlManager
      *
      * @return string
      */
-    public function generate($params = array())
+    public function generate($params = array()): string
     {
         $url = '';
-        if (defined("BASE_SERVER_URL")) {
+        if (defined('BASE_SERVER_URL')) {
             $url = BASE_SERVER_URL;
         }
         if (empty($params)) {
@@ -110,20 +115,18 @@ class UrlManager
         }
         foreach ($this->_rule as $key => $null) {
             $matches = [];
-            if (preg_match_all('#<([\w\d-\_]+):([^>]+)>#', $key, $matches)) {
-                $search     = $matches[0];
-                $replaceKey = $matches[1];
-                $validate   = $matches[2];
-                $replace    = [];
-                foreach ($replaceKey as $index => $mkey) {
-                    if (!isset($params[$mkey])) {
+            if (preg_match_all('#<([\w-_]+):([^>]+)>#', $key, $matches)) {
+                [$search, $replaceKey, $validate] = $matches;
+                $replace = [];
+                foreach ($replaceKey as $index => $mKey) {
+                    if (!isset($params[$mKey])) {
                         break;
                     }
-                    if (!preg_match('#' . $validate[$index] . '#', $params[$mkey])) {
+                    if (!preg_match('#' . $validate[$index] . '#', $params[$mKey])) {
                         break;
                     }
-                    $replace[$index] = $params[$mkey];
-                    unset($params[$mkey]);
+                    $replace[$index] = $params[$mKey];
+                    unset($params[$mKey]);
                 }
                 if (count($replace) !== count($search)) {
                     continue;
@@ -131,8 +134,8 @@ class UrlManager
                 $url .= str_replace($search, $replace, $key);
                 if (!empty($params)) {
                     $queryStr = http_build_query($params);
-                    $pos      = mb_strpos($url, '?');
-                    $len      = mb_strlen($url);
+                    $pos = mb_strpos($url, '?');
+                    $len = mb_strlen($url);
                     if ($pos === false) {
                         $url .= "?${queryStr}";
                     } else if ($pos < ($len - 1)) {

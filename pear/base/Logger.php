@@ -18,6 +18,8 @@
 namespace loeye\base;
 
 use Monolog;
+use Monolog\Formatter\LineFormatter;
+use Monolog\Handler\RotatingFileHandler;
 
 /**
  * Logger
@@ -27,13 +29,13 @@ use Monolog;
 class Logger
 {
 
-    const LOEYE_LOGGER_TYPE_CRITICAL      = Monolog\Logger::CRITICAL;
-    const LOEYE_LOGGER_TYPE_ERROR         = Monolog\Logger::ERROR;
-    const LOEYE_LOGGER_TYPE_WARNING       = Monolog\Logger::WARNING;
-    const LOEYE_LOGGER_TYPE_NOTICE        = Monolog\Logger::NOTICE;
-    const LOEYE_LOGGER_TYPE_INFO          = Monolog\Logger::INFO;
-    const LOEYE_LOGGER_TYPE_DEBUG         = Monolog\Logger::DEBUG;
-    const LOEYE_LOGGER_TYPE_CONTEXT_TRACE = 50;
+    public const LOEYE_LOGGER_TYPE_CRITICAL = Monolog\Logger::CRITICAL;
+    public const LOEYE_LOGGER_TYPE_ERROR = Monolog\Logger::ERROR;
+    public const LOEYE_LOGGER_TYPE_WARNING = Monolog\Logger::WARNING;
+    public const LOEYE_LOGGER_TYPE_NOTICE = Monolog\Logger::NOTICE;
+    public const LOEYE_LOGGER_TYPE_INFO = Monolog\Logger::INFO;
+    public const LOEYE_LOGGER_TYPE_DEBUG = Monolog\Logger::DEBUG;
+    public const LOEYE_LOGGER_TYPE_CONTEXT_TRACE = 50;
 
     private static $logger = [];
 
@@ -42,26 +44,27 @@ class Logger
      *
      * @param string $name logger name
      * @param string $file log file
+     * @param Monolog\Handler\HandlerInterface $handler
      *
-     * @return \Monolog\Logger
+     * @return Monolog\Logger
      */
-    private static function getLogger($name, $file = null, $handler = null)
+    private static function getLogger($name, $file = null, $handler = null): Monolog\Logger
     {
         $logfile = $file ?? RUNTIME_LOG_DIR . DIRECTORY_SEPARATOR
-                . PROJECT_NAMESPACE . DIRECTORY_SEPARATOR
-                . 'error-'.$name.'.log';
-        $key     = md5($logfile);
+            . PROJECT_NAMESPACE . DIRECTORY_SEPARATOR
+            . 'error-' . $name . '.log';
+        $key = md5($logfile);
         if (!isset(self::$logger[$key])) {
-            $dateFormat         = "Y-m-d H:i:s";
-            $output             = "[%datetime%][%level_name%]%channel%: %message%\n";
-            $formatter          = new \Monolog\Formatter\LineFormatter($output, $dateFormat);
-            $logLevel           = defined('RUNTIME_LOGGER_LEVEL') ? RUNTIME_LOGGER_LEVEL : static::LOEYE_LOGGER_TYPE_DEBUG;
+            $dateFormat = 'Y-m-d H:i:s';
+            $output = "[%datetime%][%level_name%]%channel%: %message%\n";
+            $formatter = new LineFormatter($output, $dateFormat);
+            $logLevel = defined('RUNTIME_LOGGER_LEVEL') ? RUNTIME_LOGGER_LEVEL : static::LOEYE_LOGGER_TYPE_DEBUG;
             if (!$handler) {
-                $handler        = new \Monolog\Handler\RotatingFileHandler($logfile, 10, $logLevel);
+                $handler = new RotatingFileHandler($logfile, 10, $logLevel);
             }
             $handler->setFormatter($formatter);
-            $logger             = new \Monolog\Logger($name);
-            $logger->setTimezone(new \DateTimeZone('Asia/Shanghai'));
+            $logger = new Monolog\Logger($name);
+            Monolog\Logger::setTimezone(new \DateTimeZone('Asia/Shanghai'));
             $logger->pushHandler($handler);
             self::$logger[$key] = $logger;
         }
@@ -71,47 +74,47 @@ class Logger
     /**
      * handle
      *
-     * @param int    $no      no
+     * @param int $no no
      * @param string $message message
-     * @param string $file    file
-     * @param int    $line    line
+     * @param string $file file
+     * @param int $line line
      *
      * @return void
      */
-    static public function handle($no, $message, $file, $line)
+    public static function handle($no, $message, $file, $line): void
     {
         switch ($no) {
             case E_ERROR:
                 $message = '[core] ' . $message;
-                $type    = self::LOEYE_LOGGER_TYPE_ERROR;
+                $type = self::LOEYE_LOGGER_TYPE_ERROR;
                 break;
             case E_USER_ERROR:
                 $message = '[user] ' . $message;
-                $type    = self::LOEYE_LOGGER_TYPE_ERROR;
+                $type = self::LOEYE_LOGGER_TYPE_ERROR;
                 break;
             case E_WARNING:
                 $message = '[core] ' . $message;
-                $type    = self::LOEYE_LOGGER_TYPE_WARNING;
+                $type = self::LOEYE_LOGGER_TYPE_WARNING;
                 break;
             case E_USER_WARNING:
                 $message = '[user] ' . $message;
-                $type    = self::LOEYE_LOGGER_TYPE_WARNING;
+                $type = self::LOEYE_LOGGER_TYPE_WARNING;
                 break;
             case E_NOTICE:
                 $message = '[core] ' . $message;
-                $type    = self::LOEYE_LOGGER_TYPE_NOTICE;
+                $type = self::LOEYE_LOGGER_TYPE_NOTICE;
                 break;
             case E_USER_NOTICE:
                 $message = '[user] ' . $message;
-                $type    = self::LOEYE_LOGGER_TYPE_NOTICE;
+                $type = self::LOEYE_LOGGER_TYPE_NOTICE;
                 break;
             default:
                 $message = '[other] ' . $message;
-                $type    = self::LOEYE_LOGGER_TYPE_ERROR;
+                $type = self::LOEYE_LOGGER_TYPE_ERROR;
                 break;
         }
         $log = [$message, '(' . $file . ':' . $line . ')', 'Stack trace:'];
-        $log += self::getTraceInfo();
+        $log =array_merge($log, self::getTraceInfo());
         self::log($log, $type);
     }
 
@@ -119,15 +122,15 @@ class Logger
      * trigger
      *
      * @param string $message message
-     * @param string $file    file
-     * @param string $line    line
-     * @param int    $type    logger type
+     * @param string $file file
+     * @param string $line line
+     * @param int $type logger type
      *
      * @return void
      */
-    static public function trigger(
-            $message, $file, $line, $type = Logger::LOEYE_LOGGER_TYPE_WARNING
-    )
+    public static function trigger(
+        $message, $file, $line, $type = Logger::LOEYE_LOGGER_TYPE_WARNING
+    ): void
     {
         $log = [$message, '(' . $file . ':' . $line . ')'];
         self::log($log, $type);
@@ -137,20 +140,21 @@ class Logger
      * trace
      *
      * @param string $message message
-     * @param int    $code    code
-     * @param string $file    file
-     * @param string $line    line
+     * @param int $code code
+     * @param string $file file
+     * @param string $line line
+     * @param int $type log type
      *
      * @return void
      */
-    static public function trace($message, $code, $file, $line, $type = self::LOEYE_LOGGER_TYPE_DEBUG)
+    public static function trace($message, $code, $file, $line, $type = self::LOEYE_LOGGER_TYPE_DEBUG): void
     {
         $log = [];
         $log[] = $message;
         $log[] = 'error code ' . $code;
         $log[] = '(' . $file . ':' . $line . ')';
         $log[] = 'Stack trace:';
-        $log += self::getTraceInfo();
+        $log = array_merge($log, self::getTraceInfo());
         self::log($log, $type);
     }
 
@@ -158,12 +162,12 @@ class Logger
      * log
      *
      * @param string|array $message message
-     * @param int    $type    message type
-     * @param string $file    file
+     * @param int $type message type
+     * @param string $file file
      *
      * @return void
      */
-    static public function log($message, $type = self::LOEYE_LOGGER_TYPE_ERROR, $file = null)
+    public static function log($message, $type = self::LOEYE_LOGGER_TYPE_ERROR, $file = null): void
     {
         if (defined('PROJECT_PROPERTY')) {
             $name = PROJECT_PROPERTY;
@@ -185,7 +189,7 @@ class Logger
      *
      * @param string|array $message
      */
-    static public function critical($message)
+    public static function critical($message): void
     {
         static::log($message, static::LOEYE_LOGGER_TYPE_CRITICAL);
     }
@@ -195,7 +199,7 @@ class Logger
      *
      * @param string|array $message
      */
-    static public function error($message)
+    public static function error($message): void
     {
         static::log($message, static::LOEYE_LOGGER_TYPE_ERROR);
     }
@@ -205,7 +209,7 @@ class Logger
      *
      * @param string|array $message
      */
-    static public function warning($message)
+    public static function warning($message): void
     {
         static::warn($message);
     }
@@ -214,7 +218,7 @@ class Logger
      * warn
      * @param string|array $message
      */
-    static public function warn($message)
+    public static function warn($message): void
     {
         static::log($message, static::LOEYE_LOGGER_TYPE_WARNING);
     }
@@ -224,7 +228,7 @@ class Logger
      *
      * @param string|array $message
      */
-    static public function debug($message)
+    public static function debug($message): void
     {
         static::log($message, static::LOEYE_LOGGER_TYPE_DEBUG);
     }
@@ -234,7 +238,7 @@ class Logger
      *
      * @param string|array $message
      */
-    static public function info($message)
+    public static function info($message): void
     {
         static::log($message, static::LOEYE_LOGGER_TYPE_INFO);
     }
@@ -244,7 +248,7 @@ class Logger
      *
      * @param string|array $message
      */
-    static public function notice($message)
+    public static function notice($message): void
     {
         static::log($message, static::LOEYE_LOGGER_TYPE_NOTICE);
     }
@@ -254,10 +258,10 @@ class Logger
      *
      * @return array
      */
-    static public function getTraceInfo()
+    public static function getTraceInfo(): array
     {
         $message = [];
-        $trace   = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
+        $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
         foreach ($trace as $i => $t) {
             if (!isset($t['file'])) {
                 $t['file'] = 'unknown';
@@ -272,11 +276,11 @@ class Logger
             if (isset($t['class'])) {
                 $msg .= $t['class'] . '->';
             }
-            $msg       .= "{$t['function']}()";
+            $msg .= "{$t['function']}()";
             $message[] = $msg;
         }
         if (filter_has_var(INPUT_SERVER, 'REQUEST_URI')) {
-            $message[] = "# REQUEST_URI: " . filter_input(INPUT_SERVER, 'REQUEST_URI') .PHP_EOL;
+            $message[] = '# REQUEST_URI: ' . filter_input(INPUT_SERVER, 'REQUEST_URI') . PHP_EOL;
         }
         return $message;
     }

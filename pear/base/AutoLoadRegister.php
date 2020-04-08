@@ -40,7 +40,7 @@ class AutoLoadRegister
      *
      * @return boolean
      */
-    static public function addNamespace($ns, $path, $prepend = false)
+    public static function addNamespace($ns, $path, $prepend = false): bool
     {
         $path = static::realAliasFile($path);
         $maps = static::$namespaceMap[$ns] ?? [];
@@ -165,7 +165,7 @@ class AutoLoadRegister
      *
      * @param string $file alias path
      *
-     * @return string|bool
+     * @return mixed
      */
     public static function realAliasFile($file)
     {

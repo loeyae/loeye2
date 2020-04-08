@@ -17,6 +17,14 @@
 
 namespace loeye\base;
 
+use InvalidArgumentException;
+use loeye\config\ConfigurationLoader;
+use loeye\config\general\DeltaConfigDefinition;
+use loeye\config\general\RulesetConfigDefinition;
+use loeye\config\module\ConfigDefinition;
+use loeye\lib\Secure;
+use Symfony\Component\Config\Definition\ConfigurationInterface;
+
 /**
  * Description of Configuration
  *
@@ -34,18 +42,20 @@ class Configuration
     private $_config;
     private $_definition;
     private $_cacheDir;
-    protected $hash = null;
+    protected $hash;
 
-    const ENV_TAG = '${';
+    public const ENV_TAG = '${';
 
     /**
      * __construct
      *
      * @param string $property property
-     * @param string $bundle   bundle
-     * @param string $context  context
+     * @param string $bundle bundle
+     * @param mixed $definition definition
+     * @param string $context context
      *
-     * @return void
+     * @param null $baseDir
+     * @param null $cacheDir
      */
     public function __construct($property, $bundle, $definition = null, $context = null, $baseDir = null, $cacheDir = null)
     {
@@ -61,9 +71,9 @@ class Configuration
         $this->_baseBundle  = $bundle;
         $this->_baseContext = $context;
         if (null === $definition) {
-            $ruseltDefinition  = new \loeye\config\general\RulesetConfigDefinition();
-            $deltaDefinition   = new \loeye\config\general\DeltaConfigDefinition();
-            $this->_definition = [$ruseltDefinition, $deltaDefinition];
+            $rulesetDefinition  = new RulesetConfigDefinition();
+            $deltaDefinition   = new DeltaConfigDefinition();
+            $this->_definition = [$rulesetDefinition, $deltaDefinition];
         } else {
             $this->setDefinition($definition);
         }
@@ -75,7 +85,7 @@ class Configuration
      *
      * @return string
      */
-    public function getBaseDir()
+    public function getBaseDir(): string
     {
         return $this->_baseDir;
     }
@@ -85,7 +95,7 @@ class Configuration
      *
      * @return string
      */
-    public function getBundle()
+    public function getBundle(): string
     {
         return $this->_bundle ?? $this->_baseBundle;
     }
@@ -105,19 +115,19 @@ class Configuration
      *
      * @param mixed $definition
      */
-    public function setDefinition($definition)
+    public function setDefinition($definition): void
     {
         if (is_array($definition)) {
             foreach ($definition as $value) {
-                if (!($value instanceof \Symfony\Component\Config\Definition\ConfigurationInterface)) {
-                    throw \InvalidArgumentException('definition must be instance of \Symfony\Component\Config\ConfigCacheInterface');
+                if (!($value instanceof ConfigurationInterface)) {
+                    throw new InvalidArgumentException('definition must be instance of \Symfony\Component\Config\ConfigCacheInterface');
                 }
             }
             $this->_definition = $definition;
-        } elseif ($definition instanceof \Symfony\Component\Config\Definition\ConfigurationInterface) {
+        } elseif ($definition instanceof ConfigurationInterface) {
             $this->_definition = [$definition];
         } else {
-            throw \InvalidArgumentException('definition must be instance of \Symfony\Component\Config\ConfigCacheInterface');
+            throw new InvalidArgumentException('definition must be instance of \Symfony\Component\Config\ConfigCacheInterface');
         }
     }
 
@@ -125,7 +135,7 @@ class Configuration
      *
      * @return array of \Symfony\Component\Config\ConfigCacheInterface's instance
      */
-    public function getDefinition()
+    public function getDefinition(): array
     {
         return $this->_definition;
     }
@@ -133,12 +143,12 @@ class Configuration
     /**
      * bundle
      *
-     * @param string $bundle  boudle
+     * @param string $bundle  bundle
      * @param string $context context
      *
-     * @return mixed
+     * @return void
      */
-    public function bundle($bundle, $context = null)
+    public function bundle($bundle, $context = null): void
     {
         $this->_bundle = $bundle;
         $this->context($context);
@@ -151,7 +161,7 @@ class Configuration
      *
      * @return void
      */
-    public function context($context = null)
+    public function context($context = null): void
     {
         $this->_context = $context;
         $this->_loadConfig();
@@ -167,7 +177,7 @@ class Configuration
      */
     public function get($key, $default = null)
     {
-        $keyList = explode(".", $key);
+        $keyList = explode('.', $key);
 
         $config = $this->_config;
         foreach ($keyList as $k) {
@@ -175,7 +185,6 @@ class Configuration
             if (null === $config) {
                 return $default;
             }
-            $isList = false;
         }
         return $config;
     }
@@ -202,11 +211,9 @@ class Configuration
      * getSettings
      *
      * @param string $bundle bundle
-     * @param bool   $reduce need reduce
-     *
      * @return array
      */
-    public function getSettings($bundle = null, $reduce = true)
+    public function getSettings($bundle = null): array
     {
         if (!empty($bundle)) {
             $this->bundle($bundle, null);
@@ -218,9 +225,9 @@ class Configuration
      *
      * @return string
      */
-    private function _computeHash()
+    private function _computeHash(): string
     {
-        return \loeye\lib\Secure::getKey([$this->getBundle(), $this->getContext()]);
+        return Secure::getKey([$this->getBundle(), $this->getContext()]);
     }
 
     /**
@@ -228,7 +235,7 @@ class Configuration
      *
      * @return boolean
      */
-    public function isFresh()
+    public function isFresh(): bool
     {
         $hash = $this->_computeHash();
         if (null === $this->hash) {
@@ -241,7 +248,7 @@ class Configuration
     /**
      * _loadConfig
      */
-    private function _loadConfig()
+    private function _loadConfig(): void
     {
         if ($this->isFresh()) {
             $bundle  = $this->getBundle();
@@ -251,8 +258,9 @@ class Configuration
                 $context = array_combine([$array[0]], [$array[1]]);
             }
             $namespace = strtr($bundle, ['/' => '.', '\\' => '.']);
-            $loader    = new \loeye\config\ConfigurationLoader($this->_baseDir, $namespace, $this->getDefinition(), true, $this->_cacheDir);
-            if (current($this->_definition) instanceof \loeye\config\module\ConfigDefinition) {
+            $loader    = new ConfigurationLoader($this->_baseDir, $namespace, $this->getDefinition(), true,
+                $this->_cacheDir);
+            if (current($this->_definition) instanceof ConfigDefinition) {
                 $this->_config = $loader->loadModules();
             } else {
                 $this->_config = $loader->load($context);
@@ -263,13 +271,11 @@ class Configuration
     /**
      * _getConfig
      *
-     * @param string $key    key
-     * @param array  $config config
-     * @param bool   $isList is list
-     *
+     * @param string $key key
+     * @param array $config config
      * @return mixed
      */
-    private function _getConfig($key, $config, $isList = false)
+    private function _getConfig($key, $config)
     {
         return isset($config[$key]) ? $this->getEnv($config[$key]) : null;
     }
@@ -277,13 +283,13 @@ class Configuration
     /**
      * 获取环境变量
      *
-     * @param type $var
-     * @return type
+     * @param string $var
+     * @return mixed
      */
     private function getEnv($var)
     {
         if (is_iterable($var)) {
-            return array_map(array($this, "getEnv"), $var);
+            return array_map(array($this, 'getEnv'), (array)$var);
         }
         if ($var && Utils::startwith($var, self::ENV_TAG)) {
             $l          = mb_strlen(self::ENV_TAG);

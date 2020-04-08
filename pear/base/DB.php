@@ -17,6 +17,24 @@
 
 namespace loeye\base;
 
+use Doctrine\Common\Cache\ApcuCache;
+use Doctrine\Common\Cache\ArrayCache;
+use Doctrine\Common\Cache\MemcachedCache;
+use Doctrine\Common\Cache\PhpFileCache;
+use Doctrine\Common\Cache\RedisCache;
+use Doctrine\Common\Persistence\ObjectRepository;
+use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityRepository;
+use Doctrine\ORM\NativeQuery;
+use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\ORMException;
+use Doctrine\ORM\Query\ResultSetMapping;
+use Doctrine\ORM\QueryBuilder;
+use Doctrine\ORM\TransactionRequiredException;
+use loeye\error\BusinessException;
+use loeye\lib\Secure;
+use Symfony\Component\Cache\Adapter\ApcuAdapter;
+
 /**
  * Description of DB
  *
@@ -32,28 +50,29 @@ class DB
 
     /**
      *
-     * @var \Doctrine\ORM\EntityManager
+     * @var EntityManager
      */
     protected $em;
     protected $defaultType;
-    protected $isDevMode   = false;
+    protected $isDevMode = false;
     protected static $_instance;
     protected $encryptMode = ENCRYPT_MODE_EXPLICIT;
 
     /**
      * __construct
      *
-     * @param \loeye\base\AppConfig $appConfig AppConfig
-     * @param string|null           $type      type
+     * @param AppConfig $appConfig AppConfig
+     * @param string|null $type type
+     * @throws Exception
      */
     public function __construct(AppConfig $appConfig, $type = null)
     {
-        $property   = $appConfig->getPropertyName();
-        $settins    = $appConfig->getSetting('application.database');
-        $config     = $this->databaseConfig($appConfig);
-        $this->defaultType = isset($settins['default']) ? $settins['default'] : null;
-        $this->isDevMode   = isset($settins['is_dev_mode']) ? $settins['is_dev_mode'] : false;
-        $this->encryptMode = isset($settins['encrypt_mode']) ? $settins['encrypt_mode'] : ENCRYPT_MODE_EXPLICIT;
+        $property = $appConfig->getPropertyName();
+        $settings = $appConfig->getSetting('application.database');
+        $config = $this->databaseConfig($appConfig);
+        $this->defaultType = $settings['default'] ?? null;
+        $this->isDevMode = $settings['is_dev_mode'] ?? false;
+        $this->encryptMode = $settings['encrypt_mode'] ?? ENCRYPT_MODE_EXPLICIT;
         $this->_getEntityManager($appConfig, $config, $property, $type);
     }
 
@@ -61,7 +80,7 @@ class DB
      *
      * @return boolean
      */
-    public function getDevMode()
+    public function getDevMode(): bool
     {
         return $this->isDevMode;
     }
@@ -69,16 +88,17 @@ class DB
     /**
      * getInstance
      *
-     * @param \loeye\base\AppConfig $appConfig AppConfig
-     * @param string|null           $type      type
-     * @param string|null           $sign      sign
+     * @param AppConfig $appConfig AppConfig
+     * @param string|null $type type
+     * @param string|null $sign sign
      *
-     * @return \loeye\base\DB
+     * @return DB
+     * @throws Exception
      */
-    static public function getInstance(AppConfig $appConfig, $type = null, $sign = null)
+    public static function getInstance(AppConfig $appConfig, $type = null, $sign = null): DB
     {
         $it = ($type ?? 'default');
-        $it = md5($it.$sign);
+        $it = md5($it . $sign);
         if (!isset(self::$_instance[$it])) {
             self::$_instance[$it] = new self($appConfig, $type);
         }
@@ -88,73 +108,74 @@ class DB
     /**
      * _getEntityManager
      *
-     * @param \loeye\base\AppConfig     $appConfig AppConfig
-     * @param \loeye\base\Configuration $config    Configuration
-     * @param string                    $property  property
-     * @param string                    $type      type
+     * @param AppConfig $appConfig AppConfig
+     * @param Configuration $config Configuration
+     * @param string $property property
+     * @param string $type type
      *
      * @return void
      * @throws Exception
      */
-    private function _getEntityManager(AppConfig $appConfig, Configuration $config, $property, $type)
+    private function _getEntityManager(AppConfig $appConfig, Configuration $config, $property, $type): void
     {
         $key = $type ?? $this->defaultType;
         if (!$key) {
-            throw new \loeye\error\BusinessException("Invalid database type", \loeye\error\BusinessException::INVALID_CONFIG_SET_CODE);
+            throw new BusinessException('Invalid database type', BusinessException::INVALID_CONFIG_SET_CODE);
         }
         $dbSetting = $config->get($key);
         if (!$dbSetting) {
-            throw new \loeye\error\BusinessException("Invalid db setting", \loeye\error\BusinessException::INVALID_CONFIG_SET_CODE);
+            throw new BusinessException('Invalid db setting', BusinessException::INVALID_CONFIG_SET_CODE);
         }
         if (ENCRYPT_MODE_CRYPT === $this->encryptMode && $dbSetting['password']) {
-            $dbSetting['password'] = \loeye\lib\Secure::crypt($property, $dbSetting['password'], true);
+            $dbSetting['password'] = Secure::crypt($property, $dbSetting['password'], true);
         } elseif (ENCRYPT_MODE_KEYDB === $this->encryptMode && $dbSetting['password']) {
-            $dbSetting['password'] = \loeye\lib\Secure::getKeyDb($property, $dbSetting['password']);
+            $dbSetting['password'] = Secure::getKeyDb($property, $dbSetting['password']);
         }
-        $cache    = $this->getCache($appConfig);
+        $cache = $this->getCache($appConfig);
         $this->em = \loeye\database\EntityManager::getManager($dbSetting, $property, $cache);
     }
 
     /**
      * getCache
      *
-     * @param \loeye\base\AppConfig $appConfig AppConfig
+     * @param AppConfig $appConfig AppConfig
      * @return \Doctrine\Common\Cache\Cache
+     * @throws Exception
      */
-    protected function getCache(AppConfig $appConfig)
+    protected function getCache(AppConfig $appConfig): \Doctrine\Common\Cache\Cache
     {
         if ($this->isDevMode) {
-            return new \Doctrine\Common\Cache\ArrayCache();
+            return new ArrayCache();
         }
-        if (\Symfony\Component\Cache\Adapter\ApcuAdapter::isSupported()) {
-            return new \Doctrine\Common\Cache\ApcuCache();
+        if (ApcuAdapter::isSupported()) {
+            return new ApcuCache();
         }
         $cacheType = $appConfig->getSetting('application.cache');
         if (Cache::CACHE_TYPE_REDIS === $cacheType) {
-            $cache = new \Doctrine\Common\Cache\RedisCache();
+            $cache = new RedisCache();
             $config = $this->cacheConfig($appConfig);
             $setting = $config->get($cacheType);
             $redis = $this->getRedisClient($setting);
             $cache->setRedis($redis);
         } elseif (Cache::CACHE_TYPE_MEMCACHED === $cacheType) {
-            $cache = new \Doctrine\Common\Cache\MemcachedCache();
+            $cache = new MemcachedCache();
             $config = $this->cacheConfig($appConfig);
             $setting = $config->get($cacheType);
             $memcached = $this->getMeachedClient($setting);
             $cache->setMemcached($memcached);
         } else {
             $directory = RUNTIME_CACHE_DIR . D_S . self::BUNDLE;
-            $cache     = new \Doctrine\Common\Cache\PhpFileCache($directory);
+            $cache = new PhpFileCache($directory);
         }
-         return $cache;
+        return $cache;
     }
 
     /**
      * entityManager
      *
-     * @return \Doctrine\ORM\EntityManager
+     * @return EntityManager
      */
-    public function entityManager()
+    public function entityManager(): EntityManager
     {
         return $this->em;
     }
@@ -162,9 +183,9 @@ class DB
     /**
      * em
      *
-     * @return \Doctrine\ORM\EntityManager
+     * @return EntityManager
      */
-    public function em()
+    public function em(): EntityManager
     {
         return $this->em;
     }
@@ -172,9 +193,9 @@ class DB
     /**
      * Create Query Builder
      *
-     * @return \Doctrine\ORM\QueryBuilder
+     * @return QueryBuilder
      */
-    public function createQueryBuilder()
+    public function createQueryBuilder(): QueryBuilder
     {
         return $this->em->createQueryBuilder();
     }
@@ -182,24 +203,24 @@ class DB
     /**
      * Create Query Builder
      *
-     * @return \Doctrine\ORM\QueryBuilder
+     * @return QueryBuilder
      */
-    public function qb()
+    public function qb(): QueryBuilder
     {
         return $this->em->createQueryBuilder();
     }
 
     /**
      *
-     * @param string                                    $sql sql
-     * @param \Doctrine\ORM\Query\ResultSetMapping|null $rsm
+     * @param string $sql sql
+     * @param ResultSetMapping|null $rsm
      *
-     * @return \Doctrine\ORM\NativeQuery
+     * @return NativeQuery
      */
-    public function createNativeQuery($sql, $rsm = null)
+    public function createNativeQuery($sql, $rsm = null): NativeQuery
     {
         if (!$rsm) {
-            $rsm = new \Doctrine\ORM\Query\ResultSetMapping();
+            $rsm = new ResultSetMapping();
         }
         return $this->em->createNativeQuery($sql, $rsm);
     }
@@ -222,7 +243,7 @@ class DB
      *
      * @param string $entityName The class name of the entity to find
      *
-     * @return \Doctrine\Common\Persistence\ObjectRepository|\Doctrine\ORM\EntityRepository The repository class.
+     * @return ObjectRepository|EntityRepository The repository class.
      */
     public function repository($entityName)
     {
@@ -232,9 +253,9 @@ class DB
     /**
      * Finds a single entity by a set of criteria.
      *
-     * @param string     $entityName The class name of the entity to find
-     * @param array      $criteria   criteria
-     * @param array|null $orderBy    order by
+     * @param string $entityName The class name of the entity to find
+     * @param array $criteria criteria
+     * @param array|null $orderBy order by
      *
      * @return object|null The entity instance or NULL if the entity can not be found.
      */
@@ -245,15 +266,18 @@ class DB
 
     /**
      *
-     * @param string       $name        The class name of the entity to find.
-     * @param mixed        $id          The identity of the entity to find.
-     * @param integer|null $lockMode    One of the \Doctrine\DBAL\LockMode::* constants
+     * @param string $name The class name of the entity to find.
+     * @param mixed $id The identity of the entity to find.
+     * @param integer|null $lockMode One of the \Doctrine\DBAL\LockMode::* constants
      *                                  or NULL if no specific lock mode should be used
      *                                  during the search.
      * @param integer|null $lockVersion The version of the entity to find when using
      *                                  optimistic locking.
      *
      * @return object|null The entity instance or NULL if the entity can not be found.
+     * @throws ORMException
+     * @throws OptimisticLockException
+     * @throws TransactionRequiredException
      */
     public function entity($name, $id, $lockMode = null, $lockVersion = null)
     {
@@ -266,8 +290,10 @@ class DB
      * @param object $entity
      *
      * @return bool
+     * @throws ORMException
+     * @throws OptimisticLockException
      */
-    public function save($entity)
+    public function save($entity): bool
     {
         $this->em->persist($entity);
         $this->em->flush();
@@ -278,8 +304,10 @@ class DB
      * flush
      *
      * @return bool
+     * @throws ORMException
+     * @throws OptimisticLockException
      */
-    public function flush()
+    public function flush(): bool
     {
         $this->em->flush();
         return true;
@@ -291,6 +319,7 @@ class DB
      * @param object $entity
      *
      * @return object
+     * @throws ORMException
      */
     public function refresh($entity)
     {
@@ -304,8 +333,10 @@ class DB
      * @param object $entity
      *
      * @return bool
+     * @throws ORMException
+     * @throws OptimisticLockException
      */
-    public function remove($entity)
+    public function remove($entity): bool
     {
         $this->em->remove($entity);
         $this->em->flush();

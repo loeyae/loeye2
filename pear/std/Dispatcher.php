@@ -27,6 +27,7 @@ use loeye\error\ResourceException;
 use loeye\lib\Cookie;
 use loeye\web\Resource;
 use loeye\web\Template;
+use ReflectionException;
 use Smarty;
 
 if (!defined('LOEYE_PROCESS_MODE__NORMAL')) {
@@ -176,6 +177,7 @@ abstract class Dispatcher
      * initGenericObj
      *
      * @return void
+     * @throws Exception
      */
     protected function initAppConfig(): void
     {
@@ -264,8 +266,7 @@ abstract class Dispatcher
                     foreach ((array)$list as $dir) {
                         AutoLoadRegister::addDir($dir);
                     }
-                }
-                {
+                } else {
                     foreach ((array)$list as $file) {
                         $ignore = false;
                         AutoLoadRegister::addFile($file, $ignore);
@@ -341,7 +342,7 @@ abstract class Dispatcher
         if (!empty($redirectUrl)) {
             if ($this->processMode > LOEYE_PROCESS_MODE__NORMAL) {
                 $this->setTraceDataIntoContext(array());
-                \loeye\base\Utils::logContextTrace($this->context);
+                Utils::logContextTrace($this->context);
             }
             $this->context->getResponse()->redirect($redirectUrl);
         }
@@ -460,7 +461,7 @@ abstract class Dispatcher
      * executeOutput
      *
      * @return void
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
     protected function executeOutput(): void
     {

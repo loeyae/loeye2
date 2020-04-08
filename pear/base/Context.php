@@ -15,40 +15,88 @@
 
 namespace loeye\base;
 
+use ArrayAccess;
+use Generator;
+use loeye\client\ParallelClientManager;
 use loeye\std\Request;
 use loeye\std\Response;
+use loeye\web\Template;
+use Psr\Cache\InvalidArgumentException;
 
 /**
  * Context
  *
- * @category PHP
- * @package  LOEYE
  * @author   Zhang Yi <loeyae@gmail.com>
- * @license  http://www.apache.org/licenses/LICENSE-2.0 Apache License
- * @link     URL description
  */
-class Context implements \ArrayAccess
+class Context implements ArrayAccess
 {
 
+    /**
+     * @var array
+     */
     private $_data;
+
+    /**
+     * @var array
+     */
     private $_cdata;
+    /**
+     * @var array
+     */
     private $_traceData;
+    /**
+     * @var array
+     */
     private $_errors;
+    /**
+     * @var AppConfig
+     */
     private $_appConfig;
+    /**
+     * @var Request
+     */
     private $_request;
+    /**
+     * @var Response
+     */
     private $_response;
+    /**
+     * @var ParallelClientManager
+     */
     private $_parallelClientManager;
+    /**
+     * @var Router
+     */
     private $_router;
+    /**
+     * @var int
+     */
     private $_expire;
+    /**
+     * @var Template
+     */
     private $_template;
+    /**
+     * @var ModuleDefinition
+     */
     private $_mDfnObj;
+    /**
+     * @var Cache
+     */
     private $_cache;
+    /**
+     * @var array
+     */
     private $_object = array(
         'AppConfig',
         'Request',
         'Response',
         'Router',
     );
+    /**
+     * @var bool
+     */
+    private $_errorProcessed;
 
     /**
      * __construct
@@ -74,10 +122,10 @@ class Context implements \ArrayAccess
      *
      * @return void
      */
-    public function setExpire($expire)
+    public function setExpire($expire): void
     {
         if ($expire !== null) {
-            $this->_expire = intval($expire);
+            $this->_expire = (int)$expire;
         }
     }
 
@@ -86,12 +134,9 @@ class Context implements \ArrayAccess
      *
      * @return null|int
      */
-    public function getExpire()
+    public function getExpire(): ?int
     {
-        if (isset($this->_expire)) {
-            return $this->_expire;
-        }
-        return null;
+        return $this->_expire ?? null;
     }
 
     /**
@@ -99,7 +144,7 @@ class Context implements \ArrayAccess
      *
      * @return void
      */
-    public function cacheData()
+    public function cacheData(): void
     {
         if ($this->_cache instanceof Cache) {
             $g    = $this->getDataGenerator();
@@ -120,20 +165,18 @@ class Context implements \ArrayAccess
      * loadCacheData
      *
      * @return void
+     * @throws InvalidArgumentException
      */
-    public function loadCacheData()
+    public function loadCacheData(): void
     {
         if ($this->_cache instanceof Cache) {
             $array = $this->_cache->get($this->getRequest()->getModuleId());
             if ($array) {
-                $time = time();
                 foreach ($array as $key => $value) {
-                    $cdata = unserialize($value);
-                    if ($cdata instanceof ContextData) {
-                        if (!$cdata->isExpire($time)) {
-                            $this->_data[$key]  = $cdata;
-                            $this->_cdata[$key] = $cdata;
-                        }
+                    $cdata = unserialize($value, null);
+                    if (($cdata instanceof ContextData) && !$cdata->isExpire()) {
+                        $this->_data[$key]  = $cdata;
+                        $this->_cdata[$key] = $cdata;
                     }
                 }
             }
@@ -148,10 +191,10 @@ class Context implements \ArrayAccess
      *
      * @return void
      */
-    public function offsetSet($offset, $value)
+    public function offsetSet($offset, $value): void
     {
         $short = mb_substr($offset, 3);
-        if ($offset == 'errors') {
+        if ($offset === 'errors') {
             if (is_array($value)) {
                 foreach ($value as $key => $error) {
                     $this->addErrors($key, $error);
@@ -159,7 +202,7 @@ class Context implements \ArrayAccess
             } else {
                 $this->addErrors(0, $value);
             }
-        } else if (in_array($short, $this->_object)) {
+        } else if (in_array($short, $this->_object, true)) {
             $this->$offset($value);
         } else {
             $this->_data[$offset] = ContextData::init($value);
@@ -173,12 +216,14 @@ class Context implements \ArrayAccess
      *
      * @return boolean
      */
-    public function offsetExists($offset)
+    public function offsetExists($offset): bool
     {
         $short = mb_substr($offset, 3);
-        if ($offset == 'errors') {
+        if ($offset === 'errors') {
             return $this->hasErrors();
-        } else if (in_array($short, $this->_object)) {
+        }
+
+        if (in_array($short, $this->_object, true)) {
             return true;
         }
         return isset($this->_data[$offset]);
@@ -194,14 +239,15 @@ class Context implements \ArrayAccess
     public function offsetGet($offset)
     {
         $short = mb_substr($offset, 3);
-        if ($offset == 'errors') {
+        if ($offset === 'errors') {
             return $this->getErrors();
-        } else if (in_array($short, $this->_object)) {
-            return $this->$offset();
-        } else if (isset($this->_data[$offset])) {
-            return $this->_data[$offset];
         }
-        return null;
+
+        if (in_array($short, $this->_object, true)) {
+            return $this->$offset();
+        }
+
+        return $this->_data[$offset] ?? null;
     }
 
     /**
@@ -211,7 +257,7 @@ class Context implements \ArrayAccess
      *
      * @return void
      */
-    public function offsetUnset($offset)
+    public function offsetUnset($offset): void
     {
         if (isset($this->_data[$offset])) {
             unset($this->_data[$offset]);
@@ -239,12 +285,12 @@ class Context implements \ArrayAccess
     /**
      * __set
      *
-     * @param stirng $key   key
+     * @param string $key   key
      * @param mixed  $value value
      *
      * @return void
      */
-    public function __set($key, $value)
+    public function __set($key, $value): void
     {
         $this->_data[$key] = ContextData::init($value);
     }
@@ -256,7 +302,7 @@ class Context implements \ArrayAccess
      *
      * @return void
      */
-    public function __unset($key)
+    public function __unset($key): void
     {
         if (isset($this->_data[$key])) {
             unset($this->_data[$key]);
@@ -268,7 +314,7 @@ class Context implements \ArrayAccess
      *
      * @param string $key key
      *
-     * @return void
+     * @return mixed
      */
     public function __get($key)
     {
@@ -285,7 +331,7 @@ class Context implements \ArrayAccess
      *
      * @return boolean
      */
-    public function __isset($key)
+    public function __isset($key): bool
     {
         return isset($this->_data[$key]);
     }
@@ -299,7 +345,7 @@ class Context implements \ArrayAccess
      *
      * @return void
      */
-    public function set($key, $value, $expire = 1)
+    public function set($key, $value, $expire = 1): void
     {
         $this->_data[$key] = ContextData::init($value, $expire);
     }
@@ -310,7 +356,7 @@ class Context implements \ArrayAccess
      * @param string $key     key
      * @param mixed  $default default
      *
-     * @return type
+     * @return mixed
      */
     public function get($key, $default = null)
     {
@@ -336,8 +382,7 @@ class Context implements \ArrayAccess
     {
         if (array_key_exists($key, $this->_data)) {
             $data = $this->_data[$key];
-            $value = $data(true);
-            return $value;
+            return $data(true);
         }
         return null;
     }
@@ -351,7 +396,7 @@ class Context implements \ArrayAccess
      *
      * @return void
      */
-    public function setTraceData($key, $value)
+    public function setTraceData($key, $value): void
     {
         $this->_traceData[$key] = $value;
     }
@@ -365,19 +410,16 @@ class Context implements \ArrayAccess
      */
     public function getTraceData($key)
     {
-        if (isset($this->_traceData[$key])) {
-            return $this->_traceData[$key];
-        }
-        return null;
+        return $this->_traceData[$key] ?? null;
     }
 
 
     /**
      * db
      *
-     * @return \loeye\base\DB
+     * @return DB
      */
-    public function db()
+    public function db(): DB
     {
         return DB::getInstance($this->getAppConfig());
     }
@@ -387,7 +429,7 @@ class Context implements \ArrayAccess
      *
      * @return array
      */
-    public function getData()
+    public function getData(): array
     {
         $data = [];
         foreach ($this->_data as $key => $value) {
@@ -399,11 +441,10 @@ class Context implements \ArrayAccess
     /**
      * getDataGenerator
      *
-     * @return Generator
      */
-    public function getDataGenerator()
+    public function getDataGenerator(): Generator
     {
-        $g = function ($data) {
+        $g = static function ($data) {
             foreach ($data as $key => $value) {
                 yield $key => $value();
             }
@@ -418,7 +459,7 @@ class Context implements \ArrayAccess
      *
      * @return boolean
      */
-    public function isExist($key)
+    public function isExist($key): bool
     {
         return isset($this->_data[$key]);
     }
@@ -430,7 +471,7 @@ class Context implements \ArrayAccess
      *
      * @return boolean
      */
-    public function isExistKey($key)
+    public function isExistKey($key): bool
     {
         return array_key_exists($key, $this->_data);
     }
@@ -442,7 +483,7 @@ class Context implements \ArrayAccess
      *
      * @return boolean
      */
-    public function isExpire($key)
+    public function isExpire($key): bool
     {
         if (isset($this->_cdata[$key])) {
             return $this->_cdata[$key]->isExpire();
@@ -458,7 +499,7 @@ class Context implements \ArrayAccess
      *
      * @return boolean
      */
-    public function isEmpty($key, $ignore = true)
+    public function isEmpty($key, $ignore = true): bool
     {
         if (!isset($this->_data[$key])) {
             return true;
@@ -473,7 +514,7 @@ class Context implements \ArrayAccess
      *
      * @return void
      */
-    public function unsetKey($key)
+    public function unsetKey($key): void
     {
         if (isset($this->_data[$key])) {
             unset($this->_data[$key]);
@@ -483,11 +524,11 @@ class Context implements \ArrayAccess
     /**
      * setAppConfig
      *
-     * @param \loeye\base\AppConfig $appConfig app config
+     * @param AppConfig $appConfig app config
      *
      * @return void
      */
-    public function setAppConfig(AppConfig $appConfig)
+    public function setAppConfig(AppConfig $appConfig): void
     {
         $this->_appConfig = $appConfig;
     }
@@ -495,9 +536,9 @@ class Context implements \ArrayAccess
     /**
      * getAppConfig
      *
-     * @return \loeye\base\AppConfig
+     * @return AppConfig
      */
-    public function getAppConfig()
+    public function getAppConfig(): AppConfig
     {
         return $this->_appConfig;
     }
@@ -541,7 +582,7 @@ class Context implements \ArrayAccess
      *
      * @return Response $response response
      */
-    public function getResponse()
+    public function getResponse(): Response
     {
         return $this->_response;
     }
@@ -549,11 +590,10 @@ class Context implements \ArrayAccess
     /**
      * setParallelClientManager
      *
-     * @param  \loeye\client\ParallelClientManager $clientMgr client mgr
-     *
+     * @param ParallelClientManager $clientManager
      * @return void
      */
-    public function setParallelClientManager(\loeye\client\ParallelClientManager $clientManager)
+    public function setParallelClientManager(ParallelClientManager $clientManager): void
     {
         $this->_parallelClientManager = $clientManager;
     }
@@ -561,9 +601,9 @@ class Context implements \ArrayAccess
     /**
      * getParallelClientMgr
      *
-     * @return \loeye\client\ParallelClientManager
+     * @return ParallelClientManager
      */
-    public function getParallelClientManager()
+    public function getParallelClientManager(): ParallelClientManager
     {
         return $this->_parallelClientManager;
     }
@@ -571,11 +611,11 @@ class Context implements \ArrayAccess
     /**
      * setRouter
      *
-     * @param \loeye\base\Router $router router
+     * @param Router $router router
      *
      * @return void
      */
-    public function setRouter(\loeye\base\Router $router)
+    public function setRouter(Router $router): void
     {
         $this->_router = $router;
     }
@@ -583,9 +623,9 @@ class Context implements \ArrayAccess
     /**
      * getRouter
      *
-     * @return \loeye\base\Router
+     * @return Router
      */
-    public function getRouter()
+    public function getRouter(): Router
     {
         return $this->_router;
     }
@@ -593,11 +633,11 @@ class Context implements \ArrayAccess
     /**
      * setUrlManager
      *
-     * @param \loeye\base\UrlManager $router router
+     * @param UrlManager $router router
      *
      * @return void
      */
-    public function setUrlManager(UrlManager $router)
+    public function setUrlManager(UrlManager $router): void
     {
         $this->_router = $router;
     }
@@ -605,9 +645,9 @@ class Context implements \ArrayAccess
     /**
      * getUrlManager
      *
-     * @return \loeye\base\UrlManager
+     * @return Router
      */
-    public function getUrlManager()
+    public function getUrlManager(): Router
     {
         return $this->_router;
     }
@@ -615,11 +655,11 @@ class Context implements \ArrayAccess
     /**
      * setModule
      *
-     * @param \loeye\base\ModuleDefinition $module module definition
+     * @param ModuleDefinition $module module definition
      *
      * @return void
      */
-    public function setModule(ModuleDefinition $module)
+    public function setModule(ModuleDefinition $module): void
     {
         $this->_mDfnObj = $module;
     }
@@ -627,9 +667,9 @@ class Context implements \ArrayAccess
     /**
      * getModule
      *
-     * @return \loeye\base\ModuleDefinition
+     * @return ModuleDefinition
      */
-    public function getModule()
+    public function getModule(): ModuleDefinition
     {
         return $this->_mDfnObj;
     }
@@ -637,11 +677,11 @@ class Context implements \ArrayAccess
     /**
      * setTemplate
      *
-     * @param \loeye\web\Template $template template
+     * @param Template $template template
      *
      * @return void
      */
-    public function setTemplate(\loeye\web\Template $template)
+    public function setTemplate(Template $template): void
     {
         $this->_template = $template;
     }
@@ -649,9 +689,9 @@ class Context implements \ArrayAccess
     /**
      * getTemplate
      *
-     * @return \loeye\web\Template
+     * @return Template
      */
-    public function getTemplate()
+    public function getTemplate(): Template
     {
         return $this->_template;
     }
@@ -664,7 +704,7 @@ class Context implements \ArrayAccess
      *
      * @return void
      */
-    public function addErrors($errorKey, $errorList)
+    public function addErrors($errorKey, $errorList): void
     {
         if (!is_array($errorList)) {
             $errorList = array($errorList);
@@ -681,12 +721,12 @@ class Context implements \ArrayAccess
      *
      * @param string $errorKey error key
      *
-     * @return array
+     * @return mixed
      */
     public function getErrors($errorKey = null)
     {
         if (isset($errorKey)) {
-            return isset($this->_errors[$errorKey]) ? $this->_errors[$errorKey] : null;
+            return $this->_errors[$errorKey] ?? null;
         }
         return $this->_errors;
     }
@@ -694,14 +734,14 @@ class Context implements \ArrayAccess
     /**
      * removeErrors
      *
-     * @param string $errorkey error key
+     * @param string $errorKey error key
      *
      * @return void
      */
-    public function removeErrors($errorkey)
+    public function removeErrors($errorKey): void
     {
-        if (isset($this->_errors[$errorkey])) {
-            unset($this->_errors[$errorkey]);
+        if (isset($this->_errors[$errorKey])) {
+            unset($this->_errors[$errorKey]);
         }
     }
 
@@ -712,7 +752,7 @@ class Context implements \ArrayAccess
      *
      * @return boolean
      */
-    public function hasErrors($errorKey = null)
+    public function hasErrors($errorKey = null): bool
     {
         if (isset($errorKey)) {
             return !empty($this->_errors[$errorKey]);

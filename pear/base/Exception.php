@@ -17,13 +17,19 @@
 
 namespace loeye\base;
 
+use loeye\web\Request;
+use loeye\web\Response;
+use ReflectionException;
+
 /**
  * ExceptionHandler
  *
- * @param Exception           $exc     exception
- * @param \loeye\base\Context $context context
+ * @param \Exception $exc exception
+ * @param Context $context context
  *
  * @return void
+ * @throws Exception
+ * @throws ReflectionException
  */
 function ExceptionHandler(\Exception $exc, Context $context)
 {
@@ -34,15 +40,16 @@ function ExceptionHandler(\Exception $exc, Context $context)
     }
     $format = null;
     $appConfig = $context->getAppConfig();
-    if ($context->getRequest() instanceof \loeye\web\Request) {
-        $format = $appConfig ? $appConfig->getSetting('application.response.format', $context->getRequest()->getFormatType()) : $context->getRequest()->getFormatType();
+    if ($context->getRequest() instanceof Request) {
+        $format = $appConfig ? $appConfig->getSetting('application.response.format', $context->getRequest()
+            ->getFormatType()) : $context->getRequest()->getFormatType();
     }
     switch ($format) {
         case 'xml':
         case 'json':
             $response = $context->getResponse();
-            if (!$response instanceof \loeye\web\Response) {
-                $response = new \loeye\web\Response();
+            if (!$response instanceof Response) {
+                $response = new Response();
             }
             $debug     = $appConfig ? $appConfig->getSetting('debug', false) : false;
             $res       = ['status' => ['code' => LOEYE_REST_STATUS_BAD_REQUEST, 'message' => 'Internal Error']];
@@ -56,7 +63,7 @@ function ExceptionHandler(\Exception $exc, Context $context)
                 $res['data'] = $exc->getCode();
             }
             $response->addOutput($res);
-            $renderObj = \loeye\base\Factory::getRender($format);
+            $renderObj = Factory::getRender($format);
 
             $renderObj->header($response);
             $renderObj->output($response);
@@ -76,7 +83,7 @@ function ExceptionHandler(\Exception $exc, Context $context)
                     }
                 }
             }
-            Factory::includeErrorPage($context, $exc, $errorPage);
+            echo Factory::includeErrorPage($context, $exc, $errorPage);
             break;
     }
 }
@@ -91,20 +98,20 @@ class Exception extends \Exception {
     /**
      * default error code
      */
-    const DEFAULT_ERROR_CODE = 500;
+    public const DEFAULT_ERROR_CODE = 500;
 
     /**
      * default error message
      */
-    const DEFAULT_ERROR_MSG = "Internal Error";
+    public const DEFAULT_ERROR_MSG = 'Internal Error';
 
     /**
      * __construct
      *
      * @param string $errorMessage error message
-     * @param int    $errorCode    error code
+     * @param int $errorCode error code
      *
-     * @return void
+     * @param array $parameter
      */
     public function __construct(string $errorMessage = self::DEFAULT_ERROR_MSG, int $errorCode = self::DEFAULT_ERROR_CODE, array $parameter = [])
     {

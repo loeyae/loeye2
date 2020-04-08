@@ -16,19 +16,22 @@
  */
 
 namespace loeye\base;
+use ArrayAccess;
+use loeye\config\router\ConfigDefinition;
 use loeye\error\BusinessException;
+use loeye\std\ConfigTrait;
 
 /**
  * Description of Router
  *
  * @author   Zhang Yi <loeyae@gmail.com>
  */
-class Router implements \ArrayAccess
+class Router implements ArrayAccess
 {
 
-    use \loeye\std\ConfigTrait;
+    use ConfigTrait;
 
-    const BUNDLE = 'router';
+    public const BUNDLE = 'router';
 
     private $_router;
     protected $config;
@@ -37,10 +40,11 @@ class Router implements \ArrayAccess
      * __construct
      *
      * @param string $property property name
+     * @throws BusinessException
      */
     public function __construct($property)
     {
-        $definition = new \loeye\config\router\ConfigDefinition();
+        $definition = new ConfigDefinition();
         $this->config = $this->bundleConfig($property, null, $definition);
         $this->_initRouter();
     }
@@ -52,17 +56,14 @@ class Router implements \ArrayAccess
      *
      * @return boolean
      */
-    public function offsetExists($offset)
+    public function offsetExists($offset): bool
     {
         $methodList = array(
             'getRouter',
             'getRouterKey',
             'match',
         );
-        if (in_array($offset, $methodList) || in_array($offset, $propertyList)) {
-            return true;
-        }
-        return false;
+        return in_array($offset, $methodList, true);
     }
 
     /**
@@ -92,9 +93,8 @@ class Router implements \ArrayAccess
      *
      * @return void
      */
-    public function offsetSet($offset, $value)
+    public function offsetSet($offset, $value): void
     {
-        return;
     }
 
     /**
@@ -104,9 +104,8 @@ class Router implements \ArrayAccess
      *
      * @return void
      */
-    public function offsetUnset($offset)
+    public function offsetUnset($offset): void
     {
-        return;
     }
 
     /**
@@ -116,7 +115,7 @@ class Router implements \ArrayAccess
      *
      * @return null|array
      */
-    public function getRouter($key)
+    public function getRouter($key): ?array
     {
         if (array_key_exists($key, $this->_router)) {
             return $this->_router[$key];
@@ -131,7 +130,7 @@ class Router implements \ArrayAccess
      *
      * @return string
      */
-    public function getRouterKey($url)
+    public function getRouterKey($url): string
     {
         $routerKey = null;
         $path      = parse_url($url, PHP_URL_PATH);
@@ -155,11 +154,11 @@ class Router implements \ArrayAccess
      *
      * @return string
      */
-    public function match($url)
+    public function match($url): string
     {
         $moduleId = null;
         $basePath = '';
-        if (defined("BASE_SERVER_URL")) {
+        if (defined('BASE_SERVER_URL')) {
             $basePath = parse_url(BASE_SERVER_URL, PHP_URL_PATH);
         } elseif (filter_has_var(INPUT_SERVER, 'rUrlPath')) {
             $basePath = filter_input(INPUT_SERVER, 'rUrlPath');
@@ -191,7 +190,7 @@ class Router implements \ArrayAccess
                             $value     = filter_var($matches[$key], FILTER_SANITIZE_STRING);
                             $search[]  = '{' . $key . '}';
                             $replace[] = $value;
-                            if (mb_substr($key, 0, 1, '7bit') != '_') {
+                            if (mb_strpos($key, '_', '7bit') !== 0) {
                                 $_REQUEST[$key] = urldecode($value);
                             }
                         }
@@ -229,7 +228,7 @@ class Router implements \ArrayAccess
      * @return string
      * @throws Exception
      */
-    public function generate($routerName, $params = array())
+    public function generate($routerName, $params = array()): string
     {
         if (!isset($this->_router[$routerName])) {
             throw new BusinessException(BusinessException::INVALID_CONFIG_SET_MSG,
@@ -261,7 +260,7 @@ class Router implements \ArrayAccess
                 unset($query[$key]);
             }
         }
-        if (defined("BASE_SERVER_URL")) {
+        if (defined('BASE_SERVER_URL')) {
             $url = BASE_SERVER_URL;
         } else {
             $url = '';
@@ -289,8 +288,9 @@ class Router implements \ArrayAccess
      * _initRouter
      *
      * @return void
+     * @throws BusinessException
      */
-    private function _initRouter()
+    private function _initRouter(): void
     {
         $config        = $this->config->get('routes');
         $this->_router = array();
@@ -305,7 +305,7 @@ class Router implements \ArrayAccess
                 $params  = array();
                 if (isset($value['regex'])) {
                     $matches = array();
-                    if (preg_match_all('(\{[\w\d\-\_]+\})', $value['path'], $matches)) {
+                    if (preg_match_all('({[\w\-_]+})', $value['path'], $matches)) {
                         foreach ($matches[0] as $match) {
                             $param = mb_substr($match, 1, -1, '7bit');
                             if (isset($value['regex'][$param])) {

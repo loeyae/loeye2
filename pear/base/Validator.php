@@ -17,6 +17,14 @@
 
 namespace loeye\base;
 
+use FilesystemIterator;
+use loeye\config\validate\DeltaConfigDefinition;
+use loeye\config\validate\RulesetConfigDefinition;
+use loeye\std\ConfigTrait;
+use ReflectionClass;
+use ReflectionException;
+use Symfony\Component\Validator\Constraints\All;
+use Symfony\Component\Validator\Constraints\Callback;
 use Symfony\Component\Validator\Validation;
 use Symfony\Component\Validator\ConstraintViolationList;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -29,40 +37,42 @@ use Symfony\Component\Validator\Context\ExecutionContext;
  *
  * @author   Zhang Yi <loeyae@gmail.com>
  */
-class Validator {
+class Validator
+{
 
-    use \loeye\std\ConfigTrait;
+    use ConfigTrait;
 
     private $_report;
 
     /**
      *
-     * @var \loeye\base\AppConfig
+     * @var AppConfig
      */
     protected $appConfig;
 
     /**
      *
-     * @var \loeye\base\Configuration
+     * @var Configuration
      */
     protected $config;
 
-    const LLT_PREFIX = 'LV_FIELD_';
-    const KEYWORD = 'validate';
-    const BUNDLE = 'validate';
+    public const LLT_PREFIX = 'LV_FIELD_';
+    public const KEYWORD = 'validate';
+    public const BUNDLE = 'validate';
 
     protected $prefix;
 
     /**
+     * __construct
      *
-     * @param \loeye\base\AppConfig       $appConfig        AppConfig instance
-     * @param string|null                 $bundle           bundle
-     * @param array                       $validationConfig validation config setting
+     * @param AppConfig $appConfig AppConfig instance
+     * @param string|null $bundle bundle
+     * @throws Exception
      */
-    public function __construct(AppConfig $appConfig, $bundle = null, $validationConfig = array()
-    ) {
+    public function __construct(AppConfig $appConfig, $bundle = null)
+    {
         $this->appConfig = $appConfig;
-        $definition  = [new \loeye\config\validate\RulesetConfigDefinition(), new \loeye\config\validate\DeltaConfigDefinition()];
+        $definition = [new RulesetConfigDefinition(), new DeltaConfigDefinition()];
         $this->config = $this->bundleConfig($appConfig->getPropertyName(), $bundle, $definition);
         $this->_report = array('has_error' => false, 'error_message' => []);
     }
@@ -70,22 +80,26 @@ class Validator {
     /**
      * validate
      *
-     * @param array  $data   data
-     * @param string $rule   rule
+     * @param array $data data
+     * @param string $rule rule
      *
      * @return array()
+     * @throws BusinessException
+     * @throws Exception
+     * @throws ReflectionException
      */
-    public function validate($data, $rule) {
-        $rulesets = $this->config->get('rulesets');
+    public function validate($data, $rule): array
+    {
+        $ruleSets = $this->config->get('ruleSets');
         $validateSets = $this->config->getConfig(null, self::KEYWORD . '=' . $rule);
         if (empty($validateSets[self::KEYWORD]) || empty($validateSets[self::KEYWORD]['fields'])) {
             throw new BusinessException(
-                    BusinessException::INVALID_CONFIG_SET_MSG, BusinessException::INVALID_CONFIG_SET_CODE);
+                BusinessException::INVALID_CONFIG_SET_MSG, BusinessException::INVALID_CONFIG_SET_CODE);
         }
         $schema = $this->_initSchema($validateSets[self::KEYWORD]['fields'], $data);
-        $fdata = $this->_filterData($rulesets, $schema, $data);
+        $fData = $this->_filterData($ruleSets, $schema, $data);
         $validator = Validation::createValidator();
-        $constraintList = $this->_buildConstraintList($rulesets, $schema, $data);
+        $constraintList = $this->_buildConstraintList($ruleSets, $schema, $data);
         $violationList = new ConstraintViolationList();
         if ($constraintList) {
             $constraint = new Assert\Collection([
@@ -94,7 +108,7 @@ class Validator {
             ]);
             $violationList = $validator->validate($data, $constraint);
         }
-        $validData = $this->_filter($fdata, $violationList);
+        $validData = $this->_filter($fData, $violationList);
         if (!empty($this->_report['error_message'])) {
             $this->_report['has_error'] = true;
         }
@@ -102,19 +116,31 @@ class Validator {
         return $this->_report;
     }
 
-    private function _buildConstraintList($rulesets, $schema, $data) {
+    /**
+     * _buildConstraintList
+     *
+     * @param $ruleSets
+     * @param $schema
+     * @param $data
+     * @return array
+     * @throws BusinessException
+     * @throws ReflectionException
+     */
+    private function _buildConstraintList($ruleSets, $schema, $data): array
+    {
         $validationList = [];
         $requiredFields = [];
         foreach ($schema as $key => $rule) {
-            $validator = $this->_buildConstraint($rulesets, $rule);
+            $validator = $this->_buildConstraint($ruleSets, $rule);
             if ($validator) {
                 $validationList[$key] = $validator;
             }
-            $requiredFields = array_replace($requiredFields, $this->_getRequiredFields($key, $rule, $data));
+            $fields = $requiredFields;
+            $requiredFields = array_replace($fields, $this->_getRequiredFields($key, $rule, $data));
         }
         foreach ($validationList as $key => $constraintList) {
             if (array_key_exists($key, $requiredFields)) {
-                if ($requiredFields[$key] == 'required_value') {
+                if ($requiredFields[$key] === 'required_value') {
                     array_unshift($constraintList, new Assert\NotBlank());
                     array_unshift($constraintList, new Assert\NotNull());
                 }
@@ -127,7 +153,17 @@ class Validator {
         return $validationList;
     }
 
-    private function _getRequiredFields($key, $rule, $data) {
+    /**
+     * _getRequiredFields
+     *
+     * @param string $key key
+     * @param array $rule rule
+     * @param array $data data
+     *
+     * @return array
+     */
+    private function _getRequiredFields($key, $rule, $data): array
+    {
         $requiredFields = [];
         if (isset($rule['required_value'])) {
             $requiredFields = [$key => 'required_value'];
@@ -137,44 +173,46 @@ class Validator {
         }
         if (isset($rule['required_value_if_match'])) {
             foreach ($rule['required_value_if_match'] as $v => $f) {
-                if ($data[$key] == $v) {
-                    $requiredFields = array_replace($requiredFields, array_fill_keys((array) $f, 'required_value'));
+                if ($data[$key] === $v) {
+                    $fields = $requiredFields;
+                    $requiredFields = array_replace($fields, array_fill_keys((array)$f, 'required_value'));
                 }
             }
         }
         if (isset($rule['required_value_if_include'])) {
             foreach ($rule['required_value_if_include'] as $v => $f) {
-                if (in_array($v, $data[$key])) {
-                    $requiredFields = array_replace($requiredFields, array_fill_keys((array) $f, 'required_value'));
+                if (in_array($v, $data[$key], true)) {
+                    $fields = $requiredFields;
+                    $requiredFields = array_replace($fields, array_fill_keys((array)$f, 'required_value'));
                 }
             }
         }
-        if (isset($rule['required_value_if_key_exists'])) {
-            if (isset($data[$key])) {
-                $requiredFields = [$key => 'required_value'];
-            }
+        if (isset($rule['required_value_if_key_exists'], $data[$key])) {
+            $requiredFields = [$key => 'required_value'];
         }
-        if (isset($rule['required_value_if_blank'])) {
-            if (isset($data[$key]) && $data[$key] == '') {
-                $requiredFields = array_replace($requiredFields, array_fill_keys((array) $rule['required_value_if_blank'], 'required_value'));
-            }
+        if (isset($rule['required_value_if_blank'], $data[$key]) && $data[$key] === '') {
+            $requiredFields = array_replace($requiredFields, array_fill_keys((array)$rule['required_value_if_blank'], 'required_value'));
         }
         return $requiredFields;
     }
 
     /**
+     * _buildConstraint
      *
-     * @param type $rulesets
-     * @param type $setting
-     * @return \Symfony\Component\Validator\Constraints\All
+     * @param array $ruleSets rules
+     * @param array $setting setting
+     *
+     * @return array
      * @throws BusinessException
+     * @throws ReflectionException
      */
-    private function _buildConstraint($rulesets, $setting) {
-        $ruleset = $rulesets[$setting['rule']] ?? null;
+    private function _buildConstraint($ruleSets, $setting): array
+    {
+        $ruleset = $ruleSets[$setting['rule']] ?? null;
         if (!$ruleset) {
-            throw new BusinessException(BusinessException::INVALID_CONFIG_SET_MSG, BusinessException::INVALID_CONFIG_SET_CODE, ['setting' => 'validate ruleset: '.$setting['rule']]);
+            throw new BusinessException(BusinessException::INVALID_CONFIG_SET_MSG, BusinessException::INVALID_CONFIG_SET_CODE, ['setting' => 'validate ruleset: ' . $setting['rule']]);
         }
-        $ruleset = array_filter($ruleset, function($item){
+        $ruleset = array_filter($ruleset, static function ($item) {
             if (null === $item) {
                 return false;
             }
@@ -198,25 +236,29 @@ class Validator {
         $choiceConstraint = $this->_buildChoiceConstraint($ruleset);
         $operatorConstraint = $this->_buildOperatorConstraint($ruleset);
         $validatorList = array_merge($funConstraint, $typeConstraint,
-                $lengthConstraint, $countConstraint, $rangeConstraint,
-                $regexConstraint, $choiceConstraint, $operatorConstraint);
+            $lengthConstraint, $countConstraint, $rangeConstraint,
+            $regexConstraint, $choiceConstraint, $operatorConstraint);
         if (isset($setting['item'])) {
-            $allConstraintor = new Assert\All($this->_buildConstraint($rulesets, $setting['item']));
-            $validatorList[] = $allConstraintor;
+            $allConstraint = new All($this->_buildConstraint($ruleSets, $setting['item']));
+            $validatorList[] = $allConstraint;
         }
         return $validatorList;
     }
 
-    private function _buildLengthConstraint($ruleset) {
+    /**
+     * _buildLengthConstraint
+     *
+     * @param array $ruleset ruleset
+     *
+     * @return array
+     */
+    private function _buildLengthConstraint($ruleset): array
+    {
         $lengthKeys = ['length', 'min_length', 'max_length'];
         if (array_intersect_key($ruleset, array_fill_keys($lengthKeys, null))) {
             $options = [
-                'min' => (isset($ruleset['min_length']) ? $ruleset['min_length'] : (
-                    isset($ruleset['length'][0]) ? $ruleset['length'][0] : (
-                    isset($ruleset['length']) ? $ruleset['length'] : null))),
-                'max' => (isset($ruleset['max_length']) ? $ruleset['max_length'] : (
-                    isset($ruleset['length'][1]) ? $ruleset['length'][1] : (
-                    isset($ruleset['length']) ? $ruleset['length'] : null))),
+                'min' => ($ruleset['min_length'] ?? ($ruleset['length'][0] ?? ($ruleset['length'] ?? null))),
+                'max' => ($ruleset['max_length'] ?? ($ruleset['length'][1] ?? ($ruleset['length'] ?? null))),
             ];
             $validator = new Assert\Length($options);
             !isset($ruleset['length_errmsg']) ?: $validator->exactMessage = $ruleset['length_errmsg'];
@@ -227,16 +269,19 @@ class Validator {
         return [];
     }
 
-    private function _buildCountConstraint($ruleset) {
+    /**
+     * _buildCountConstraint
+     *
+     * @param array $ruleset ruleset
+     * @return array
+     */
+    private function _buildCountConstraint($ruleset): array
+    {
         $countKeys = ['count', 'min_count', 'max_count'];
         if (array_intersect_key($ruleset, array_fill_keys($countKeys, null))) {
             $options = [
-                'min' => (isset($ruleset['min_count']) ? $ruleset['min_count'] : (
-                    isset($ruleset['count'][0]) ? $ruleset['count'][0] : (
-                    isset($ruleset['count']) ? $ruleset['count'] : null))),
-                'max' => (isset($ruleset['max_count']) ? $ruleset['max_count'] : (
-                    isset($ruleset['count'][1]) ? $ruleset['count'][1] : (
-                    isset($ruleset['count']) ? $ruleset['count'] : null))),
+                'min' => ($ruleset['min_count'] ?? ($ruleset['count'][0] ?? ($ruleset['count'] ?? null))),
+                'max' => ($ruleset['max_count'] ?? ($ruleset['count'][1] ?? ($ruleset['count'] ?? null))),
             ];
             $validator = new Assert\Count($options);
             !isset($ruleset['count_errmsg']) ?: $validator->exactMessage = $ruleset['count_errmsg'];
@@ -247,18 +292,19 @@ class Validator {
         return [];
     }
 
-    private function _buildRangeConstraint($ruleset) {
+    /**
+     * _buildRangeConstraint
+     *
+     * @param array $ruleset ruleset
+     * @return array
+     */
+    private function _buildRangeConstraint($ruleset): array
+    {
         $rangeKeys = ['range', 'min', 'max'];
         if (array_intersect_key($ruleset, array_fill_keys($rangeKeys, null))) {
             $options = [
-                'min' => (isset($ruleset['min']) ? $ruleset['min'] : (
-                    isset($ruleset['range'][0]) ? $ruleset['range'][0] : (
-                    isset($ruleset['range']) ? $ruleset['range'] : null
-                ))),
-                'max' => (isset($ruleset['max']) ? $ruleset['max'] : (
-                    isset($ruleset['range'][1]) ? $ruleset['range'][1] : (
-                    isset($ruleset['range']) ? $ruleset['range'] : null
-                ))),
+                'min' => ($ruleset['min'] ?? ($ruleset['range'][0] ?? ($ruleset['range'] ?? null))),
+                'max' => ($ruleset['max'] ?? ($ruleset['range'][1] ?? ($ruleset['range'] ?? null))),
             ];
             $validator = new Assert\Range($options);
             !isset($ruleset['min_errmsg']) ?: $validator->minMessage = $ruleset['min_errmsg'];
@@ -268,12 +314,19 @@ class Validator {
         return [];
     }
 
-    private function _buildRegexConstraint($ruleset) {
+    /**
+     * _buildRegexConstraint
+     *
+     * @param array $ruleset ruleset
+     * @return array
+     */
+    private function _buildRegexConstraint($ruleset): array
+    {
         if (isset($ruleset['regex']) && $ruleset['regex']) {
             $options = [
-                'pattern' => isset($ruleset['regex']['pattern']) ? $ruleset['regex']['pattern'] : null,
-                'htmlPattern' => isset($ruleset['regex']['html_pattern']) ? $ruleset['regex']['html_pattern'] : null,
-                'match' => isset($ruleset['regex']['match']) ? $ruleset['regex']['match'] : true,
+                'pattern' => $ruleset['regex']['pattern'] ?? null,
+                'htmlPattern' => $ruleset['regex']['html_pattern'] ?? null,
+                'match' => $ruleset['regex']['match'] ?? true,
             ];
             $validator = new Assert\Regex($options);
             return [$validator];
@@ -281,14 +334,21 @@ class Validator {
         return [];
     }
 
-    private function _buildChoiceConstraint($ruleset) {
+    /**
+     * _buildChoiceConstraint
+     *
+     * @param array $ruleset ruleset
+     * @return array
+     */
+    private function _buildChoiceConstraint($ruleset): array
+    {
         if (isset($ruleset['choice']) && $ruleset['choice']) {
             $options = [
                 'choices' => $ruleset['choice'],
-                'callback' => isset($ruleset['choice_callback']) ? $ruleset['choice_callback'] : null,
-                'multiple' => isset($ruleset['choice_multiple']) ? $ruleset['choice_multiple'] : false,
-                'min' => isset($ruleset['choice_min']) ? $ruleset['choice_min'] : null,
-                'max' => isset($ruleset['choice_max']) ? $ruleset['choice_max'] : null,
+                'callback' => $ruleset['choice_callback'] ?? null,
+                'multiple' => $ruleset['choice_multiple'] ?? false,
+                'min' => $ruleset['choice_min'] ?? null,
+                'max' => $ruleset['choice_max'] ?? null,
             ];
             $validator = new Assert\Choice($options);
             !isset($ruleset['choice_errmsg']) ?: $validator->message = $ruleset['choice_errmsg'];
@@ -300,7 +360,15 @@ class Validator {
         return [];
     }
 
-    private function _buildOperatorConstraint($ruleset) {
+    /**
+     * _buildOperatorConstraint
+     *
+     * @param array $ruleset ruleset
+     * @return array
+     * @throws ReflectionException
+     */
+    private function _buildOperatorConstraint($ruleset): array
+    {
         $validatorList = [];
         $operatorMapping = [
             '=' => 'EqualTo',
@@ -314,7 +382,7 @@ class Validator {
         if ($intersect) {
             foreach ($intersect as $key => $value) {
                 $item = $operatorMapping[$key];
-                $rc = \ReflectionClass('\\Symfony\\Component\\Validator\\Constraints\\' . ucfirst($item));
+                $rc = new ReflectionClass('\\Symfony\\Component\\Validator\\Constraints\\' . ucfirst($item));
                 $validator = $rc->newInstance(['value' => $value]);
                 !$ruleset[$key . '_errmsg'] ?: $validator->message = $ruleset[$key . '_errmsg'];
                 $validatorList[] = $validator;
@@ -323,43 +391,52 @@ class Validator {
         return $validatorList;
     }
 
-    private function _buildTypeConstraint($ruleset) {
+    /**
+     * _buildTypeConstraint
+     *
+     * @param array $ruleset ruleset
+     * @return array
+     * @throws BusinessException
+     * @throws ReflectionException
+     */
+    private function _buildTypeConstraint($ruleset): array
+    {
         $type = $ruleset['type'] ?? null;
         $message = $ruleset['type_errmsg'] ?? null;
         $validator = null;
         if ($type && function_exists('\\is_' . $type)) {
             $validator = new Assert\Type(['type' => $type]);
         } else if ($type && class_exists('\\Symfony\\Component\\Validator\\Constraints\\' . ucfirst($type))) {
-            $rc = new \ReflectionClass('\\Symfony\\Component\\Validator\\Constraints\\' . ucfirst($type));
+            $rc = new ReflectionClass('\\Symfony\\Component\\Validator\\Constraints\\' . ucfirst($type));
             $validator = $rc->newInstanceArgs();
-            if ($type == 'image') {
-                $validator->mimeTypes = (isset($ruleset['mim-types']) ? $ruleset['mim-types'] : 'image/*');
+            if ($type === 'image') {
+                $validator->mimeTypes = ($ruleset['mim-types'] ?? 'image/*');
                 !isset($ruleset['mim-types_errmsg']) ?: $validator->mimeTypesMessage = $ruleset['mim-types_errmsg'];
-                $validator->minWidth = isset($ruleset['min_width']) ? $ruleset['min_width'] : null;
+                $validator->minWidth = $ruleset['min_width'] ?? null;
                 !isset($ruleset['min_width_errmsg']) ?: $validator->minWidthMessage = $ruleset['min_width_errmsg'];
-                $validator->maxWidth = (isset($ruleset['max_width']) ? $ruleset['max_width'] : null);
+                $validator->maxWidth = ($ruleset['max_width'] ?? null);
                 !isset($ruleset['max_width_errmsg']) ?: $validator->maxWidthMessage = $ruleset['mmax_width_errmsg'];
-                $validator->maxHeight = (isset($ruleset['max_height']) ? $ruleset['max_height'] : null);
+                $validator->maxHeight = ($ruleset['max_height'] ?? null);
                 !isset($ruleset['max_height_errmsg']) ?: $validator->maxHeightMessage = $ruleset['max_height_errmsg'];
-                $validator->minHeight = (isset($ruleset['min_height']) ? $ruleset['min_height'] : null);
+                $validator->minHeight = ($ruleset['min_height'] ?? null);
                 !isset($ruleset['min_height_errmsg']) ?: $validator->minHeightMessage = $ruleset['min_height_errmsg'];
-                $validator->maxRatio = (isset($ruleset['max_ratio']) ? $ruleset['max_ratio'] : null);
+                $validator->maxRatio = ($ruleset['max_ratio'] ?? null);
                 !isset($ruleset['max_ratio_errmsg']) ?: $validator->maxRatioMessage = $ruleset['max_ratio_errmsg'];
-                $validator->minRatio = (isset($ruleset['min_ratio']) ? $ruleset['min_ratio'] : null);
+                $validator->minRatio = ($ruleset['min_ratio'] ?? null);
                 !isset($ruleset['min_ratio_errmsg']) ?: $validator->minRatioMessage = $ruleset['min_ratio_errmsg'];
-                $validator->minPixels = (isset($ruleset['min_pixels']) ? $ruleset['min_pixels'] : null);
+                $validator->minPixels = ($ruleset['min_pixels'] ?? null);
                 !isset($ruleset['min_pixels_errmsg']) ?: $validator->minPixelsMessage = $ruleset['min_pixels_errmsg'];
-                $validator->maxPixels = (isset($ruleset['max_pixels']) ? $ruleset['max_pixels'] : null);
+                $validator->maxPixels = ($ruleset['max_pixels'] ?? null);
                 !isset($ruleset['max_pixels_errmsg']) ?: $validator->maxPixelsMessage = $ruleset['max_pixels_errmsg'];
-                $validator->maxSize = (isset($ruleset['max_size']) ? $ruleset['max_size'] : null);
+                $validator->maxSize = ($ruleset['max_size'] ?? null);
                 !isset($ruleset['max_size_errmsg']) ?: $validator->maxSizeMessage = $ruleset['max_size_errmsg'];
-            } else if ($type == 'file') {
-                $validator->mimeTypes = (isset($ruleset['mim-types']) ? $ruleset['mim-types'] : []);
+            } else if ($type === 'file') {
+                $validator->mimeTypes = ($ruleset['mim-types'] ?? []);
                 !isset($ruleset['mim-types_errmsg']) ?: $validator->mimeTypesMessage = $ruleset['mim-types_errmsg'];
-                $validator->maxSize = (isset($ruleset['max_size']) ? $ruleset['max_size'] : null);
+                $validator->maxSize = ($ruleset['max_size'] ?? null);
                 !isset($ruleset['max_size_errmsg']) ?: $validator->maxSizeMessage = $ruleset['max_size_errmsg'];
-            } else if ($type == 'ip') {
-                $validator->version = (isset($ruleset['version']) ? $ruleset['version'] : Assert\Ip::V4);
+            } else if ($type === 'ip') {
+                $validator->version = ($ruleset['version'] ?? Assert\Ip::V4);
             }
         } else if ($type) {
             throw new BusinessException('No Support type: %type%', BusinessException::DEFAULT_ERROR_CODE, ['type' => $type]);
@@ -371,110 +448,111 @@ class Validator {
     /**
      * _buildCallbackConstraint
      *
-     * @param type $ruleset
+     * @param array $ruleset
      * @return array
      */
-    private function _buildCallbackConstraint($ruleset) {
-        $fun = isset($ruleset['callback']) ? $ruleset['callback'] : null;
-        $msg = isset($ruleset['callback_message']) ? $ruleset['callback_message'] : null;
+    private function _buildCallbackConstraint($ruleset): array
+    {
+        $fun = $ruleset['callback'] ?? null;
+        $msg = $ruleset['callback_message'] ?? null;
         $validatorList = [];
-        if ($fun) {
-            if (is_iterable($fun)) {
-                foreach ($fun as $item) {
-                    $callback = $item['name'];
-                    $message = isset($item['message']) ? $item['message'] : $msg;
-                    $validatorList[] = $this->_buidCallbackValidator($callback, $message);
-                }
+        if ($fun && is_iterable($fun)) {
+            foreach ($fun as $item) {
+                $callback = $item['name'];
+                $message = $item['message'] ?? $msg;
+                $validatorList[] = $this->_buildCallbackValidator($callback, $message);
             }
         }
         return $validatorList;
     }
 
     /**
-     * _buidCallbackValidator
+     * _buildCallbackValidator
      *
-     * @param type $callback
-     * @param type $message
-     * @return \Symfony\Component\Validator\Constraints\Callback
+     * @param callable $callback
+     * @param string $message
+     * @return mixed
      */
-    private function _buidCallbackValidator(callable $callback, $message) {
+    private function _buildCallbackValidator(callable $callback, $message)
+    {
         $appConfig = $this->appConfig;
-        $f = function($object, ExecutionContext $context, $payload) use ($appConfig, $callback, $message) {
-            if (!call_user_func_array($callback, [$object, $appConfig])) {
+        $f = static function ($object, ExecutionContext $context, $payload) use ($appConfig, $callback, $message) {
+            if (!$callback($object, $appConfig)) {
                 $context->buildViolation($message)
-                        ->setParameter('{{ value }}', $object)
-                        ->setCode(uniqid())
-                        ->addViolation();
+                    ->setParameter('{{ value }}', $object)
+                    ->setCode(uniqid('', true))
+                    ->addViolation();
             }
         };
         $options = [
-            "callback" => $f
+            'callback' => $f
         ];
-        return new Assert\Callback($options);
+        return new Callback($options);
     }
 
     /**
      * _filterData
-     * @param type $rulesets
-     * @param type $schema
-     * @param type $data
-     * @return type
+     *
+     * @param array $ruleSets ruleset list
+     * @param array $schema schema
+     * @param array $data data
+     * @return array
      * @throws BusinessException
      */
-    private function _filterData($rulesets, $schema, $data) {
-        $filtedData = [];
+    private function _filterData($ruleSets, $schema, $data): array
+    {
+        $filteredData = [];
         foreach ($data as $key => $value) {
             if (isset($schema[$key])) {
-                $ruleset = $rulesets[$schema[$key]['rule']] ?? null;
+                $ruleset = $ruleSets[$schema[$key]['rule']] ?? null;
                 if (!$ruleset) {
-                    throw new BusinessException(BusinessException::INVALID_CONFIG_SET_MSG, BusinessException::INVALID_CONFIG_SET_CODE, ['setting' => 'validate ruleset: '. $schema[$key]['rule']]);
+                    throw new BusinessException(BusinessException::INVALID_CONFIG_SET_MSG, BusinessException::INVALID_CONFIG_SET_CODE, ['setting' => 'validate ruleset: ' . $schema[$key]['rule']]);
                 }
                 if (!empty($ruleset['filter'])) {
-                    $filtedData[$key] = $this->_filterVar($value, $ruleset);
+                    $filteredData[$key] = $this->_filterVar($value, $ruleset);
                     continue;
                 }
             }
-            $filtedData[$key] = filter_var($value, FILTER_SANITIZE_FULL_SPECIAL_CHARS, FILTER_FLAG_NO_ENCODE_QUOTES);
+            $filteredData[$key] = filter_var($value, FILTER_SANITIZE_FULL_SPECIAL_CHARS, FILTER_FLAG_NO_ENCODE_QUOTES);
         }
-        return $filtedData;
+        return $filteredData;
     }
 
     /**
      * _filterVar
      *
-     * @param type $data
-     * @param type $ruleset
-     * @return type
+     * @param array $data data
+     * @param array $ruleset ruleset
+     * @return array
      */
-    private function _filterVar($data, $ruleset) {
+    private function _filterVar($data, $ruleset): array
+    {
         if (is_iterable($data)) {
-            $filted = [];
+            $filtered = [];
             foreach ($data as $key => $value) {
-                $filted[$key] = $this->_filterVar($value, $ruleset);
+                $filtered[$key] = $this->_filterVar($value, $ruleset);
             }
-            return $filted;
+            return $filtered;
         }
-        $filter = isset($ruleset["filter"]["filter_type"]) ? constant($ruleset["filter"]["filter_type"]) : FILTER_SANITIZE_FULL_SPECIAL_CHARS;
+        $filter = isset($ruleset['filter']['filter_type']) ? constant($ruleset['filter']['filter_type']) : FILTER_SANITIZE_FULL_SPECIAL_CHARS;
         $ops = [];
-        if (!empty($ruleset["filter"]["options"])) {
-            if (is_iterable($ruleset["filter"]["options"])) {
-                $ops = $ruleset["filter"]["options"];
+        if (!empty($ruleset['filter']['options'])) {
+            if (is_iterable($ruleset['filter']['options'])) {
+                $ops = $ruleset['filter']['options'];
             } else {
-                $ops['flag'] = $ruleset["filter"]["options"];
+                $ops['flag'] = $ruleset['filter']['options'];
             }
         }
-        !isset($ruleset["filter"]["filter_flag"]) ?: $ops['flag'] = constant($ruleset["filter"]['filter_flag']);
-        !isset($ruleset["filter"]['filter_options']) ?: $ops['options'] = $ruleset["filter"]['filter_options'];
+        !isset($ruleset['filter']['filter_flag']) ?: $ops['flag'] = constant($ruleset['filter']['filter_flag']);
+        !isset($ruleset['filter']['filter_options']) ?: $ops['options'] = $ruleset['filter']['filter_options'];
         $validated = filter_var($data, $filter, $ops);
-        if ($validated !== false) {
-            if (!empty($ruleset['fun'])) {
-                foreach ($ruleset['fun'] as $funset) {
-                    $fun = $funset['name'];
-                    if(is_callable($fun)) {
-                        $params = (array )($funset['params'] ?? []);
-                        array_unshift($params, $validated);
-                        $validated = call_user_func_array($fun, $params);
-                    }
+        if (($validated !== false) && !empty($ruleset['fun'])) {
+            foreach ($ruleset['fun'] as $funSet) {
+                $fun = $funSet['name'];
+                if (is_callable($fun)) {
+                    $params = (array )($funSet['params'] ?? []);
+                    array_unshift($params, $validated);
+                    $validated = call_user_func_array($fun, $params);
                 }
             }
         }
@@ -485,22 +563,23 @@ class Validator {
      * _initSchema
      *
      * @param array $schema rule name
-     * @param array $data   data
+     * @param array $data data
      *
      * @return array
      * @throws Exception
      */
-    private function _initSchema($schema, $data) {
+    private function _initSchema($schema, $data): array
+    {
         foreach ($schema as $key => $rule) {
             if (isset($rule['fields'])) {
                 $children = $rule['fields'];
                 foreach ($children as $k => $child) {
                     if (empty($child) || !is_array($child)) {
                         throw new BusinessException(
-                                BusinessException::INVALID_CONFIG_SET_MSG, BusinessException::INVALID_CONFIG_SET_CODE, ['setting' => 'validate ruleset child']);
+                            BusinessException::INVALID_CONFIG_SET_MSG, BusinessException::INVALID_CONFIG_SET_CODE, ['setting' => 'validate ruleset child']);
                     }
                     $childrenSchema = array();
-                    if ($k == 'i') {
+                    if ($k === 'i') {
                         if (isset($data[$key]) && is_array($data[$key])) {
                             foreach ($data[$key] as $i => $value) {
                                 if (isset($child['fields'])) {
@@ -517,11 +596,10 @@ class Validator {
                             );
                         }
                     } else if (preg_match("/^(\d+)-(\d+)$/", $k, $match)) {
-                        $min = $match[1];
-                        $max = $match[2];
+                        [$min, $max] = $match;
                         for ($i = $min; $i <= $max; $i++) {
                             if (isset($child['fields'])) {
-                                $cdata = isset($data[$key][$i]) ? $data[$key][$i] : array();
+                                $cdata = $data[$key][$i] ?? array();
                                 $child['children'] = $this->_initSchema($child, $cdata);
                             } else {
                                 $child = $this->_parseRule($child, $data);
@@ -529,14 +607,12 @@ class Validator {
                             $childrenSchema[$i] = $child;
                         }
                         $children = $childrenSchema;
+                    } else if (isset($child['fields'])) {
+                        $cdata = $data[$key][$k] ?? array();
+                        $child['children'] = $this->_initSchema($child, $cdata);
+                        $children[$k] = $child;
                     } else {
-                        if (isset($child['fields'])) {
-                            $cdata = isset($data[$key][$k]) ? $data[$key][$k] : array();
-                            $child['children'] = $this->_initSchema($child, $cdata);
-                            $children[$k] = $child;
-                        } else {
-                            $children[$k]['children'] = $this->_parseRule($child, $data);
-                        }
+                        $children[$k]['children'] = $this->_parseRule($child, $data);
                     }
                 }
                 unset($rule['fields']);
@@ -555,21 +631,22 @@ class Validator {
      *
      * @return array
      */
-    private function _parseRule($rule, $data) {
+    private function _parseRule($rule, $data): array
+    {
         if (is_array($rule['rule'])) {
             foreach ($rule['rule'] as $key => $value) {
-                if ($value == 'default') {
+                if ($value === 'default') {
                     $rule['rule'] = $key;
                 } else if (is_array($value)) {
                     $flag = true;
                     foreach ($value as $fKey => $fVal) {
                         $cVal = $this->_hasKeyPathValue($data, $fKey);
                         if (is_array($fVal)) {
-                            if (!in_array($cVal, $fVal)) {
+                            if (!in_array($cVal, $fVal, true)) {
                                 $flag = false;
                                 break;
                             }
-                        } else if ($cVal != $fVal) {
+                        } else if ($cVal !== $fVal) {
                             $flag = false;
                             break;
                         }
@@ -586,20 +663,21 @@ class Validator {
     /**
      * initTranslator
      *
-     * @param \loeye\base\AppConfig $appConfig AppConfig instance
+     * @param AppConfig $appConfig AppConfig instance
      *
-     * @return void
+     * @return I18n\Translator
      */
-    static public function initTranslator(AppConfig $appConfig) {
+    public static function initTranslator(AppConfig $appConfig): \Symfony\Component\Translation\Translator
+    {
         $translator = Factory::translator($appConfig)->getTranslator();
         $loader = new I18n\Loader\XliffFileLoader();
-        $resourseDir = PROJECT_DIR . '/../vendor/symfony/validator/Resources/translations/';
-        foreach (new \FilesystemIterator($resourseDir, \FilesystemIterator::KEY_AS_FILENAME) as $key => $item) {
+        $resourceDir = PROJECT_DIR . '/../vendor/symfony/validator/Resources/translations/';
+        foreach (new FilesystemIterator($resourceDir, FilesystemIterator::KEY_AS_FILENAME) as $key => $item) {
             if (!$item->isFile()) {
                 continue;
             }
-            $lpos = strpos($key, ".");
-            $rpos = strrpos($key, ".");
+            $lpos = strpos($key, '.');
+            $rpos = strrpos($key, '.');
             $locale = substr($key, $lpos + 1, $rpos - $lpos - 1);
             $translator->addResource('xlf', $item->getRealPath(), $locale);
         }
@@ -610,14 +688,15 @@ class Validator {
     /**
      * _hasKeyPathValue
      *
-     * @param array  $data    data
+     * @param array $data data
      * @param string $keyPath key path
      *
      * @return boolean
      */
-    private function _hasKeyPathValue($data, $keyPath) {
+    private function _hasKeyPathValue($data, $keyPath): bool
+    {
         $current = $data;
-        $keyArray = explode(">", $keyPath);
+        $keyArray = explode('>', $keyPath);
         while ($key = array_shift($keyArray)) {
             if (!isset($current[$key])) {
                 return false;
@@ -630,12 +709,13 @@ class Validator {
     /**
      * _filter
      *
-     * @param array $data
+     * @param array $data data
      * @param ConstraintViolationList $violationList
-     * @param type $pkey
+     * @param string $pkey
      * @return array
      */
-    private function _filter(array $data, ConstraintViolationList $violationList, $pkey = null) {
+    private function _filter(array $data, ConstraintViolationList $violationList, $pkey = null): array
+    {
         $errmsg = self::buildErrmsg($violationList, self::initTranslator($this->appConfig));
         foreach ($errmsg as $key => $value) {
             unset($data[$key]);
@@ -646,12 +726,13 @@ class Validator {
 
     /**
      * buildErrmsg
-     * 
-     * @param ConstraintViolationList                   $violationList
+     *
+     * @param ConstraintViolationList $violationList
      * @param \Symfony\Component\Translation\Translator $translator
-     * @return type
+     * @return array
      */
-    static public function buildErrmsg(ConstraintViolationList $violationList, \Symfony\Component\Translation\Translator $translator) {
+    public static function buildErrmsg(ConstraintViolationList $violationList, \Symfony\Component\Translation\Translator $translator): array
+    {
         $error = [];
         for ($i = 0; $i < $violationList->count(); $i++) {
             $violation = $violationList->get($i);
@@ -659,9 +740,9 @@ class Validator {
             $msg = $translator->trans($violation->getMessageTemplate(), $violation->getParameters());
             $offset = 0;
             $property = [];
-            while (preg_match('/\[([^\]]+)\]/', $propertyPath, $matches, PREG_OFFSET_CAPTURE, $offset)) {
+            while (preg_match('/\[([^]]+)]/', $propertyPath, $matches, PREG_OFFSET_CAPTURE, $offset)) {
                 $offset = $matches[0][1] + strlen($matches[0][0]);
-                array_push($property, $matches[1][0]);
+                $property[] = $matches[1][0];
             }
             if (empty($property)) {
                 $property = [$propertyPath];
@@ -670,7 +751,7 @@ class Validator {
             $c = count($property);
             for ($j = 0; $j < $c; $j++) {
                 $key = array_pop($property);
-                if ($j == $c - 1) {
+                if ($j === $c - 1) {
                     $error[$key] = $err;
                 } else {
                     $error = [$key => $err];

@@ -17,17 +17,23 @@
 
 namespace loeye\base;
 
+use ArrayAccess;
+use loeye\config\app\ConfigDefinition;
+use loeye\config\app\DeltaDefinition;
+use loeye\error\BusinessException;
+use loeye\std\ConfigTrait;
+
 /**
  * Description of AppConfig
  *
- * @author   Zhang Yi <loeyae@gmail.com>
+ * @author  Zhang Yi <loeyae@gmail.com>
  */
-class AppConfig implements \ArrayAccess
+class AppConfig implements ArrayAccess
 {
 
-    use \loeye\std\ConfigTrait;
+    use ConfigTrait;
 
-    const BUNDLE = 'app';
+    public const BUNDLE = 'app';
 
     private $_config;
     private $_propertyName;
@@ -41,7 +47,7 @@ class AppConfig implements \ArrayAccess
      */
     public function __construct($property)
     {
-        $definitions   = [new \loeye\config\app\ConfigDefinition(), new \loeye\config\app\DeltaDefinition()];
+        $definitions = [new ConfigDefinition(), new DeltaDefinition()];
         $configuration = $this->propertyConfig($property, self::BUNDLE, $definitions);
         $this->processConfiguration($configuration);
         $this->_propertyName = $property;
@@ -50,26 +56,26 @@ class AppConfig implements \ArrayAccess
     /**
      * processConfiguration
      *
-     * @param \loeye\base\Configuration $configuration
+     * @param Configuration $configuration
      */
-    protected function processConfiguration(Configuration $configuration)
+    protected function processConfiguration(Configuration $configuration): void
     {
         $masterConfig = $configuration->getConfig();
-        $profile      = $configuration->get('profile');
-        $deltaConfig  = [];
+        $profile = $configuration->get('profile');
+        $deltaConfig = [];
         if ($profile) {
             $deltaConfig = $configuration->getConfig(null, ['profile' => $profile]) ?? [];
         }
-        $this->mergConfiguration($masterConfig, $deltaConfig);
+        $this->mergeConfiguration($masterConfig, $deltaConfig);
     }
 
     /**
-     * mergConfiguration
+     * mergeConfiguration
      *
      * @param array $mater
      * @param array $delta
      */
-    protected function mergConfiguration(array $mater, array $delta)
+    protected function mergeConfiguration(array $mater, array $delta): void
     {
         foreach ($delta as $key => $value) {
             if ($value) {
@@ -86,7 +92,7 @@ class AppConfig implements \ArrayAccess
      *
      * @return boolean
      */
-    public function offsetExists($offset)
+    public function offsetExists($offset): void
     {
         switch ($offset) {
             case 'property_name':
@@ -107,6 +113,7 @@ class AppConfig implements \ArrayAccess
      * @param mixed $offset offset
      *
      * @return mixed
+     * @throws Exception
      */
     public function offsetGet($offset)
     {
@@ -115,8 +122,6 @@ class AppConfig implements \ArrayAccess
                 return $this->getPropertyName();
             case 'timezone':
                 return $this->getTimezone();
-            case 'base_dir':
-                return $this->getPropertyConfigBaseDir();
             default :
                 return $this->getSetting($offset);
         }
@@ -126,11 +131,11 @@ class AppConfig implements \ArrayAccess
      * offsetSet
      *
      * @param mixed $offset offset
-     * @param mixed $value  value
+     * @param mixed $value value
      *
      * @return void
      */
-    public function offsetSet($offset, $value)
+    public function offsetSet($offset, $value): void
     {
         switch ($offset) {
             case 'property_name':
@@ -138,9 +143,6 @@ class AppConfig implements \ArrayAccess
                 break;
             case 'timezone':
                 $this->setTimezone($value);
-                break;
-            case 'base_dir':
-                $this->setPropertyConfigBaseDir($value);
                 break;
             default :
                 break;
@@ -154,16 +156,15 @@ class AppConfig implements \ArrayAccess
      *
      * @return void
      */
-    public function offsetUnset($offset)
+    public function offsetUnset($offset): void
     {
-        return;
     }
 
     /**
      * getSetting
      *
-     * @param string $key     ex: key|key1.key2
-     * @param mixed  $default default value
+     * @param string $key ex: key|key1.key2
+     * @param mixed $default default value
      *
      * @return mixed
      * @throws Exception
@@ -171,13 +172,14 @@ class AppConfig implements \ArrayAccess
     public function getSetting($key, $default = null)
     {
         if (empty($key)) {
-            throw new \loeye\error\BusinessException(\loeye\error\BusinessException::INVALID_CONFIG_SET_MSG, \loeye\error\BusinessException::INVALID_CONFIG_SET_CODE, ["setting" => "setting " . $key]);
+            throw new BusinessException(BusinessException::INVALID_CONFIG_SET_MSG,
+                BusinessException::INVALID_CONFIG_SET_CODE, ['setting' => 'setting ' . $key]);
         }
-        $keyList = explode(".", $key);
-        $config  = $this->_config;
-        foreach ($keyList as $key) {
-            if (isset($config[$key])) {
-                $config = $config[$key];
+        $keyList = explode('.', $key);
+        $config = $this->_config;
+        foreach ($keyList as $k) {
+            if (isset($config[$k])) {
+                $config = $config[$k];
             } else {
                 return $default;
             }
@@ -192,7 +194,7 @@ class AppConfig implements \ArrayAccess
      *
      * @return void
      */
-    public function setPropertyName($propertyName)
+    public function setPropertyName($propertyName): void
     {
         $this->_propertyName = $propertyName;
     }
@@ -203,7 +205,7 @@ class AppConfig implements \ArrayAccess
      * @return string
      * @throws Exception
      */
-    public function getPropertyName()
+    public function getPropertyName(): string
     {
         if (!empty($this->_propertyName)) {
             return $this->_propertyName;
@@ -222,7 +224,7 @@ class AppConfig implements \ArrayAccess
      *
      * @return void
      */
-    public function setTimezone($timezone)
+    public function setTimezone($timezone): void
     {
         $this->_timezone = $timezone;
     }
@@ -231,15 +233,16 @@ class AppConfig implements \ArrayAccess
      * getTimezone
      *
      * @return string
+     * @throws Exception
      */
-    public function getTimezone()
+    public function getTimezone(): string
     {
         if (!empty($this->_timezone)) {
             return $this->_timezone;
         }
-        $timezone     = $this->getSetting('configuration.timezone');
+        $timezone = $this->getSetting('configuration.timezone');
         $timezoneList = timezone_identifiers_list();
-        if (!empty($timezone) && in_array($timezone, $timezoneList)) {
+        if (!empty($timezone) && in_array($timezone, $timezoneList, true)) {
             return $timezone;
         }
         return 'UTC';
@@ -251,11 +254,12 @@ class AppConfig implements \ArrayAccess
      * @param string $locale locale
      *
      * @return void
+     * @throws Exception
      */
-    public function setLocale($locale)
+    public function setLocale($locale): void
     {
-        $supported = (array) $this->getSetting('locale.supported_languages', ['zh_CN']);
-        if (in_array($locale, $supported)) {
+        $supported = (array)$this->getSetting('locale.supported_languages', ['zh_CN']);
+        if (in_array($locale, $supported, true)) {
             $this->_locale = $locale;
         }
     }
@@ -264,25 +268,27 @@ class AppConfig implements \ArrayAccess
      * getLocale
      *
      * @return string
+     * @throws Exception
      */
-    public function getLocale()
+    public function getLocale(): string
     {
         if (!empty($this->_locale)) {
             return $this->_locale;
         }
-        $locale    = $this->getSetting('locale.default');
-        $supported = (array) $this->getSetting('locale.supported_languages', ['zh_CN']);
-        return in_array($locale, $supported) ? $locale : $supported[0];
+        $locale = $this->getSetting('locale.default');
+        $supported = (array)$this->getSetting('locale.supported_languages', ['zh_CN']);
+        return in_array($locale, $supported, true) ? $locale : $supported[0];
     }
-    
+
     /**
      * getActiveProfile
-     * 
+     *
      * @return string
+     * @throws Exception
      */
-    public function getActiveProfile()
+    public function getActiveProfile(): string
     {
-        return $this->getSetting("profile");
+        return $this->getSetting('profile');
     }
 
 }

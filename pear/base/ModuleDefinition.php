@@ -17,6 +17,7 @@
 
 namespace loeye\base;
 
+use loeye\config\module\ConfigDefinition;
 use loeye\error\{ResourceException, BusinessException};
 
 /**
@@ -29,8 +30,8 @@ class ModuleDefinition
 
     use \loeye\std\ConfigTrait;
 
-    const PLUGIN_REMOVE_FROM_MODULE = 'lyRemovePlugin';
-    const BUNDLE = 'modules';
+    public const PLUGIN_REMOVE_FROM_MODULE = 'lyRemovePlugin';
+    public const BUNDLE = 'modules';
 
     private $_modules;
     private $_currentModule;
@@ -44,14 +45,14 @@ class ModuleDefinition
     protected $config;
     protected $forbiddenKey = array(
         'name' => null,
-        'src'  => null,
+        'src' => null,
     );
 
     /**
      * __construct
      *
-     * @param \loeye\base\AppConfig $appConfig AppConfig instance
-     * @param string                $moduleId  module id
+     * @param AppConfig $appConfig AppConfig instance
+     * @param string $moduleId module id
      *
      * @return void
      * @throws Exception
@@ -59,15 +60,15 @@ class ModuleDefinition
     public function __construct(AppConfig $appConfig, $moduleId)
     {
         $this->appConfig = $appConfig;
-        $explode         = explode('.', $moduleId);
+        $explode = explode('.', $moduleId);
         $bundle = null;
-        if (count($explode) > 2){
+        if (count($explode) > 2) {
             array_shift($explode);
             array_pop($explode);
             $bundle = implode('/', $explode);
         }
-        $definition = new \loeye\config\module\ConfigDefinition();
-        $this->config    = $this->bundleConfig($appConfig->getPropertyName(), $bundle, $definition);
+        $definition = new ConfigDefinition();
+        $this->config = $this->bundleConfig($appConfig->getPropertyName(), $bundle, $definition);
         $this->_initModule($moduleId);
         $this->_parseModuleDefinition();
     }
@@ -75,9 +76,9 @@ class ModuleDefinition
     /**
      * getModuleId
      *
-     * @return string
+     * @return string|null
      */
-    public function getModuleId()
+    public function getModuleId(): ?string
     {
         return $this->_moduleId;
     }
@@ -85,9 +86,9 @@ class ModuleDefinition
     /**
      * getInputs
      *
-     * @return array
+     * @return array|null
      */
-    public function getInputs()
+    public function getInputs(): ?array
     {
         return $this->_inputs;
     }
@@ -95,9 +96,9 @@ class ModuleDefinition
     /**
      * getSetting
      *
-     * @return array
+     * @return array|null
      */
-    public function getSetting()
+    public function getSetting(): ?array
     {
         return $this->_setting;
     }
@@ -105,9 +106,9 @@ class ModuleDefinition
     /**
      * getPlugins
      *
-     * @return array
+     * @return array|null
      */
-    public function getPlugins()
+    public function getPlugins(): ?array
     {
         return $this->_plugins;
     }
@@ -115,9 +116,9 @@ class ModuleDefinition
     /**
      * getMockPlugins
      *
-     * @return array
+     * @return array|null
      */
-    public function getMockPlugins()
+    public function getMockPlugins(): ?array
     {
         return $this->_mockPlugins;
     }
@@ -125,9 +126,9 @@ class ModuleDefinition
     /**
      * getViews
      *
-     * @return array
+     * @return array|null
      */
-    public function getViews()
+    public function getViews(): ?array
     {
         return $this->_views;
     }
@@ -137,18 +138,18 @@ class ModuleDefinition
      *
      * @param string $renderId render id
      *
-     * @return array
+     * @return array|null
      * @throws Exception
      */
-    public function getView($renderId = 'default')
+    public function getView($renderId = 'default'): ?array
     {
         if ($renderId === null) {
             return array();
         }
         if (!isset($this->_views[$renderId])) {
             throw new BusinessException(
-                    BusinessException::INVALID_RENDER_SET_MSG,
-                    BusinessException::INVALID_RENDER_SET_CODE
+                BusinessException::INVALID_RENDER_SET_MSG,
+                BusinessException::INVALID_RENDER_SET_CODE
             );
         }
         return $this->_views[$renderId];
@@ -158,40 +159,41 @@ class ModuleDefinition
      * parseModuleDefinition
      *
      * @return void
+     * @throws BusinessException
+     * @throws Exception
      */
-    private function _parseModuleDefinition()
+    private function _parseModuleDefinition(): void
     {
         $this->_moduleId = $this->_currentModule['module_id'];
-        $inputs          = array();
+        $inputs = array();
         if (!empty($this->_currentModule['inputs'])) {
             if (!is_array($this->_currentModule['inputs'])) {
                 throw new BusinessException(
                     BusinessException::INVALID_MODULE_SET_MSG,
                     BusinessException::INVALID_MODULE_SET_CODE,
-                    ["mode"=>"inputs"]
+                    ['mode' => 'inputs']
                 );
             }
             $inputs = $this->_currentModule['inputs'];
         }
         $this->_inputs = $inputs;
-        $setting       = array();
+        $setting = array();
         if (!empty($this->_currentModule['setting'])) {
             if (!is_array($this->_currentModule['setting'])) {
                 throw new BusinessException(
                     BusinessException::INVALID_MODULE_SET_MSG,
                     BusinessException::INVALID_MODULE_SET_CODE,
-                    ["mode"=>"setting"]
+                    ['mode' => 'setting']
                 );
             }
             $setting = $this->_currentModule['setting'];
         }
         $this->_setting = $setting;
-        $mockPlugins    = array();
         if (!empty($this->_currentModule['mock_plugin'])) {
-            $mockPlugins        = $this->_currentModule['mock_plugin'];
+            $mockPlugins = $this->_currentModule['mock_plugin'];
             $this->_parsePlugin($mockPlugins);
             $this->_mockPlugins = $this->_plugins;
-            $this->_plugins     = array();
+            $this->_plugins = array();
         }
         $plugins = array();
         if (!empty($this->_currentModule['plugin'])) {
@@ -214,10 +216,10 @@ class ModuleDefinition
      * @return void
      * @throws Exception
      */
-    private function _parsePlugin($plugins)
+    private function _parsePlugin($plugins): void
     {
         $this->_plugins = array();
-        $i              = 0;
+        $i = 0;
         foreach ($plugins as $plugin) {
             if (isset($plugin['include_module'])) {
                 $includePlugins = null;
@@ -225,23 +227,24 @@ class ModuleDefinition
                     $includePlugins = $this->_modules[$plugin['include_module']]['plugin'];
                 } else {
                     $includeModuleDfn = new self($this->appConfig, $plugin['include_module']);
-                    $includePlugins   = $includeModuleDfn->getPlugins();
+                    $includePlugins = $includeModuleDfn->getPlugins();
                 }
                 if ($includePlugins) {
-                    $includeSettings = isset($plugin['setting']) ? (array) $plugin['setting'] : array();
+                    $includeSettings = isset($plugin['setting']) ? (array)$plugin['setting'] : array();
                     foreach ($includePlugins as $includePlugin) {
-                        if (isset($includePlugin['name']) && isset($includeSettings[$includePlugin['name']])) {
+                        $plugin = $includePlugin;
+                        if (isset($includePlugin['name'], $includeSettings[$includePlugin['name']])) {
                             $includeSetting = $includeSettings[$includePlugin['name']];
                             if (isset($includeSetting[self::PLUGIN_REMOVE_FROM_MODULE]) &&
-                                    $includeSetting[self::PLUGIN_REMOVE_FROM_MODULE] == true) {
+                                $includeSetting[self::PLUGIN_REMOVE_FROM_MODULE] === true) {
                                 unset($includeSettings[$includePlugin['name']]);
                                 continue;
                             }
-                            $settings      = array_diff_key($includeSetting, $this->forbiddenKey);
-                            $includePlugin = array_merge($includePlugin, $settings);
+                            $settings = array_diff_key($includeSetting, $this->forbiddenKey);
+                            $plugin = array_merge($includePlugin, $settings);
                             unset($includeSettings[$includePlugin['name']]);
                         }
-                        $this->_plugins[$i] = $includePlugin;
+                        $this->_plugins[$i] = $plugin;
                         $i++;
                     }
                 } else {
@@ -263,16 +266,17 @@ class ModuleDefinition
      *
      * @param string $moduleId module id
      *
-     * @return void
+     * @return bool
+     * @throws ResourceException
      */
-    private function _initModule($moduleId)
+    private function _initModule($moduleId): bool
     {
         $config = $this->config->getConfig();
         foreach ($config as $moduleSetting) {
             if (!empty($moduleSetting['module']) && !empty($moduleSetting['module']['module_id'])
             ) {
                 $this->_modules[$moduleSetting['module']['module_id']] = $moduleSetting['module'];
-                if ($moduleId == $moduleSetting['module']['module_id']) {
+                if ($moduleId === $moduleSetting['module']['module_id']) {
                     $this->_currentModule = $moduleSetting['module'];
                     return true;
                 }
@@ -288,14 +292,14 @@ class ModuleDefinition
      *
      * @return void
      */
-    protected function init($moduleSetting)
+    protected function init($moduleSetting): void
     {
-        $this->_moduleId    = $moduleSetting['id'];
-        $this->_inputs      = $moduleSetting['inputs'];
-        $this->_setting     = $moduleSetting['setting'];
+        $this->_moduleId = $moduleSetting['id'];
+        $this->_inputs = $moduleSetting['inputs'];
+        $this->_setting = $moduleSetting['setting'];
         $this->_mockPlugins = $moduleSetting['mockps'];
-        $this->_plugins     = $moduleSetting['plugins'];
-        $this->_views       = $moduleSetting['views'];
+        $this->_plugins = $moduleSetting['plugins'];
+        $this->_views = $moduleSetting['views'];
     }
 
 }

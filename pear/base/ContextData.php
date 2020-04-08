@@ -17,6 +17,8 @@
 
 namespace loeye\base;
 
+use self;
+
 /**
  * ContextData
  *
@@ -64,13 +66,18 @@ class ContextData
      * @param mixed $data      data
      * @param int   $expire    expire times
      *
-     * @return \self
+     * @return self
      */
-    static public function init($data, $expire = 1)
+    public static function init($data, $expire = 1): ContextData
     {
         return new self($data, $expire);
     }
 
+    /**
+     * getData
+     *
+     * @return mixed
+     */
     public function getData()
     {
         return $this->data;
@@ -83,30 +90,31 @@ class ContextData
      */
     public function __toString()
     {
-        return var_export($this->data, true);
+        return (string)var_export($this->data, true);
     }
 
     /**
      * __invoke
      *
+     * @param bool $trace trace info
      * @return mixed
      */
     public function __invoke($trace = false)
     {
         if (false === $trace) {
-            $this->accessedTimes += 1;
+            ++$this->accessedTimes;
         }
         return $this->data;
     }
 
     /**
-     * isEmpyt
+     * isEmpty
      *
      * @param bool $ignore ignore 0
      *
      * @return boolean
      */
-    public function isEmpyt($ignore = true)
+    public function isEmpty($ignore = true): bool
     {
         if ($ignore) {
             return empty($this->data) && !is_numeric($this->data);
@@ -119,13 +127,12 @@ class ContextData
      *
      * @return boolean
      */
-    public function isExpire()
+    public function isExpire(): bool
     {
         if (0 === $this->allowAccessTimes || 0 === $this->accessedTimes):
             return false;
-        else:
-            return $this->allowAccessTimes <= $this->accessedTimes;
         endif;
+        return $this->allowAccessTimes <= $this->accessedTimes;
     }
 
     /**
@@ -135,9 +142,9 @@ class ContextData
      *
      * @return void
      */
-    public function expire($expire = 1)
+    public function expire($expire = 1): void
     {
-        if (null == $expire) {
+        if (null === $expire) {
             $expire = 1;
         }
         $this->allowAccessTimes = $expire;

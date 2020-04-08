@@ -70,6 +70,10 @@ if (!defined('PROJECT_VIEWS_DIR')) {
     define('PROJECT_VIEWS_DIR', PROJECT_DIR . D_S.'views');
 }
 
+if (!defined('PROJECT_HANDLE_DIR')) {
+    define('PROJECT_HANDLE_DIR', PROJECT_DIR . D_S.'handles');
+}
+
 if (!defined('PROJECT_MODELS_DIR')) {
     define('PROJECT_MODELS_DIR', PROJECT_DIR . D_S.'models');
 }

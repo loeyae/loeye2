@@ -1,70 +1,73 @@
 {
-    "name": "loeyae/loeye2",
-    "description": "a php framework",
-    "keywords": [
-        "loeyae",
-        "loeye"
-    ],
-    "type": "library",
-    "config": {
-        "vendor-dir": "vendor"
-    },
-    "require": {
-        "php": ">=7.1.0",
-        "smarty/smarty": "^3.1",
-        "monolog/monolog": "^1.23",
-        "symfony/yaml": "^4.1",
-        "symfony/cache": "^4.1",
-        "symfony/validator": "^4.1",
-        "symfony/config": "^4.1",
-        "symfony/console": "^4.1",
-        "symfony/translation": "^4.1",
-        "symfony/intl": "^4.1",
-        "php-amqplib/php-amqplib": "^2.7",
-        "doctrine/orm": "^2.6",
-        "gedmo/doctrine-extensions": "^2.4",
-        "workerman/workerman": "^3.5",
-        "jsonrpc/jsonrpc": "^1.0",
-        "twbs/bootstrap": "^4.1",
-        "guzzlehttp/guzzle": "^6.3"
-    },
-    "require-dev": {
-        "phpunit/phpunit": "~7.5.19",
-        "phpunit/php-code-coverage": "~6.1.4"
-    },
-    "license": "MIT",
-    "authors": [
-        {
-            "name": "Zhang Yi",
-            "email": "loeyae@gmail.com"
-        }
-    ],
-    "bin":[
-        "bin/loeye",
-        "bin/loeye-orm"
-    ],
-    "autoload": {
-        "files": [
-            "pear/base/Constants.php",
-            "pear/base/Exception.php",
-            "pear/service/Constants.php"
-        ],
-        "psr-4": {
-            "loeye\\": "pear/"
-        }
-    },
-    "autoload-dev": {
-        "classmap": [ "tests/TestCase.php" ],
-        "psr-4": {
-            "loeye\\unit\\": "tests/pear"
-        }
-    },
-    "minimum-stability": "dev",
-    "prefer-stable": true,
-    "repositories": {
-        "packagist": {
-            "type": "composer",
-            "url": "https://mirrors.aliyun.com/composer/"
-        }
+  "name": "loeyae/loeye2",
+  "description": "a php framework",
+  "keywords": [
+    "loeyae",
+    "loeye"
+  ],
+  "type": "library",
+  "config": {
+    "vendor-dir": "vendor"
+  },
+  "require": {
+    "php": ">=7.1.0",
+    "smarty/smarty": "^3.1",
+    "monolog/monolog": "^1.23",
+    "symfony/yaml": "^4.1",
+    "symfony/cache": "^4.1",
+    "symfony/validator": "^4.1",
+    "symfony/config": "^4.1",
+    "symfony/console": "^4.1",
+    "symfony/translation": "^4.1",
+    "symfony/intl": "^4.1",
+    "php-amqplib/php-amqplib": "^2.7",
+    "doctrine/orm": "^2.6",
+    "gedmo/doctrine-extensions": "^2.4",
+    "workerman/workerman": "^3.5",
+    "jsonrpc/jsonrpc": "^1.0",
+    "twbs/bootstrap": "^4.1",
+    "guzzlehttp/guzzle": "^6.3",
+    "ext-intl": "*"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "~7.5.19",
+    "phpunit/php-code-coverage": "~6.1.4"
+  },
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Zhang Yi",
+      "email": "loeyae@gmail.com"
     }
+  ],
+  "bin": [
+    "bin/loeye",
+    "bin/loeye-orm"
+  ],
+  "autoload": {
+    "files": [
+      "pear/base/Constants.php",
+      "pear/base/Exception.php",
+      "pear/service/Constants.php"
+    ],
+    "psr-4": {
+      "loeye\\": "pear/"
+    }
+  },
+  "autoload-dev": {
+    "classmap": [
+      "tests/TestCase.php"
+    ],
+    "psr-4": {
+      "loeye\\unit\\": "tests/pear"
+    }
+  },
+  "minimum-stability": "dev",
+  "prefer-stable": true,
+  "repositories": {
+    "packagist": {
+      "type": "composer",
+      "url": "https://mirrors.aliyun.com/composer/"
+    }
+  }
 }

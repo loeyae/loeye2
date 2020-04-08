@@ -51,15 +51,15 @@ abstract class Client
      * @var \loeye\base\Configuration
      */
     protected $config;
-    protected $timeout   = 5;
-    private $_headers    = array();
+    protected $timeout = 5;
+    private $_headers = array();
     private $_isParallel = false;
 
     /**
      *
-     * @var \loeye\client\Request[]
+     * @var Request[]
      */
-    private $_parallelRequest     = array();
+    private $_parallelRequest = array();
     private $_parallelRequestInfo = array();
 
     /**
@@ -72,10 +72,10 @@ abstract class Client
     public function __construct($bundle = null)
     {
         $this->config = $this->propertyConfig(static::BUNDLE, $bundle);
-        $config       = $this->config->get('service');
+        $config = $this->config->get('service');
         if (empty($config['server_url']) || !is_string($config['server_url'])) {
             throw new \loeye\error\BusinessException(\loeye\error\BusinessException::INVALID_CONFIG_SET_MSG,
-                    \loeye\error\BusinessException::INVALID_CONFIG_SET_CODE, ['setting' => 'server_url']);
+                \loeye\error\BusinessException::INVALID_CONFIG_SET_CODE, ['setting' => 'server_url']);
         }
         $this->baseUrl = $config['server_url'];
         if (!empty($config['timeout']) && $config['timeout'] > 0 && $config['timeout'] <= 30) {
@@ -87,7 +87,7 @@ abstract class Client
     /**
      * setHeader
      *
-     * @param string $name  name
+     * @param string $name name
      * @param string $value value
      *
      * @return void
@@ -130,7 +130,7 @@ abstract class Client
     /**
      * getParallelRequest
      *
-     * @return \loeye\client\Request[]
+     * @return Request[]
      */
     public function getParallelRequest()
     {
@@ -150,8 +150,8 @@ abstract class Client
     /**
      * request
      *
-     * @param string                $cmd  command
-     * @param \loeye\client\Request $req  request
+     * @param string $cmd command
+     * @param Request $req request
      * @param mixed                 &$ret ret
      *
      * @return void
@@ -183,16 +183,16 @@ abstract class Client
      */
     public function reset()
     {
-        $this->_isParallel          = false;
-        $this->_parallelRequest     = array();
+        $this->_isParallel = false;
+        $this->_parallelRequest = array();
         $this->_parallelRequestInfo = array();
     }
 
     /**
      * _parallelRequest
      *
-     * @param string                  $cmd  command
-     * @param \loeye\client\Request $req  request
+     * @param string $cmd command
+     * @param Request $req request
      * @param mixed                   &$ret ret
      *
      * @return void
@@ -203,14 +203,14 @@ abstract class Client
             'cmd' => $cmd,
             'ret' => & $ret,
         );
-        $this->_parallelRequest[]     = $req;
+        $this->_parallelRequest[] = $req;
     }
 
     /**
      * _directRequest
      *
-     * @param string                $cmd command
-     * @param \loeye\client\Request $req request
+     * @param string $cmd command
+     * @param Request $req request
      *
      * @return mixed
      */
@@ -225,15 +225,15 @@ abstract class Client
     /**
      * onComplete
      *
-     * @param \loeye\client\Request $req   request
-     * @param int                   $index index
+     * @param Request $req request
+     * @param int $index index
      *
      * @return mixed
      */
     public function onComplete(Request $req, $index = 0)
     {
-        $resp                                      = new Response($req);
-        $cmd                                       = $this->_parallelRequestInfo[$index]['cmd'];
+        $resp = new Response($req);
+        $cmd = $this->_parallelRequestInfo[$index]['cmd'];
         $this->_parallelRequestInfo[$index]['ret'] = $this->responseHandle($cmd, $resp);
         return $this->_parallelRequestInfo[$index]['ret'];
     }
@@ -241,7 +241,7 @@ abstract class Client
     /**
      * responseHandle
      *
-     * @param string                 $cmd  command
+     * @param string $cmd command
      * @param \loeye\client\Response $resp response
      *
      * @return mixed
@@ -251,14 +251,14 @@ abstract class Client
     /**
      * setReq
      *
-     * @param \loeye\client\Request $req         request
-     * @param string                $method      method
-     * @param string                $path        path
-     * @param array                 $requestData request data
+     * @param Request $req request
+     * @param string $method method
+     * @param string $path path
+     * @param array $requestData request data
      *
      * @return void
      */
-    protected function setReq(\loeye\client\Request $req, $method, $path, $requestData = null)
+    protected function setReq(Request $req, $method, $path, $requestData = null)
     {
         $req->setMethod($method);
         $req->setTimeOut($this->timeout);
@@ -266,7 +266,7 @@ abstract class Client
         $req->setUrl($url);
         if ($requestData !== null) {
             $req->setContent('application/json',
-                    json_encode($requestData, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
+                json_encode($requestData, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
         }
     }
 

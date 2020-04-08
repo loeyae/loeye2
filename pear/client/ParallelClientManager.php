@@ -28,18 +28,18 @@ class ParallelClientManager
 
     /**
      *
-     * @var \loeye\client\Client array
+     * @var Client array
      */
     private $_parallelClient = [];
 
     /**
      * addClient
      *
-     * @param \loeye\client\Client $client client
+     * @param Client $client client
      *
      * @return void
      */
-    public function addClient(\loeye\client\Client $client)
+    public function addClient(Client $client): void
     {
         $client->setParallel();
         $this->_parallelClient[] = $client;
@@ -53,7 +53,7 @@ class ParallelClientManager
     public function excute()
     {
         $promises = [];
-        $idx      = 0;
+        $idx = 0;
         foreach ($this->_parallelClient as $client) {
             $reqs = $client->getParallelRequest();
             foreach ($reqs as $req) {

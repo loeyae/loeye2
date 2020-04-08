@@ -19,7 +19,7 @@ namespace loeye\base;
 
 /**
  * Description of EsiUtil
- * 
+ *
  * @author   Zhang Yi <loeyae@gmail.com>
  */
 class EsiUtil
@@ -31,13 +31,13 @@ class EsiUtil
     private $_idPrefix;
     private $_isTryCatch;
     private $_queryArray = array();
-    private $_isHttps    = false;
+    private $_isHttps;
 
     /**
      * __construct
      *
      * @param string $moduleServer module server
-     * @param bool   $isHttps      is https
+     * @param bool $isHttps is https
      *
      * @return void
      */
@@ -47,14 +47,12 @@ class EsiUtil
         if (empty($moduleServer)) {
             if (defined('MODULE_SERVER')) {
                 $moduleServer = MODULE_SERVER;
+            } else if (filter_has_var(INPUT_SERVER, 'HTTP_HOST')) {
+                $moduleServer = filter_input(INPUT_SERVER, 'HTTP_HOST');
+            } else if (filter_has_var(INPUT_SERVER, 'SERVER_NAME')) {
+                $moduleServer = filter_input(INPUT_SERVER, 'SERVER_NAME');
             } else {
-                if (filter_has_var(INPUT_SERVER, 'HTTP_HOST')) {
-                    $moduleServer = filter_input(INPUT_SERVER, 'HTTP_HOST');
-                } else if (filter_has_var(INPUT_SERVER, 'SERVER_NAME')) {
-                    $moduleServer = filter_input(INPUT_SERVER, 'SERVER_NAME');
-                } else {
-                    $moduleServer = '';
-                }
+                $moduleServer = '';
             }
         }
         $this->setModuleServer($moduleServer);
@@ -66,9 +64,9 @@ class EsiUtil
      *
      * @param string $moduleServer module server
      *
-     * @return /LOEYE/EsiUtil
+     * @return EsiUtil EsiUtil
      */
-    static public function getInstance($moduleServer = '')
+    public static function getInstance($moduleServer = ''): EsiUtil
     {
         if (!self::$_instance) {
             self::$_instance = new EsiUtil($moduleServer);
@@ -81,9 +79,9 @@ class EsiUtil
      *
      * @param string $moduleServer module server
      *
-     * @return /LOEYE/EsiUtil
+     * @return EsiUtil EsiUtil
      */
-    static public function getHttpsInstance($moduleServer = '')
+    public static function getHttpsInstance($moduleServer = ''): EsiUtil
     {
         if (!self::$_httpsInstance) {
             self::$_httpsInstance = new EsiUtil($moduleServer, true);
@@ -98,7 +96,7 @@ class EsiUtil
      *
      * @return void
      */
-    public function setModuleServer($moduleServer)
+    public function setModuleServer($moduleServer): void
     {
         $this->_moduleServer = $moduleServer;
     }
@@ -108,7 +106,7 @@ class EsiUtil
      *
      * @return string
      */
-    public function getModuleServer()
+    public function getModuleServer(): string
     {
         return $this->_moduleServer;
     }
@@ -120,7 +118,7 @@ class EsiUtil
      *
      * @return void
      */
-    public function setModuleIdPrefix($prefix)
+    public function setModuleIdPrefix($prefix): void
     {
         $this->_idPrefix = $prefix;
     }
@@ -130,7 +128,7 @@ class EsiUtil
      *
      * @return string
      */
-    public function getModuleIdPrefix()
+    public function getModuleIdPrefix(): string
     {
         return $this->_idPrefix;
     }
@@ -138,17 +136,13 @@ class EsiUtil
     /**
      * includeModule
      *
-     * @param string $moduleId     Module id
-     * @param array  $extraParam   query array
+     * @param string $moduleId Module id
+     * @param array $extraParam query array
      * @param string $exceptString String
      *
      * @return void
      */
-    public function includeModule(
-            $moduleId,
-            $extraParam = array(),
-            $exceptString = ''
-    )
+    public function includeModule($moduleId, $extraParam = array(), $exceptString = ''): void
     {
         $queryString = http_build_query($extraParam);
         $this->includeModuleWithQueryString($moduleId, $queryString, $exceptString);
@@ -158,25 +152,25 @@ class EsiUtil
      * includeModuleWithModuleServer
      *
      * @param string $moduleServer Module server
-     * @param string $moduleId     Module id
-     * @param array  $extraParam   query string
+     * @param string $moduleId Module id
+     * @param array $extraParam query string
      * @param string $exceptString String
      *
      * @return void
      */
     public function includeModuleWithModuleServer(
+        $moduleServer,
+        $moduleId,
+        $extraParam = array(),
+        $exceptString = ''
+    ): void
+    {
+        $queryString = http_build_query($extraParam);
+        $includeString = $this->getEsiIncludeStringWithModuleServer(
             $moduleServer,
             $moduleId,
-            $extraParam = array(),
-            $exceptString = ''
-    )
-    {
-        $queryString   = http_build_query($extraParam);
-        $includeString = $this->getEsiIncludeStringWithModuleServer(
-                $moduleServer,
-                $moduleId,
-                $queryString,
-                $exceptString
+            $queryString,
+            $exceptString
         );
         echo $includeString;
     }
@@ -184,23 +178,23 @@ class EsiUtil
     /**
      * includeModuleWithQueryString
      *
-     * @param string $moduleId     Module id
-     * @param string $queryString  query string
+     * @param string $moduleId Module id
+     * @param string $queryString query string
      * @param string $exceptString String
      *
      * @return void
      */
     public function includeModuleWithQueryString(
-            $moduleId,
-            $queryString = '',
-            $exceptString = ''
-    )
+        $moduleId,
+        $queryString = '',
+        $exceptString = ''
+    ): void
     {
         $includeString = $this->getEsiIncludeStringWithModuleServer(
-                $this->_moduleServer,
-                $moduleId,
-                $queryString,
-                $exceptString
+            $this->_moduleServer,
+            $moduleId,
+            $queryString,
+            $exceptString
         );
         echo $includeString;
     }
@@ -208,27 +202,28 @@ class EsiUtil
     /**
      * specialIncludeModule
      *
-     * @param array  $specialIncludeParam Special include parameters
-     * @param string $moduleId            Module id
-     * @param array  $extraParam          query array
-     * @param string $exceptString        String
+     * @param array $specialIncludeParam Special include parameters
+     * @param string $moduleId Module id
+     * @param array $extraParam query array
+     * @param string $exceptString String
      *
      * @return void
+     * @throws \Exception
      */
     public function specialIncludeModule(
-            $specialIncludeParam,
-            $moduleId,
-            $extraParam = array(),
-            $exceptString = ''
-    )
+        $specialIncludeParam,
+        $moduleId,
+        $extraParam = array(),
+        $exceptString = ''
+    ): void
     {
-        $queryString   = http_build_query($extraParam);
+        $queryString = http_build_query($extraParam);
         $includeString = $this->getEsiSpecialIncludeStringWithModuleServer(
-                $specialIncludeParam,
-                $this->_moduleServer,
-                $moduleId,
-                $queryString,
-                $exceptString
+            $specialIncludeParam,
+            $this->_moduleServer,
+            $moduleId,
+            $queryString,
+            $exceptString
         );
 
         echo $includeString;
@@ -237,29 +232,30 @@ class EsiUtil
     /**
      * specialIncludeModuleWithModuleServer
      *
-     * @param array  $specialIncludeParam Special include parameters
-     * @param string $moduleServer        Module server
-     * @param string $moduleId            Module id
-     * @param array  $extraParam          query array
-     * @param string $exceptString        String
+     * @param array $specialIncludeParam Special include parameters
+     * @param string $moduleServer Module server
+     * @param string $moduleId Module id
+     * @param array $extraParam query array
+     * @param string $exceptString String
      *
      * @return void
+     * @throws \Exception
      */
     public function specialIncludeModuleWithModuleServer(
+        $specialIncludeParam,
+        $moduleServer,
+        $moduleId,
+        $extraParam = array(),
+        $exceptString = ''
+    ): void
+    {
+        $queryString = http_build_query($extraParam);
+        $includeString = $this->getEsiSpecialIncludeStringWithModuleServer(
             $specialIncludeParam,
             $moduleServer,
             $moduleId,
-            $extraParam = array(),
-            $exceptString = ''
-    )
-    {
-        $queryString   = http_build_query($extraParam);
-        $includeString = $this->getEsiSpecialIncludeStringWithModuleServer(
-                $specialIncludeParam,
-                $moduleServer,
-                $moduleId,
-                $queryString,
-                $exceptString
+            $queryString,
+            $exceptString
         );
 
         echo $includeString;
@@ -268,26 +264,27 @@ class EsiUtil
     /**
      * specialIncludeModuleWithQueryString
      *
-     * @param array  $specialIncludeParam Special include parameters
-     * @param string $moduleId            Module id
-     * @param string $queryString         query string
-     * @param string $exceptString        String
+     * @param array $specialIncludeParam Special include parameters
+     * @param string $moduleId Module id
+     * @param string $queryString query string
+     * @param string $exceptString String
      *
      * @return void
+     * @throws \Exception
      */
     public function specialIncludeModuleWithQueryString(
-            $specialIncludeParam,
-            $moduleId,
-            $queryString = '',
-            $exceptString = ''
-    )
+        $specialIncludeParam,
+        $moduleId,
+        $queryString = '',
+        $exceptString = ''
+    ): void
     {
         $includeString = $this->getEsiSpecialIncludeStringWithModuleServer(
-                $specialIncludeParam,
-                $this->_moduleServer,
-                $moduleId,
-                $queryString,
-                $exceptString
+            $specialIncludeParam,
+            $this->_moduleServer,
+            $moduleId,
+            $queryString,
+            $exceptString
         );
         echo $includeString;
     }
@@ -296,57 +293,58 @@ class EsiUtil
      * getEsiIncludeStringWithModuleServer
      *
      * @param string $moduleServer Module server
-     * @param string $moduleId     Module id
-     * @param string $queryString  query string
+     * @param string $moduleId Module id
+     * @param string $queryString query string
      * @param string $exceptString String
      *
      * @return string
      */
     public function getEsiIncludeStringWithModuleServer(
-            $moduleServer,
-            $moduleId,
-            $queryString = '',
-            $exceptString = ''
-    )
+        $moduleServer,
+        $moduleId,
+        $queryString = '',
+        $exceptString = ''
+    ): string
     {
-        $scheme        = ($this->_isHttps) ? 'https' : 'http';
-        $fullModuleId  = $this->_idPrefix . $moduleId;
+        $scheme = ($this->_isHttps) ? 'https' : 'http';
+        $fullModuleId = $this->_idPrefix . $moduleId;
         $includeString = "<esi:include src=\"$scheme://$moduleServer";
         $includeString .= '/_remote/?m_id=' . $fullModuleId;
 
         return $this->_createEsiString(
-                        $includeString, $queryString, $exceptString
+            $includeString, $queryString, $exceptString
         );
     }
 
     /**
      * getEsiSpecialIncludeStringWithModuleServer
      *
-     * @param array  $specialIncludeParam Special include parameters
-     * @param string $moduleServer        Module server
-     * @param string $moduleId            Module id
-     * @param string $queryString         query string
-     * @param string $exceptString        String
+     * @param array $specialIncludeParam Special include parameters
+     * @param string $moduleServer Module server
+     * @param string $moduleId Module id
+     * @param string $queryString query string
+     * @param string $exceptString String
      *
      * @return string
+     * @throws \Exception
      */
     public function getEsiSpecialIncludeStringWithModuleServer(
-            $specialIncludeParam,
-            $moduleServer,
-            $moduleId,
-            $queryString = '',
-            $exceptString = ''
-    )
+        $specialIncludeParam,
+        $moduleServer,
+        $moduleId,
+        $queryString = '',
+        $exceptString = ''
+    ): string
     {
         if (!isset($specialIncludeParam['handler'])) {
-            throw new \Exception(
-                    $moduleId . ': \'handler\' is a required esi:special-include parameter.'
+            throw new \RuntimeException(
+                $moduleId . ': \'handler\' is a required esi:special-include parameter.'
             );
         }
 
-        $scheme        = ($this->_isHttps) ? 'https' : 'http';
-        $fullModuleId  = $this->_idPrefix . $moduleId;
-        $includeString = "<esi:special-include ";
+        $scheme = ($this->_isHttps) ? 'https' : 'http';
+        $fullModuleId = $this->_idPrefix . $moduleId;
+        $includeString = '<esi:special-include ';
 
         foreach ($specialIncludeParam as $key => $value) {
             $includeString .= "$key=\"$value\" ";
@@ -355,7 +353,7 @@ class EsiUtil
         $includeString .= "src=\"$scheme://$moduleServer/_remote/?m_id=$fullModuleId";
 
         return $this->_createEsiString(
-                        $includeString, $queryString, $exceptString
+            $includeString, $queryString, $exceptString
         );
     }
 
@@ -363,12 +361,12 @@ class EsiUtil
      * _createEsiString
      *
      * @param string $includeString Include string
-     * @param string $queryString   query string
-     * @param string $exceptString  String
+     * @param string $queryString query string
+     * @param string $exceptString String
      *
      * @return string
      */
-    private function _createEsiString($includeString, $queryString = '', $exceptString = '')
+    private function _createEsiString($includeString, $queryString = '', $exceptString = ''): string
     {
         if (!empty($this->_queryArray)) {
             $includeString .= '&' . http_build_query($this->_queryArray);
@@ -392,18 +390,18 @@ class EsiUtil
      * Error Handling
      *
      * @param string $includeString Include string
-     * @param string $exceptString  String
+     * @param string $exceptString String
      *
      * @return string
      */
-    public function setErrorHandleTag($includeString, $exceptString = '')
+    public function setErrorHandleTag($includeString, $exceptString = ''): string
     {
         if ($this->_isTryCatch) {
             $tryCatchString = '<esi:try><esi:attempt>';
             $tryCatchString .= $includeString;
             $tryCatchString .= '</esi:attempt><esi:except>' . $exceptString;
             $tryCatchString .= '</esi:except></esi:try>';
-            $includeString  = $tryCatchString;
+            $includeString = $tryCatchString;
         }
         return $includeString;
     }
@@ -413,7 +411,7 @@ class EsiUtil
      *
      * @return array
      */
-    public function getQueryArray()
+    public function getQueryArray(): array
     {
         return $this->_queryArray;
     }
@@ -425,7 +423,7 @@ class EsiUtil
      *
      * @return void
      */
-    public function setQueryArray($query)
+    public function setQueryArray($query): void
     {
         $this->_queryArray = array_merge($this->_queryArray, $query);
     }
@@ -437,7 +435,7 @@ class EsiUtil
      *
      * @return void
      */
-    public function setQueryString($queryString)
+    public function setQueryString($queryString): void
     {
         if (!empty($queryString)) {
             $queryArray = explode('&', $queryString);
@@ -454,12 +452,12 @@ class EsiUtil
     /**
      * addQueryParam
      *
-     * @param string $key   key
+     * @param string $key key
      * @param string $value value
      *
      * @return void
      */
-    public function addQueryParam($key, $value)
+    public function addQueryParam($key, $value): void
     {
         $this->_queryArray[$key] = $value;
     }
@@ -471,7 +469,7 @@ class EsiUtil
      *
      * @return void
      */
-    public function setTryCatchEnable($isEnable = false)
+    public function setTryCatchEnable($isEnable = false): void
     {
         $this->_isTryCatch = $isEnable;
     }
@@ -481,7 +479,7 @@ class EsiUtil
      *
      * @return bool
      */
-    public function isTryCatchEnable()
+    public function isTryCatchEnable(): bool
     {
         return $this->_isTryCatch;
     }
