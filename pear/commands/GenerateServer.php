@@ -15,7 +15,7 @@ namespace loeye\commands;
 use Doctrine\Persistence\Mapping\ClassMetadata;
 use loeye\console\Command;
 use Symfony\Component\Console\{Input\InputInterface, Output\OutputInterface, Style\SymfonyStyle};
-use loeye\console\helper\EntityGeneratorTraite;
+use loeye\console\helper\EntityGeneratorTrait;
 use loeye\database\Server;
 
 /**
@@ -26,7 +26,7 @@ use loeye\database\Server;
 class GenerateServer extends Command
 {
 
-    use EntityGeneratorTraite;
+    use EntityGeneratorTrait;
 
     protected $args = [
         ['property', 'required' => true, 'help' => 'The application property name.']

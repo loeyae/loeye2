@@ -17,9 +17,12 @@
 
 namespace loeye\console;
 
+use loeye\base\AppConfig;
 use Symfony\Component\Console\Command as BaseCommand;
 use Symfony\Component\Console\Input;
+use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output;
+use Symfony\Component\Console\Output\OutputInterface;
 
 /**
  * Command
@@ -40,7 +43,7 @@ abstract class Command extends BaseCommand\Command
      *
      * @return void
      */
-    protected function configure()
+    protected function configure(): void
     {
         $name = $this->name ?? strtolower(str_replace('\\commands\\', ':', get_class($this)));
         $this->setName($name)
@@ -53,9 +56,9 @@ abstract class Command extends BaseCommand\Command
     /**
      * parseArgs
      *
-     * @return void
+     * @return Command
      */
-    protected function parseArgs()
+    protected function parseArgs(): Command
     {
         if ($this->args) {
             foreach ($this->args as $value) {
@@ -63,13 +66,13 @@ abstract class Command extends BaseCommand\Command
                 if (is_array($value)) {
                     $name        = $value[0];
                     $mode        = $value['required'] ?? null;
-                    $mode        = $mode == true ? Input\InputArgument::REQUIRED : Input\InputArgument::OPTIONAL;
+                    $mode        = $mode === true ? Input\InputArgument::REQUIRED : Input\InputArgument::OPTIONAL;
                     $description = $value['help'] ?? null;
                     $default     = $value['default'] ?? null;
                 } else {
                     $name = $value;
                 }
-                $this->addArgument($name        = $name, $mode        = $mode, $description = $description, $default     = $default);
+                $this->addArgument($name, $mode, $description, $default);
             }
         }
         return $this;
@@ -78,24 +81,25 @@ abstract class Command extends BaseCommand\Command
     /**
      * parseParams
      *
-     * @return void
+     * @return Command
      */
-    protected function parseParams()
+    protected function parseParams(): Command
     {
         if ($this->params) {
             foreach ($this->params as $value) {
-                $name        = $shortcut    = $mode        = $description = $default     = null;
+                $shortcut    = $mode        = $description = $default     = null;
                 if (is_array($value)) {
                     $name        = $value[0];
                     $shortcut    = $value[1] ?? null;
                     $mode        = $value['required'] ?? null;
-                    $mode        = $mode === null ? Input\InputOption::VALUE_NONE : ($mode == true ? Input\InputOption::VALUE_REQUIRED : Input\InputOption::VALUE_OPTIONAL);
+                    $mode        = $mode === null ? Input\InputOption::VALUE_NONE : ($mode !== false ?
+                        Input\InputOption::VALUE_REQUIRED : Input\InputOption::VALUE_OPTIONAL);
                     $description = $value['help'] ?? null;
                     $default     = $value['default'] ?? null;
                 } else {
                     $name = $value;
                 }
-                $this->addOption($name        = $name, $shortcut    = $shortcut, $mode        = $mode, $description = $description, $default     = $default);
+                $this->addOption($name, $shortcut, $mode, $description, $default);
             }
         }
         return $this;
@@ -104,12 +108,12 @@ abstract class Command extends BaseCommand\Command
     /**
      * execute
      *
-     * @param \Symfony\Component\Console\Input\InputInterface $input
-     * @param \Symfony\Component\Console\Output\OutputInterface $output
+     * @param InputInterface $input
+     * @param OutputInterface $output
      *
      * @return void
      */
-    protected function execute(Input\InputInterface $input, Output\OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): void
     {
         $this->process($input, $output);
     }
@@ -119,20 +123,20 @@ abstract class Command extends BaseCommand\Command
      *
      * @param string $property
      *
-     * @return \loeye\base\AppConfig
+     * @return AppConfig
      */
-    protected function loadAppConfig($property)
+    protected function loadAppConfig($property): AppConfig
     {
-        return new \loeye\base\AppConfig($property);
+        return new AppConfig($property);
     }
 
     /**
      * process
      *
-     * @param \Symfony\Component\Console\Input\InputInterface $input
-     * @param \Symfony\Component\Console\Output\OutputInterface $output
+     * @param InputInterface $input
+     * @param OutputInterface $output
      *
      * @reutn void
      */
-    abstract public function process(Input\InputInterface $input, Output\OutputInterface $output);
+    abstract public function process(InputInterface $input, OutputInterface $output);
 }

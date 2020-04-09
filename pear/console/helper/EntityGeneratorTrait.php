@@ -12,17 +12,20 @@
 
 namespace loeye\console\helper;
 
-use \Symfony\Component\Console\{
-    Input\InputInterface,
-    Output\OutputInterface
-};
+use Doctrine\ORM\Tools\Console\MetadataFilter;
+use Symfony\Component\Console\{Input\InputInterface, Output\OutputInterface, Style\SymfonyStyle};
+use InvalidArgumentException;
+use loeye\base\DB;
+use loeye\base\Exception;
+use RuntimeException;
+use Symfony\Component\Filesystem\Filesystem;
 
 /**
- * EntityGeneratorTraite
+ * EntityGeneratorTrait
  *
  * @author   Zhang Yi <loeyae@gmail.com>
  */
-trait EntityGeneratorTraite {
+trait EntityGeneratorTrait {
 
 
     /**
@@ -31,7 +34,7 @@ trait EntityGeneratorTraite {
      * @param string $destDir
      * @return string
      */
-    protected function getNamespace($destDir)
+    protected function getNamespace($destDir): string
     {
         $dir = substr($destDir, strlen(PROJECT_DIR) + 1);
         return PROJECT_NAMESPACE . '\\' . $dir;
@@ -41,35 +44,36 @@ trait EntityGeneratorTraite {
     /**
      * process
      *
-     * @param \Symfony\Component\Console\Input\InputInterface $input
-     * @param \Symfony\Component\Console\Output\OutputInterface $output
+     * @param InputInterface $input
+     * @param OutputInterface $output
      *
-     * @return void
+     * @return int
+     * @throws Exception
      */
-    public function process(InputInterface $input, OutputInterface $output)
+    public function process(InputInterface $input, OutputInterface $output): int
     {
-        $ui       = new \Symfony\Component\Console\Style\SymfonyStyle($input, $output);
+        $ui       = new SymfonyStyle($input, $output);
         $property = $input->getArgument('property');
         $force    = $input->getOption('force');
 
         $appConfig = $this->loadAppConfig($property);
         $type      = $input->getOption('db-id');
-        $db        = \loeye\base\DB::getInstance($appConfig, $type);
+        $db        = DB::getInstance($appConfig, $type);
         $em        = $db->em();
 
         $metadatas = $em->getMetadataFactory()->getAllMetadata();
-        $metadatas = \Doctrine\ORM\Tools\Console\MetadataFilter::filter($metadatas, $input->getOption('filter'));
+        $metadatas = MetadataFilter::filter($metadatas, $input->getOption('filter'));
 
         $destPath = $this->getDestPath($input);
 
         if (!file_exists($destPath)) {
-            $fileSystem = new \Symfony\Component\Filesystem\Filesystem();
+            $fileSystem = new Filesystem();
             $fileSystem->mkdir($destPath);
             $destPath   = realpath($destPath);
         }
 
         if (!is_writable($destPath)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                     sprintf("Entities destination directory '<info>%s</info>' does not have write permissions.", $destPath)
             );
         }
@@ -110,14 +114,14 @@ trait EntityGeneratorTraite {
      * @param string $code
      * @param string $force
      */
-    protected function writeFile($outputDirectory, $className, $code, $force)
+    protected function writeFile($outputDirectory, $className, $code, $force): void
     {
-        $path = $outputDirectory . \DIRECTORY_SEPARATOR
-                . str_replace('\\', \DIRECTORY_SEPARATOR, $className) . '.php';
+        $path = $outputDirectory . D_S
+                . str_replace('\\', D_S, $className) . '.php';
         $dir  = dirname($path);
 
-        if (!is_dir($dir)) {
-            mkdir($dir, 0775, true);
+        if (!file_exists($dir) && !mkdir($dir, 0775, true) && !is_dir($dir)) {
+            throw new RuntimeException(sprintf('Directory "%s" was not created', $dir));
         }
 
         if ($force || !file_exists($path)) {

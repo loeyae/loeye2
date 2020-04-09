@@ -28,7 +28,7 @@ use ReflectionParameter;
 class GenerateEntityPlugins extends Command
 {
 
-    use \loeye\console\helper\EntityGeneratorTraite;
+    use \loeye\console\helper\EntityGeneratorTrait;
 
     protected $args = [
         ['property', 'required' => true, 'help' => 'The application property name.']

@@ -17,6 +17,8 @@
 
 namespace loeye\console;
 
+use FilesystemIterator;
+use RecursiveDirectoryIterator;
 use Symfony\Component\Console\Application as Base;
 
 /**
@@ -27,7 +29,7 @@ use Symfony\Component\Console\Application as Base;
 class Application extends Base
 {
 
-    const DN = 'commands';
+    public const DN = 'commands';
 
     public function __construct(string $name = 'UNKNOWN', string $version = 'UNKNOWN')
     {
@@ -35,7 +37,12 @@ class Application extends Base
         $this->loadCommand();
     }
 
-    protected function loadCommand()
+    /**
+     * loadCommand
+     *
+     * @return void
+     */
+    protected function loadCommand(): void
     {
         $loeyeCommandsDir = realpath(LOEYE_DIR . DIRECTORY_SEPARATOR . self::DN);
         $loeyeNS          = '\\loeye\\' . self::DN;
@@ -47,13 +54,20 @@ class Application extends Base
         }
     }
 
-    protected function loadCommandByDir($dir, $ns)
+    /**
+     * loadCommandByDir
+     *
+     * @param string $dir
+     * @param string $ns
+     * @return void
+     */
+    protected function loadCommandByDir($dir, $ns): void
     {
-        foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($dir, \FilesystemIterator::SKIP_DOTS)) as $file) {
+        foreach (new \RecursiveIteratorIterator(new RecursiveDirectoryIterator($dir, FilesystemIterator::SKIP_DOTS)) as $file) {
             if ($file->isFile()) {
                 $path = $file->getPath();
-                if ($path != $ns) {
-                    $_ns = strtr(str_replace($dir, $ns, $path), '/', '\\');
+                if ($path !== $ns) {
+                    $_ns = str_replace(array($dir, '/'), array($ns, '\\'), $path);
                     $cn  = $_ns . '\\' . $file->getBasename('.' . $file->getExtension());
                 } else {
                     $cn = $ns . '\\' . $file->getBasename('.' . $file->getExtension());
