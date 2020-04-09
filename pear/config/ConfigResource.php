@@ -17,12 +17,25 @@
 
 namespace loeye\config;
 
+use FilesystemIterator;
+use InvalidArgumentException;
+use loeye\lib\Secure;
+use LogicException;
+use RecursiveCallbackFilterIterator;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
+use SplFileInfo;
+use Symfony\Component\Config\Resource\SelfCheckingResourceInterface;
+use Traversable;
+use Symfony\Component\Finder\Finder;
+use Symfony\Component\Finder\Glob;
+
 /**
  * ConfigResource
  *
  * @author   Zhang Yi <loeyae@gmail.com>
  */
-class ConfigResource implements \Symfony\Component\Config\Resource\SelfCheckingResourceInterface {
+class ConfigResource implements SelfCheckingResourceInterface {
 
     private $resource;
     private $pattern;
@@ -33,16 +46,16 @@ class ConfigResource implements \Symfony\Component\Config\Resource\SelfCheckingR
      * @param string      $resource The file path to the resource
      * @param string|null $pattern  A pattern to restrict monitored files
      *
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     public function __construct(string $resource, string $pattern = null)
     {
-        $this->resource = realpath($resource) ?: (file_exists($resource) ? $resource : false);
+        $this->resource = realpath($resource) ? $resource : false;
         $this->pattern = $pattern;
-        $this->globBrace = \defined('GLOB_BRACE') ? GLOB_BRACE : 0;
+        $this->globBrace = defined('GLOB_BRACE') ? GLOB_BRACE : 0;
 
         if (false === $this->resource || !is_dir($this->resource)) {
-            throw new \InvalidArgumentException(sprintf('The directory "%s" does not exist.', $resource));
+            throw new InvalidArgumentException(sprintf('The directory "%s" does not exist.', $resource));
         }
     }
 
@@ -51,13 +64,13 @@ class ConfigResource implements \Symfony\Component\Config\Resource\SelfCheckingR
      */
     public function __toString()
     {
-        return \loeye\lib\Secure::getKey([$this->resource, $this->pattern]);
+        return Secure::getKey([$this->resource, $this->pattern]);
     }
 
     /**
      * @return string The file path to the resource
      */
-    public function getResource()
+    public function getResource(): string
     {
         return $this->resource;
     }
@@ -67,7 +80,7 @@ class ConfigResource implements \Symfony\Component\Config\Resource\SelfCheckingR
      *
      * @return string|null
      */
-    public function getPattern()
+    public function getPattern(): ?string
     {
         return $this->pattern;
     }
@@ -76,7 +89,7 @@ class ConfigResource implements \Symfony\Component\Config\Resource\SelfCheckingR
     /**
      * {@inheritdoc}
      */
-    public function isFresh($timestamp = null)
+    public function isFresh($timestamp = null): bool
     {
         $hash = $this->computeHash();
 
@@ -89,7 +102,9 @@ class ConfigResource implements \Symfony\Component\Config\Resource\SelfCheckingR
     }
 
     /**
-     * @internal
+     * __sleep
+     *
+     * @return array
      */
     public function __sleep(): array
     {
@@ -101,7 +116,9 @@ class ConfigResource implements \Symfony\Component\Config\Resource\SelfCheckingR
     }
 
     /**
-     * @return \Traversable
+     * getIterator
+     *
+     * @return Traversable
      */
     public function getIterator()
     {
@@ -111,7 +128,7 @@ class ConfigResource implements \Symfony\Component\Config\Resource\SelfCheckingR
         $resource = str_replace('\\', '/', $this->resource);
         $paths = null;
 
-        if (0 !== strpos($this->resource, 'phar://') && false === strpos($this->pattern, '/**/')) {
+        if (0 !== strpos($resource, 'phar://') && false === strpos($this->pattern, '/**/')) {
             if ($this->globBrace || false === strpos($this->pattern, '{')) {
                 $paths = glob($this->resource.$this->pattern, GLOB_NOSORT | $this->globBrace);
             } elseif (false === strpos($this->pattern, '\\') || !preg_match('/\\\\[,{}]/', $this->pattern)) {
@@ -127,25 +144,26 @@ class ConfigResource implements \Symfony\Component\Config\Resource\SelfCheckingR
             foreach ($paths as $path) {
 
                 if (is_file($path)) {
-                    yield $path => new \SplFileInfo($path);
+                    yield $path => new SplFileInfo($path);
                 }
                 if (!is_dir($path)) {
                     continue;
                 }
-                $files = iterator_to_array(new \RecursiveIteratorIterator(
-                    new \RecursiveCallbackFilterIterator(
-                        new \RecursiveDirectoryIterator($path, \FilesystemIterator::SKIP_DOTS | \FilesystemIterator::FOLLOW_SYMLINKS),
-                        function (\SplFileInfo $file, $path) {
+                $files = iterator_to_array(new RecursiveIteratorIterator(
+                    new RecursiveCallbackFilterIterator(
+                        new RecursiveDirectoryIterator($path, FilesystemIterator::SKIP_DOTS |
+                            FilesystemIterator::FOLLOW_SYMLINKS),
+                        static function (SplFileInfo $file) {
                             return '.' !== $file->getBasename()[0];
                         }
                     ),
-                    \RecursiveIteratorIterator::LEAVES_ONLY
+                    RecursiveIteratorIterator::LEAVES_ONLY
                 ));
                 uasort($files, 'strnatcmp');
 
-                foreach ($files as $path => $info) {
+                foreach ($files as $key => $info) {
                     if ($info->isFile()) {
-                        yield $path => $info;
+                        yield $key => $info;
                     }
                 }
             }
@@ -154,7 +172,7 @@ class ConfigResource implements \Symfony\Component\Config\Resource\SelfCheckingR
         }
 
         if (!class_exists(Finder::class)) {
-            throw new \LogicException(sprintf('Extended glob pattern "%s" cannot be used as the Finder component is not installed.', $this->pattern));
+            throw new LogicException(sprintf('Extended glob pattern "%s" cannot be used as the Finder component is not installed.', $this->pattern));
         }
 
         $finder = new Finder();
@@ -164,7 +182,7 @@ class ConfigResource implements \Symfony\Component\Config\Resource\SelfCheckingR
         $resourceLen = \strlen($this->resource);
         foreach ($finder->followLinks()->sortByName()->in($this->resource) as $path => $info) {
             $normalizedPath = str_replace('\\', '/', $path);
-            if (!preg_match($regex, substr($normalizedPath, $resourceLen)) || !$info->isFile()) {
+            if (!$info->isFile() || !preg_match($regex, substr($normalizedPath, $resourceLen))) {
                 continue;
             }
 
@@ -183,13 +201,19 @@ class ConfigResource implements \Symfony\Component\Config\Resource\SelfCheckingR
         return hash_final($hash);
     }
 
+    /**
+     * expandGlob
+     *
+     * @param string $pattern
+     * @return array
+     */
     private function expandGlob(string $pattern): array
     {
-        $segments = preg_split('/\{([^{}]*+)\}/', $pattern, -1, PREG_SPLIT_DELIM_CAPTURE);
+        $segments = preg_split('/{([^{}]*+)}/', $pattern, -1, PREG_SPLIT_DELIM_CAPTURE);
         $paths = [$segments[0]];
         $patterns = [];
 
-        for ($i = 1; $i < \count($segments); $i += 2) {
+        for ($i = 1, $iMax = count($segments); $i < $iMax; $i += 2) {
             $patterns = [];
 
             foreach (explode(',', $segments[$i]) as $s) {

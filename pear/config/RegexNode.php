@@ -17,6 +17,8 @@
 
 namespace loeye\config;
 
+use loeye\base\Utils;
+
 /**
  * RegexNode
  *
@@ -31,7 +33,7 @@ class RegexNode extends ArrayNode {
      * @param string $value
      * @return bool
      */
-    public function match($value)
+    public function match($value): bool
     {
         return preg_match($this->getPattern(), $value);
     }
@@ -42,15 +44,15 @@ class RegexNode extends ArrayNode {
      *
      * @return string
      */
-    protected function getPattern()
+    protected function getPattern(): string
     {
-        if ($this->name == '*') {
+        if ($this->name === '*') {
             return '#.+#';
         }
-        if (\loeye\base\Utils::startWith($this->name, '/')) {
+        if (Utils::startWith($this->name, '/')) {
             return $this->name;
         }
-        if (\loeye\base\Utils::startWith($this->name, '#')) {
+        if (Utils::startWith($this->name, '#')) {
             return $this->name;
         }
         return '#'. $this->name .'#';

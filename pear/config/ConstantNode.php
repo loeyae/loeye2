@@ -16,23 +16,27 @@
  */
 
 namespace loeye\config;
+use InvalidArgumentException;
 use \Symfony\Component\Config\Definition\NodeInterface;
+use Symfony\Component\Config\Definition\ScalarNode;
 
 /**
  * ConstantNode
  *
  * @author   Zhang Yi <loeyae@gmail.com>
  */
-class ConstantNode extends \Symfony\Component\Config\Definition\ScalarNode
+class ConstantNode extends ScalarNode
 {
 
     /**
-     * @throws \InvalidArgumentException if the name contains a period
+     * @param string|null $name
+     * @param NodeInterface|null $parent
+     * @param string $pathSeparator
      */
     public function __construct(?string $name, NodeInterface $parent = null, string $pathSeparator = self::DEFAULT_PATH_SEPARATOR)
     {
-        if (null != $name && false !== preg_match('/^[A-Z][A-Z0-9_]*$/', $name)) {
-            throw new \InvalidArgumentException('The name expect match /^[A-Z][A-Z0-9_]*$/, actual: '. $name);
+        if (null !== $name && false !== preg_match('/^[A-Z][A-Z0-9_]*$/', $name)) {
+            throw new InvalidArgumentException('The name expect match /^[A-Z][A-Z0-9_]*$/, actual: '. $name);
         }
         parent::__construct($name, $parent, $pathSeparator);
     }

@@ -16,7 +16,10 @@
  */
 
 namespace loeye\config;
+use RuntimeException;
 use \Symfony\Component\Config\Definition\Builder\NodeBuilder as BaseNodeBuilder;
+use Symfony\Component\Config\Definition\Builder\NodeDefinition;
+
 /**
  * TreeBuilder
  *
@@ -27,7 +30,7 @@ class TreeBuilder extends \Symfony\Component\Config\Definition\Builder\TreeBuild
     public function __construct(string $name = null, string $type = 'array', BaseNodeBuilder $builder = null)
     {
         if (null === $name) {
-            @trigger_error('A tree builder without a root node is deprecated since Symfony 4.2 and will not be supported anymore in 5.0.', E_USER_DEPRECATED);
+            parent::__construct($name, $type, $builder);
         } else {
             $builder = $builder ?: new NodeBuilder();
             $this->root = $builder->node($name, $type)->setParent($this);
@@ -40,9 +43,8 @@ class TreeBuilder extends \Symfony\Component\Config\Definition\Builder\TreeBuild
      * @param string $name The name of the root node
      * @param string $type The type of the root node
      *
+     * @param BaseNodeBuilder|null $builder
      * @return ArrayNodeDefinition|NodeDefinition The root node (as an ArrayNodeDefinition when the type is 'array')
-     *
-     * @throws \RuntimeException When the node type is not supported
      *
      * @deprecated since Symfony 4.3, pass the root name to the constructor instead
      */

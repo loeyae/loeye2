@@ -17,6 +17,8 @@
 
 namespace loeye\config;
 
+use Symfony\Component\Config\Loader\FileLoader;
+use Symfony\Component\Yaml\Parser;
 use Symfony\Component\Yaml\Yaml;
 
 /**
@@ -24,15 +26,15 @@ use Symfony\Component\Yaml\Yaml;
  *
  * @author   Zhang Yi <loeyae@gmail.com>
  */
-class YamlFileLoader extends \Symfony\Component\Config\Loader\FileLoader
+class YamlFileLoader extends FileLoader
 {
 
-    private $parser = null;
+    private $parser;
 
     public function load($resource, $type = null)
     {
-        if ($this->parser == null) {
-            $this->parser = new \Symfony\Component\Yaml\Parser();
+        if ($this->parser === null) {
+            $this->parser = new Parser();
         }
         $path = $this->locator->locate($resource);
         return $this->parser->parseFile($path, Yaml::PARSE_CONSTANT | Yaml::PARSE_CUSTOM_TAGS);

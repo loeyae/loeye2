@@ -40,7 +40,7 @@ class NodeBuilder extends \Symfony\Component\Config\Definition\Builder\NodeBuild
      *
      * @return RegexNodeDefinition The child node
      */
-    public function regexNode($name)
+    public function regexNode($name): RegexNodeDefinition
     {
         return $this->node($name, 'regex');
     }
@@ -53,7 +53,7 @@ class NodeBuilder extends \Symfony\Component\Config\Definition\Builder\NodeBuild
      *
      * @return ConstantNodeDefinition The child node
      */
-    public function constantNode($name)
+    public function constantNode($name): ConstantNodeDefinition
     {
         return $this->node($name, 'constant');
     }

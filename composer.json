@@ -20,6 +20,7 @@
     "symfony/console": "^4.1",
     "symfony/translation": "^4.1",
     "symfony/intl": "^4.1",
+    "symfony/finder": "^4.1",
     "php-amqplib/php-amqplib": "^2.7",
     "doctrine/orm": "^2.6",
     "gedmo/doctrine-extensions": "^2.4",

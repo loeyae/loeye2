@@ -17,6 +17,8 @@
 
 namespace loeye\config;
 
+use Exception;
+use InvalidArgumentException;
 use \Symfony\Component\Config\Definition\ConfigurationInterface;
 use \Symfony\Component\Config\Definition\NodeInterface;
 
@@ -27,19 +29,20 @@ use \Symfony\Component\Config\Definition\NodeInterface;
  */
 class Processor extends \Symfony\Component\Config\Definition\Processor {
 
-    const DEFAULT_SETTINGS = 'master';
-    const KEY_SETTINGS     = 'settings';
-    const KEY_ARBITRARILY  = '*';
+    public const DEFAULT_SETTINGS = 'master';
+    public const KEY_SETTINGS     = 'settings';
+    public const KEY_ARBITRARILY  = '*';
 
 
     /**
      * Processes an array of configurations.
      *
+     * @param NodeInterface $configTree
      * @param array $configs An array of configuration items to process
      *
-     * @return array The processed configuration
+     * @return array|null The processed configuration
      */
-    public function process(NodeInterface $configTree, array $configs)
+    public function process(NodeInterface $configTree, array $configs): ?array
     {
         $currentConfig = [];
         foreach ($configs as $config) {
@@ -52,27 +55,14 @@ class Processor extends \Symfony\Component\Config\Definition\Processor {
 
 
     /**
-     * Processes an array of configurations.
-     *
-     * @param array $configs An array of configuration items to process
-     *
-     * @return array The processed configuration
-     */
-    public function processConfiguration(ConfigurationInterface $configuration, array $configs)
-    {
-        return $this->process($configuration->getConfigTreeBuilder()->buildTree(), $configs);
-    }
-
-
-    /**
      * processConfigurations
      * 
      * @param ConfigurationInterface $configuration
      * @param array                  $configs
      * 
-     * @return type
+     * @return array
      */
-    public function processModules(ConfigurationInterface $configuration, array $configs)
+    public function processModules(ConfigurationInterface $configuration, array $configs): array
     {
         $currentConfig        = [];
         $tree = $configuration->getConfigTreeBuilder()->buildTree();
@@ -88,13 +78,14 @@ class Processor extends \Symfony\Component\Config\Definition\Processor {
 
     /**
      * processConfigurations
-     * 
+     *
      * @param array $configurations
      * @param array $configs
-     * 
-     * @return type
+     *
+     * @return array
+     * @throws Exception
      */
-    public function processConfigurations(array $configurations, array $configs)
+    public function processConfigurations(array $configurations, array $configs): array
     {
         $currentConfig        = [];
         $currentConfiguration = [];
@@ -106,15 +97,13 @@ class Processor extends \Symfony\Component\Config\Definition\Processor {
             if (static::DEFAULT_SETTINGS === $key) {
                 $tree                              = $currentConfiguration[$key];
                 $finalize                          = $tree->finalize($value);
-                unset($finalize[static::KEY_SETTINGS]);
-                unset($finalize[static::KEY_ARBITRARILY]);
+                unset($finalize[static::KEY_SETTINGS], $finalize[static::KEY_ARBITRARILY]);
                 $current[static::DEFAULT_SETTINGS] = $finalize;
             } else {
                 foreach ($value as $k => $v) {
                     $tree     = $currentConfiguration[$key][$k];
                     $finalize = $tree->finalize($v);
-                    unset($finalize[static::KEY_SETTINGS]);
-                    unset($finalize[static::KEY_ARBITRARILY]);
+                    unset($finalize[static::KEY_SETTINGS], $finalize[static::KEY_ARBITRARILY]);
                     if (!isset($current[$key])) {
                         $current[$key] = [$k => $finalize];
                     } else {
@@ -129,15 +118,15 @@ class Processor extends \Symfony\Component\Config\Definition\Processor {
 
     /**
      * processConfig
-     * 
+     *
      * @param array $configurations
      * @param array $config
      * @param array $currentConfig
      * @param array $currentConfiguration
      * @return array
-     * @throws \Exception
+     * @throws Exception
      */
-    protected function processConfig($configurations, $config, $currentConfig, &$currentConfiguration)
+    protected function processConfig($configurations, $config, $currentConfig, &$currentConfiguration): array
     {
         $ex = null;
         foreach ($configurations as $configuration) {
@@ -165,7 +154,7 @@ class Processor extends \Symfony\Component\Config\Definition\Processor {
                     $ex = null;
                     break;
                 }
-            } catch (\Exception $exc) {
+            } catch (Exception $exc) {
                 $ex = $exc;
             }
         }
@@ -180,30 +169,29 @@ class Processor extends \Symfony\Component\Config\Definition\Processor {
      * parseConfig
      * 
      * @param array $config
-     * @param type $tree
-     * @param type $currentConfiguration
+     * @param mixed $tree
+     * @param array $currentConfiguration
      * 
-     * @return type
-     * @throws type
+     * @return array
      */
-    protected function parseConfig($config, $tree, &$currentConfiguration)
+    protected function parseConfig($config, $tree, &$currentConfiguration): array
     {
         $settings = $config[static::KEY_SETTINGS];
         if (static::DEFAULT_SETTINGS === $settings[0]) {
             $currentConfiguration[static::DEFAULT_SETTINGS] = $tree;
             return [static::DEFAULT_SETTINGS => $config];
-        } else {
-            if (is_array($settings[0])) {
-                $setting = each($settings[0]);
-                if (!isset($currentConfiguration[$setting['key']])) {
-                    $currentConfiguration[$setting['key']] = [$setting['value'] => $tree];
-                } else {
-                    $currentConfiguration[$setting['key']][$setting['value']] = $tree;
-                }
-                return [$setting['key'] => [$setting['value'] => $config]];
-            }
-            throw \InvalidArgumentException('settings is invalide');
         }
+
+        if (is_array($settings[0])) {
+            $setting = each($settings[0]);
+            if (!isset($currentConfiguration[$setting['key']])) {
+                $currentConfiguration[$setting['key']] = [$setting['value'] => $tree];
+            } else {
+                $currentConfiguration[$setting['key']][$setting['value']] = $tree;
+            }
+            return [$setting['key'] => [$setting['value'] => $config]];
+        }
+        throw new InvalidArgumentException('settings is invalid');
     }
 
 }

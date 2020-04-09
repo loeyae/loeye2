@@ -17,18 +17,20 @@
 
 namespace loeye\config;
 
+use Symfony\Component\Config\Loader\FileLoader;
+
 /**
  * PhpFileLoader
  *
  * @author   Zhang Yi <loeyae@gmail.com>
  */
-class PhpFileLoader extends \Symfony\Component\Config\Loader\FileLoader {
+class PhpFileLoader extends FileLoader {
     
     
     public function load($resource, $type = null) 
     {
         $path = $this->locator->locate($resource);
-        $load = function () use ($path) {
+        $load = static function () use ($path) {
             return include $path;
         };
         return $load();

@@ -29,7 +29,7 @@ class RegexNodeDefinition extends ArrayNodeDefinition {
     /**
      * @return RegexNodeDefinition
      */
-    public function regexPrototype()
+    public function regexPrototype(): RegexNodeDefinition
     {
         return $this->prototype('regex');
     }

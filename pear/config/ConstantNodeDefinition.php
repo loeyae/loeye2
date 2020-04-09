@@ -17,19 +17,21 @@
 
 namespace loeye\config;
 
+use Symfony\Component\Config\Definition\Builder\ScalarNodeDefinition;
+
 /**
  * ConstantNodeDefinition
  *
  * @author   Zhang Yi <loeyae@gmail.com>
  */
-class ConstantNodeDefinition extends \Symfony\Component\Config\Definition\Builder\ScalarNodeDefinition
+class ConstantNodeDefinition extends ScalarNodeDefinition
 {
     /**
      * Instantiate a Node.
      *
-     * @return ScalarNode The node
+     * @return ConstantNode The node
      */
-    protected function instantiateNode()
+    protected function instantiateNode(): ConstantNode
     {
         return new ConstantNode($this->name, $this->parent, $this->pathSeparator);
     }

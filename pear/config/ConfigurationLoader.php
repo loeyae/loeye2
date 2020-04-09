@@ -17,7 +17,11 @@
 
 namespace loeye\config;
 
+use Psr\Cache\InvalidArgumentException;
+use Symfony\Component\Cache\Exception\CacheException;
 use \Symfony\Component\Config\Definition\ConfigurationInterface;
+use Symfony\Component\Config\Exception\FileLoaderImportCircularReferenceException;
+use Symfony\Component\Config\Exception\LoaderLoadException;
 
 /**
  * ConfigurationLoader
@@ -42,7 +46,7 @@ class ConfigurationLoader {
      *
      * @var boolean
      */
-    protected $cacheable;
+    protected $cacheAble;
 
     /**
      *
@@ -59,12 +63,14 @@ class ConfigurationLoader {
 
 
     /**
+     * __construct
      *
-     * @param string                            $directory      配置文件基础目录
-     * @param string                            $namespace      配置文件名称空间
-     * @param array|ConfigurationInterface|null $definition     配置文件规则实例
-     * @param boolean                           $cacheable      是否缓存
-     * @param string                            $cacheDirectory 缓存目录
+     * @param string $directory 配置文件基础目录
+     * @param string $namespace 配置文件名称空间
+     * @param array|ConfigurationInterface|null $definition 配置文件规则实例
+     * @param boolean $cacheable 是否缓存
+     * @param string $cacheDirectory 缓存目录
+     * @throws CacheException
      */
     public function __construct($directory, $namespace, $definition = null, $cacheable = true, $cacheDirectory = null)
     {
@@ -74,11 +80,11 @@ class ConfigurationLoader {
             $definition = new general\RulesetConfigDefinition();
         }
         $this->definition = $definition;
-        $this->cacheable  = $cacheable;
-        if ($this->cacheable) {
+        $this->cacheAble  = $cacheable;
+        if ($this->cacheAble) {
             if (null === $cacheDirectory) {
                 $this->cacheDirectory = RUNTIME_CACHE_DIR . D_S .PROJECT_NAMESPACE .D_S . 'config';
-                !defined('PROJECT_PROPERTY') ?? $this->cacheDirectory . DIRECTORY_SEPARATOR . PROJECT_PROPERTY;
+                !defined('PROJECT_PROPERTY') ?: $this->cacheDirectory .= D_S . PROJECT_PROPERTY;
             } else {
                 $this->cacheDirectory = $cacheDirectory;
             }
@@ -92,7 +98,7 @@ class ConfigurationLoader {
      *
      * @return string
      */
-    public function getDirectory()
+    public function getDirectory(): string
     {
         return $this->directory;
     }
@@ -104,49 +110,40 @@ class ConfigurationLoader {
      * @param array|string|null $context
      *
      * @return array
+     * @throws FileLoaderImportCircularReferenceException
+     * @throws LoaderLoadException
+     * @throws InvalidArgumentException
      */
-    public function load($context = null)
+    public function load($context = null): ?array
     {
         if (null === $context) {
             $context = Processor::DEFAULT_SETTINGS;
         }
-        if ($this->cacheable && !$this->configCache->isFresh()) {
+        if ($this->cacheAble && !$this->configCache->isFresh()) {
             return $this->getCache($context);
         }
-        $locator = new FileLocator($this->directory);
-        $loader  = new YamlFileLoader($locator);
-        $loader->setCurrentDir($this->nsToPath($this->namespace));
-        $configs = $loader->import('*.yml');
-        if (count($configs) > 1) {
-            $configs = array_reduce($configs, function($carry, $item) {
-                if ($carry) {
-                    $carry = array_merge($carry, $item);
-                } else {
-                    $carry = $item;
-                }
-                return $carry;
-            });
-        }
+        $configs = $this->loadConfig();
         $process    = new Processor();
         $definition = $this->definition;
         if (!is_array($definition)) {
             $definition = [$definition];
         }
         $configs = $process->processConfigurations($definition, $configs);
-        if ($this->cacheable) {
-            $this->setCache($configs);
+        if ($this->cacheAble) {
+            $this->setCache((array)$configs);
         }
         if (is_string($context)) {
-            return isset($configs[$context]) ? $configs[$context] : null;
+            return $configs[$context] ?? null;
         }
         if (is_array($context)) {
             $current = each($context);
-            $config  = isset($configs[$current['key']]) ? $configs[$current['key']] : array();
+            $config  = $configs[$current['key']] ?? array();
             if(empty($config)) {
                 return null;
             }
-            return isset($config[$current['value']]) ? $config[$current['value']] : null;
+            return $config[$current['value']] ?? null;
         }
+        return null;
     }
 
 
@@ -156,21 +153,54 @@ class ConfigurationLoader {
      * @param array|string|null $context
      *
      * @return array
+     * @throws FileLoaderImportCircularReferenceException
+     * @throws LoaderLoadException
+     * @throws InvalidArgumentException
      */
-    public function loadModules($context = null)
+    public function loadModules($context = null): ?array
     {
         if (null === $context) {
             $context = Processor::DEFAULT_SETTINGS;
         }
-        if ($this->cacheable && !$this->configCache->isFresh()) {
+        if ($this->cacheAble && !$this->configCache->isFresh()) {
             return $this->getCache($context);
         }
+        $configs = $this->loadConfig();
+        $process    = new Processor();
+        $definition = $this->definition;
+        if (is_array($definition)) {
+            $definition = current($definition);
+        }
+        $configs = $process->processModules($definition, $configs);
+        if ($this->cacheAble) {
+            $this->setCache((array)$configs);
+        }
+        if (is_string($context)) {
+            return $configs[$context] ?? null;
+        }
+        if (is_array($context)) {
+            $current = each($context);
+            $config  = $configs[$current['key']] ?? array();
+            return $config[$current['value']] ?? null;
+        }
+        return null;
+    }
+
+    /**
+     * loadConfig
+     *
+     * @return array
+     * @throws FileLoaderImportCircularReferenceException
+     * @throws LoaderLoadException
+     */
+    protected function loadConfig(): array
+    {
         $locator = new FileLocator($this->directory);
         $loader  = new YamlFileLoader($locator);
         $loader->setCurrentDir($this->nsToPath($this->namespace));
         $configs = $loader->import('*.yml');
         if (count($configs) > 1){
-            $configs = array_reduce($configs, function($carry, $item) {
+            $configs = array_reduce($configs, static function($carry, $item) {
                 if ($carry) {
                     $carry = array_merge($carry, $item);
                 } else {
@@ -179,25 +209,8 @@ class ConfigurationLoader {
                 return $carry;
             });
         }
-        $process    = new Processor();
-        $definition = $this->definition;
-        if (is_array($definition)) {
-            $definition = current($definition);
-        }
-        $configs = $process->processModules($definition, $configs);
-        if ($this->cacheable) {
-            $this->setCache($configs);
-        }
-        if (is_string($context)) {
-            return isset($configs[$context]) ? $configs[$context] : null;
-        }
-        if (is_array($context)) {
-            $current = each($context);
-            $config  = isset($configs[$current['key']]) ? $configs[$current['key']] : array();
-            return isset($config[$current['value']]) ? $config[$current['value']] : null;
-        }
+        return $configs;
     }
-
 
     /**
      * nsToPath
@@ -208,16 +221,17 @@ class ConfigurationLoader {
      */
     private function nsToPath(string $namespace): string
     {
-        return DIRECTORY_SEPARATOR . \strtr($namespace, ['.' => '/', '-' => '/', '_' => '/']);
+        return DIRECTORY_SEPARATOR . strtr($namespace, ['.' => '/', '-' => '/', '_' => '/']);
     }
 
 
     /**
      * getCache
      *
-     * @param string|null $key
+     * @param mixed $key
      *
      * @return mixed
+     * @throws InvalidArgumentException
      */
     public function getCache($key = null)
     {
@@ -229,7 +243,7 @@ class ConfigurationLoader {
             $current = each($key);
             $item    = $this->configCache->cacheAdapter()->getItem($current['key']);
             $config  = $item->get();
-            return isset($config[$current['value']]) ? $config[$current['value']] : null;
+            return $config[$current['value']] ?? null;
         }
         $items   = $this->configCache->cacheAdapter()->getItems();
         $current = [];
@@ -245,8 +259,10 @@ class ConfigurationLoader {
      * setCache
      *
      * @param array $data data
+     * @return void
+     * @throws InvalidArgumentException
      */
-    protected function setCache(array $data)
+    protected function setCache(array $data): void
     {
         $this->configCache->write($data);
     }
