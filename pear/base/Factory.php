@@ -210,7 +210,6 @@ class Factory
      * @param \Exception $e e
      *
      * @return string
-     * @throws Exception
      */
     private static function _getErrorPageInfo(Context $context, $e): string
     {

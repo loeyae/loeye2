@@ -12,11 +12,13 @@
 
 namespace loeye\commands;
 
+use Doctrine\Persistence\Mapping\ClassMetadata;
 use loeye\console\Command;
-use \Symfony\Component\Console\{
-    Input\InputInterface,
-    Output\OutputInterface
-};
+use Symfony\Component\Console\{Input\InputInterface, Output\OutputInterface, Style\SymfonyStyle};
+use ReflectionClass;
+use ReflectionException;
+use ReflectionMethod;
+use ReflectionParameter;
 
 /**
  * GenerateEntityPlugins
@@ -28,17 +30,17 @@ class GenerateEntityPlugins extends Command
 
     use \loeye\console\helper\EntityGeneratorTraite;
 
-    protected $args                   = [
+    protected $args = [
         ['property', 'required' => true, 'help' => 'The application property name.']
     ];
-    protected $params                 = [
+    protected $params = [
         ['db-id', 'd', 'required' => false, 'help' => 'database setting id', 'default' => 'default'],
         ['filter', 'f', 'required' => false, 'help' => 'filter', 'default' => null],
         ['force', null, 'required' => false, 'help' => 'force update file', 'default' => false],
     ];
-    protected $name                   = 'loeye:generate-entity-plugins';
-    protected $desc                   = 'generate plugin with entity';
-    protected static $_template       = <<<'EOF'
+    protected $name = 'loeye:generate-entity-plugins';
+    protected $desc = 'generate plugin with entity';
+    protected static $_template = <<<'EOF'
 <?php
 
 namespace <namespace>;
@@ -140,26 +142,28 @@ class <className> extends <abstractClassName>
 
 }
 EOF;
-    private static $_statement        = <<<'EOF'
+    private static $_statement = <<<'EOF'
         $<param> = \loeye\base\Utils::getData($context, '<className>_<param>');
 EOF;
 
     /**
      * generateFile
      *
-     * @param \Symfony\Component\Console\Style\SymfonyStyle $ui
-     * @param \Doctrine\Persistence\Mapping\ClassMetadata   $metadata
-     * @param string                                        $namespace
-     * @param string                                        $destPath
+     * @param SymfonyStyle $ui
+     * @param ClassMetadata $metadata
+     * @param string $namespace
+     * @param string $destPath
+     * @param boolean $force
+     * @throws ReflectionException
      */
-    protected function generateFile(\Symfony\Component\Console\Style\SymfonyStyle $ui, \Doctrine\Persistence\Mapping\ClassMetadata $metadata, $namespace, $destPath, $force)
+    protected function generateFile(SymfonyStyle $ui, ClassMetadata $metadata, $namespace, $destPath, $force): void
     {
-        $entityName        = $this->getEntityName($metadata->reflClass->name);
-        $namespace         .= '\\' . $entityName;
-        $destPath          .= D_S . $entityName;
+        $entityName = $this->getEntityName($metadata->reflClass->name);
+        $namespace .= '\\' . $entityName;
+        $destPath .= D_S . $entityName;
         $abstractClassName = 'Abstract' . ucfirst($entityName) . 'BasePlugin';
-        $this->writeAbstactPluginClass($ui, $namespace, $abstractClassName, $destPath, $force);
-        $serverClass       = $this->getServerClass($metadata->reflClass->name);
+        $this->writeAbstractPluginClass($ui, $namespace, $abstractClassName, $destPath, $force);
+        $serverClass = $this->getServerClass($metadata->reflClass->name);
         $this->writePluginClass($ui, $namespace, $entityName, $abstractClassName, $serverClass, $destPath, $force);
     }
 
@@ -169,19 +173,18 @@ EOF;
      *
      * @return string
      */
-    protected function getDestPath(InputInterface $input)
+    protected function getDestPath(InputInterface $input): string
     {
-        $destPath = PROJECT_DIR . D_S . 'plugins' . D_S . $input->getArgument('property');
-        return $destPath;
+        return PROJECT_DIR . D_S . 'plugins' . D_S . $input->getArgument('property');
     }
 
     /**
      * getServerClass
      *
      * @param string $className
-     * @return type
+     * @return string
      */
-    protected function getServerClass($className)
+    protected function getServerClass($className): string
     {
         return '\\' . str_replace('entity', 'server', $className) . 'Server';
     }
@@ -192,7 +195,7 @@ EOF;
      * @param string $fullClassName
      * @return string
      */
-    protected function getEntityName($fullClassName)
+    protected function getEntityName($fullClassName): string
     {
         return lcfirst(substr($fullClassName, strrpos($fullClassName, '\\') + 1));
     }
@@ -204,7 +207,7 @@ EOF;
      * @param string $className
      * @return string
      */
-    protected function generateAbstractPluginClass($namespace, $className)
+    protected function generateAbstractPluginClass($namespace, $className): string
     {
         $variables = [
             '<namespace>' => $namespace,
@@ -219,38 +222,44 @@ EOF;
      *
      * @param string $namespace
      * @param string $className
+     * @param $abstractClassName
+     * @param $serverClass
+     * @param $method
+     * @param $paramsStatement
+     * @param $params
+     * @param $returnType
      * @return string
      */
-    protected function generatePluginClass($namespace, $className, $abstractClassName, $serverClass, $method, $paramsStatement, $params, $returnType)
+    protected function generatePluginClass($namespace, $className, $abstractClassName, $serverClass, $method, $paramsStatement, $params, $returnType): string
     {
         $variables = [
-            '<namespace>'         => $namespace,
-            '<className>'         => $className,
+            '<namespace>' => $namespace,
+            '<className>' => $className,
             '<abstractClassName>' => $abstractClassName,
-            '<serverClass>'       => $serverClass,
-            '<method>'            => $method,
-            '<paramsStatement>'   => $paramsStatement,
-            '<params>'            => $params,
-            '<returnType>'        => $returnType,
+            '<serverClass>' => $serverClass,
+            '<method>' => $method,
+            '<paramsStatement>' => $paramsStatement,
+            '<params>' => $params,
+            '<returnType>' => $returnType,
         ];
 
         return str_replace(array_keys($variables), array_values($variables), self::$_pluginTemplate);
     }
 
     /**
-     * writeAbstactPluginClass
+     * writeAbstractPluginClass
      *
-     * @param \Symfony\Component\Console\Style\SymfonyStyle $ui
-     * @param string         $namespace
-     * @param string         $className
-     * @param string         $outputDirectory
-     * @param boolean        $force
+     * @param SymfonyStyle $ui
+     * @param string $namespace
+     * @param string $className
+     * @param string $outputDirectory
+     * @param boolean $force
      */
-    public function writeAbstactPluginClass(\Symfony\Component\Console\Style\SymfonyStyle $ui, $namespace, $className, $outputDirectory, $force = false)
+    public function writeAbstractPluginClass(SymfonyStyle $ui, $namespace, $className, $outputDirectory, $force = false): void
     {
         $fullAbstractClassName = $namespace . '\\' . $className;
         $ui->text(sprintf('Processing Server "<info>%s</info>"', $fullAbstractClassName));
-        $code                  = $this->generateAbstractPluginClass($namespace, $className);
+        $code = $this->generateAbstractPluginClass($namespace, $className);
 
         $this->writeFile($outputDirectory, $className, $code, $force);
     }
@@ -258,18 +267,19 @@ EOF;
     /**
      * write plugin class
      *
-     * @param \Symfony\Component\Console\Style\SymfonyStyle $ui
-     * @param string                                        $namespace
-     * @param string                                        $className
-     * @param string                                        $abstractClassName
-     * @param string                                        $serverClass
-     * @param string                                        $outputDirectory
-     * @param bool                                          $force
+     * @param SymfonyStyle $ui
+     * @param string $namespace
+     * @param string $className
+     * @param string $abstractClassName
+     * @param string $serverClass
+     * @param string $outputDirectory
+     * @param bool $force
+     * @throws ReflectionException
      */
-    public function writePluginClass(\Symfony\Component\Console\Style\SymfonyStyle $ui, $namespace, $className, $abstractClassName, $serverClass, $outputDirectory, $force = false)
+    public function writePluginClass(SymfonyStyle $ui, $namespace, $className, $abstractClassName, $serverClass, $outputDirectory, $force = false): void
     {
-        $refClass = new \ReflectionClass($serverClass);
-        $methods  = $refClass->getMethods();
+        $refClass = new ReflectionClass($serverClass);
+        $methods = $refClass->getMethods();
         foreach ($methods as $method) {
             if ($method->isConstructor() || $method->isFinal()) {
                 continue;
@@ -281,11 +291,11 @@ EOF;
             }
             $nClassName = ucfirst($className) . ucfirst($methodName) . 'Plugin';
 
-            $fullClassName   = $namespace . '\\' . $nClassName;
+            $fullClassName = $namespace . '\\' . $nClassName;
             $ui->text(sprintf('Processing Server "<info>%s</info>"', $fullClassName));
             $paramsStatement = $this->generateParamsStatement($method, $nClassName);
-            $params          = $this->generateParams($method);
-            $code            = $this->generatePluginClass($namespace, $nClassName, $abstractClassName, $serverClass, $methodName, $paramsStatement, $params, $returnType);
+            $params = $this->generateParams($method);
+            $code = $this->generatePluginClass($namespace, $nClassName, $abstractClassName, $serverClass, $methodName, $paramsStatement, $params, $returnType);
 
             $this->writeFile($outputDirectory, $nClassName, $code, $force);
         }
@@ -294,17 +304,17 @@ EOF;
     /**
      * generate params statement
      *
-     * @param \ReflectionMethod $method
-     * @param string            $className
+     * @param ReflectionMethod $method
+     * @param string $className
      * @return string
      */
-    protected function generateParamsStatement(\ReflectionMethod $method, $className)
+    protected function generateParamsStatement(ReflectionMethod $method, $className): string
     {
         $params = $method->getParameters();
         if ($params) {
             $content = [];
             foreach ($params as $param) {
-                $content[] = $this->generateParamterStatement($param, $className);
+                $content[] = $this->generateParameterStatement($param, $className);
             }
             return implode("\r\n", $content);
         }
@@ -312,17 +322,17 @@ EOF;
     }
 
     /**
-     * generate paramter statement
+     * generate parameter statement
      *
-     * @param \ReflectionParameter $param
-     * @param string               $className
+     * @param ReflectionParameter $param
+     * @param string $className
      * @return string
      */
-    protected function generateParamterStatement(\ReflectionParameter $param, $className)
+    protected function generateParameterStatement(ReflectionParameter $param, $className): string
     {
 
         $variables = [
-            '<param>'     => $param->getName(),
+            '<param>' => $param->getName(),
             '<className>' => $className,
         ];
 
@@ -332,15 +342,15 @@ EOF;
     /**
      * generate params
      *
-     * @param \ReflectionMethod $method
+     * @param ReflectionMethod $method
      * @return string
      */
-    protected function generateParams(\ReflectionMethod $method)
+    protected function generateParams(ReflectionMethod $method): string
     {
-        $params  = $method->getParameters();
+        $params = $method->getParameters();
         $initial = '';
         if ($params) {
-            return array_reduce($params, function($carry, $item) {
+            return array_reduce($params, static function ($carry, ReflectionParameter $item) {
                 if ($carry) {
                     $carry .= ', $' . $item->getName();
                 } else {

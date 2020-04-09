@@ -17,6 +17,7 @@
 
 namespace loeye\config;
 
+use RuntimeException;
 use \Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 use \Symfony\Component\Config\Definition\Exception\UnsetKeyException;
 
@@ -67,22 +68,20 @@ class ArrayNode extends \Symfony\Component\Config\Definition\ArrayNode {
                         }
                         unset($value[$name]);
                         goto brk;
-                    } else if ($node instanceof RegexNode) {
-                        if ($node->match($name)) {
-                            if (is_array($val)) {
-                                try {
-                                    $normalized[$name] = $node->normalize($val);
-                                } catch (UnsetKeyException $e) {
+                    } else if (($node instanceof RegexNode) && $node->match($name)) {
+                        if (is_array($val)) {
+                            try {
+                                $normalized[$name] = $node->normalize($val);
+                            } catch (UnsetKeyException $e) {
 
-                                } catch (\Exception $e) {
-                                    continue;
-                                }
-                            } else {
-                                $normalized[$name] = $val;
+                            } catch (\Exception $e) {
+                                continue;
                             }
-                            unset($value[$name]);
-                            goto brk;
+                        } else {
+                            $normalized[$name] = $val;
                         }
+                        unset($value[$name]);
+                        goto brk;
                     }
                 }
                 if (!$this->removeExtraKeys) {
@@ -93,7 +92,7 @@ class ArrayNode extends \Symfony\Component\Config\Definition\ArrayNode {
         }
 
         // if extra fields are present, throw exception
-        if (\count($value) && !$this->ignoreExtraKeys) {
+        if (count($value) && !$this->ignoreExtraKeys) {
             $proposals = array_keys($this->children);
             sort($proposals);
             $guesses   = [];
@@ -109,13 +108,13 @@ class ArrayNode extends \Symfony\Component\Config\Definition\ArrayNode {
                 }
             }
 
-            $msg = sprintf('Unrecognized option%s "%s" under "%s"', 1 === \count($value) ? '' : 's', implode(', ', array_keys($value)), $this->getPath());
+            $msg = sprintf('Unrecognized option%s "%s" under "%s"', 1 === count($value) ? '' : 's', implode(', ', array_keys($value)), $this->getPath());
 
-            if (\count($guesses)) {
+            if (count($guesses)) {
                 asort($guesses);
                 $msg .= sprintf('. Did you mean "%s"?', implode('", "', array_keys($guesses)));
             } else {
-                $msg .= sprintf('. Available option%s %s "%s".', 1 === \count($proposals) ? '' : 's', 1 === \count($proposals) ? 'is' : 'are', implode('", "', $proposals));
+                $msg .= sprintf('. Available option%s %s "%s".', 1 === count($proposals) ? '' : 's', 1 === count($proposals) ? 'is' : 'are', implode('", "', $proposals));
             }
 
             $ex = new InvalidConfigurationException($msg);
@@ -132,9 +131,9 @@ class ArrayNode extends \Symfony\Component\Config\Definition\ArrayNode {
      * 
      * @return array
      */
-    private function getRegexNode()
+    private function getRegexNode(): array
     {
-        return array_filter($this->children, function($item){
+        return array_filter($this->children, static function($item){
             if ($item instanceof RegexNode || $item instanceof PrototypedRegexNode) {
                 return $item;
             }
@@ -152,7 +151,7 @@ class ArrayNode extends \Symfony\Component\Config\Definition\ArrayNode {
      * @return mixed The merged values
      *
      * @throws InvalidConfigurationException
-     * @throws \RuntimeException
+     * @throws RuntimeException
      */
     protected function mergeValues($leftSide, $rightSide)
     {
@@ -168,9 +167,12 @@ class ArrayNode extends \Symfony\Component\Config\Definition\ArrayNode {
 
         foreach ($rightSide as $k => $v) {
             // no conflict
-            if (!\array_key_exists($k, $leftSide)) {
+            if (!array_key_exists($k, $leftSide)) {
                 if (!$this->allowNewKeys) {
-                    $ex = new InvalidConfigurationException(sprintf('You are not allowed to define new elements for path "%s". Please define all elements for this path in one config file. If you are trying to overwrite an element, make sure you redefine it with the same name.', $this->getPath()));
+                    $ex = new InvalidConfigurationException(
+                        sprintf('You are not allowed to define new elements for path "%s". 
+                            Please define all elements for this path in one config file. If you are trying to overwrite an element,
+                            make sure you redefine it with the same name.', $this->getPath()));
                     $ex->setPath($this->getPath());
 
                     throw $ex;
@@ -183,7 +185,7 @@ class ArrayNode extends \Symfony\Component\Config\Definition\ArrayNode {
             if (!isset($this->children[$k])) {
                 $node = $this->getRegexNode();
                 if (!$node && (!$this->ignoreExtraKeys || $this->removeExtraKeys)) {
-                    throw new \RuntimeException('merge() expects a normalized config array.');
+                    throw new RuntimeException('merge() expects a normalized config array.');
                 }
 
                 $leftSide[$k] = $v;

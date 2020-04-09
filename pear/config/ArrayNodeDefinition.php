@@ -28,7 +28,7 @@ class ArrayNodeDefinition extends \Symfony\Component\Config\Definition\Builder\A
     /**
      * @return RegexNodeDefinition
      */
-    public function regexPrototype()
+    public function regexPrototype(): RegexNodeDefinition
     {
         return $this->prototype('regex');
     }
@@ -36,7 +36,7 @@ class ArrayNodeDefinition extends \Symfony\Component\Config\Definition\Builder\A
     /**
      * @return ConstantNodeDefinition
      */
-    public function constantPrototype()
+    public function constantPrototype(): ConstantNodeDefinition
     {
         return $this->prototype('constant');
     }

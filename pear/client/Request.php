@@ -17,6 +17,12 @@
 
 namespace loeye\client;
 
+use GuzzleHttp\Cookie\CookieJar;
+use GuzzleHttp\Psr7\Uri;
+use GuzzleHttp\Promise\PromiseInterface;
+use Psr\Http\Message\ResponseInterface;
+use function GuzzleHttp\Psr7\uri_for;
+
 /**
  * Request
  *
@@ -32,13 +38,13 @@ class Request
 
     /**
      *
-     * @var \GuzzleHttp\Psr\Http\Message\ResponseInterface
+     * @var ResponseInterface
      */
     private $_res;
 
     /**
      *
-     * @var \GuzzleHttp\Psr7\Uri
+     * @var Uri
      */
     private $_uri;
 
@@ -49,11 +55,11 @@ class Request
      */
     public function __construct()
     {
-        $this->_ch      = new \GuzzleHttp\Client();
+        $this->_ch = new \GuzzleHttp\Client();
         $this->_options = [
             'connect_timeout' => 15,
-            'timeout'         => 30,
-            'headers'         => [],
+            'timeout' => 30,
+            'headers' => [],
         ];
     }
 
@@ -64,22 +70,18 @@ class Request
      */
     public function __destruct()
     {
-        unset($this->_ch);
-        unset($this->_options);
-        unset($this->_uri);
-        unset($this->_method);
-        unset($this->_res);
+        unset($this->_ch, $this->_options, $this->_uri, $this->_method, $this->_res);
     }
 
     /**
      * setOpt
      *
-     * @param string $name  option name
-     * @param mixed  $value option value
+     * @param string $name option name
+     * @param mixed $value option value
      *
      * @return void
      */
-    public function setOpt($name, $value)
+    public function setOpt($name, $value): void
     {
         $this->_options[$name] = $value;
     }
@@ -91,42 +93,41 @@ class Request
      *
      * @return void
      */
-    public function setUrl($url)
+    public function setUrl($url): void
     {
-        $this->_uri = new \GuzzleHttp\Psr7\Uri($url);
+        $this->_uri = new Uri($url);
     }
 
     /**
      * setMethod
      *
-     * @param string $mothed method
+     * @param string $method method
      *
      * @return void
      */
-    public function setMethod($mothed = 'GET')
+    public function setMethod($method = 'GET'): void
     {
-        $this->_method = mb_strtoupper($mothed);
+        $this->_method = mb_strtoupper($method);
     }
 
     /**
      * setProxy
      *
-     * @param string $host      proxy host
-     * @param inpt   $port      proxy port
-     * @param int    $proxyType proxy type ex: CURLPROXY_HTTP|CURLPROXY_SOCKS4|CURLPROXY_SOCKS5
-     * @param string $username  proxy user name
-     * @param string $userpwd   proxy user password
+     * @param string $host proxy host
+     * @param int $port proxy port
+     * @param int $proxyType proxy type ex: CURLPROXY_HTTP|CURLPROXY_SOCKS4|CURLPROXY_SOCKS5
+     * @param string $username proxy user name
+     * @param string $userpwd proxy user password
      *
      * @return void
      */
     public function setProxy(
-            $host, $port, $proxyType = CURLPROXY_HTTP, $username = null, $userpwd = null
-    )
+        $host, $port, $proxyType = CURLPROXY_HTTP, $username = null, $userpwd = null
+    ): void
     {
         if ($port) {
             $host .= ':';
         }
-        $proxy = sprintf("%s%s");
         if ($username && $userpwd) {
             $username .= ':';
         }
@@ -134,12 +135,12 @@ class Request
             $host = '@' . $host;
         }
         $type = 'http';
-        if ($proxyType == CURLPROXY_SOCKS4) {
+        if ($proxyType === CURLPROXY_SOCKS4) {
             $type = 'socks4';
-        } else if ($proxyType == CURLPROXY_SOCKS5) {
+        } else if ($proxyType === CURLPROXY_SOCKS5) {
             $type = 'socks5';
         }
-        $proxy                   = sprintf('%s%s%s%s%s', $type, $username, $userpwd, $host, $port);
+        $proxy = sprintf('%s%s%s%s%s', $type, $username, $userpwd, $host, $port);
         $this->_options['proxy'] = $proxy;
     }
 
@@ -150,7 +151,7 @@ class Request
      *
      * @return void
      */
-    public function setTimeOut($time = 30)
+    public function setTimeOut($time = 30): void
     {
         $this->_options['timeout'] = $time;
     }
@@ -160,9 +161,9 @@ class Request
      *
      * @param array $header header
      *
-     * @return array
+     * @return void
      */
-    public function setHeader($header)
+    public function setHeader($header): void
     {
         $this->_options['headers'] = $header;
     }
@@ -170,26 +171,26 @@ class Request
     /**
      * setCookie
      *
-     * @param array  $cookies [key => value, ...]
+     * @param array $cookies [key => value, ...]
      * @param string $baseUri base url
      *
      * @return void
      */
-    public function setCookie($cookies, $baseUri)
+    public function setCookie($cookies, $baseUri): void
     {
-        $uri                       = \GuzzleHttp\Psr7\uri_for($baseUri);
-        $this->_options['cookies'] = \GuzzleHttp\Cookie\CookieJar::fromArray($cookies, $uri->getHost());
+        $uri = uri_for($baseUri);
+        $this->_options['cookies'] = CookieJar::fromArray($cookies, $uri->getHost());
     }
 
     /**
      * setContent
      *
      * @param string $contentType content type
-     * @param string $content     $content
+     * @param string $content $content
      *
      * @return void
      */
-    public function setContent($contentType, $content)
+    public function setContent($contentType, $content): void
     {
         $header = array(
             'Content-Type: ' . $contentType,
@@ -206,7 +207,7 @@ class Request
      *
      * @return void
      */
-    public function setHandle($handle)
+    public function setHandle($handle): void
     {
         $this->_handle = $handle;
     }
@@ -214,9 +215,9 @@ class Request
     /**
      * execute
      *
-     * @return execute
+     * @return ResponseInterface
      */
-    public function execute()
+    public function execute(): ResponseInterface
     {
         $this->_res = $this->_ch->requestAsync($this->_method, $this->_uri, $this->_options)->wait();
         return $this->_res;
@@ -224,9 +225,9 @@ class Request
 
     /**
      *
-     * @return type
+     * @return PromiseInterface
      */
-    public function promise()
+    public function promise(): PromiseInterface
     {
         return $this->_ch->requestAsync($this->_method, $this->_uri, $this->_options);
     }
@@ -234,9 +235,9 @@ class Request
     /**
      * set response
      *
-     * @param \GuzzleHttp\Psr\Http\Message\ResponseInterface $res
+     * @param $res
      */
-    public function setResponse(\Psr\Http\Message\ResponseInterface $res)
+    public function setResponse(ResponseInterface $res): void
     {
         $this->_res = $res;
     }
@@ -244,9 +245,9 @@ class Request
     /**
      * get Response
      *
-     * @return \GuzzleHttp\Psr\Http\Message\ResponseInterface
+     * @return ResponseInterface
      */
-    public function getResponse()
+    public function getResponse(): ResponseInterface
     {
         return $this->_res;
     }
@@ -254,9 +255,9 @@ class Request
     /**
      * getResource
      *
-     * @return resource curl
+     * @return \GuzzleHttp\Client curl
      */
-    public function getResource()
+    public function getResource(): \GuzzleHttp\Client
     {
         return $this->_ch;
     }
@@ -274,9 +275,9 @@ class Request
     /**
      * getUri
      *
-     * @return \GuzzleHttp\Psr7\Uri
+     * @return Uri
      */
-    public function getUri()
+    public function getUri(): Uri
     {
         return $this->_uri;
     }

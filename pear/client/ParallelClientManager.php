@@ -18,6 +18,9 @@
 namespace loeye\client;
 
 
+use Throwable;
+use function GuzzleHttp\Promise\unwrap;
+
 /**
  * Description of ParallelClientManager
  *
@@ -28,7 +31,7 @@ class ParallelClientManager
 
     /**
      *
-     * @var Client array
+     * @var Client[] array
      */
     private $_parallelClient = [];
 
@@ -46,11 +49,12 @@ class ParallelClientManager
     }
 
     /**
-     * excute
+     * execute
      *
      * @return void
+     * @throws Throwable
      */
-    public function excute()
+    public function execute(): void
     {
         $promises = [];
         $idx = 0;
@@ -62,7 +66,7 @@ class ParallelClientManager
             }
         }
 
-        $results = \GuzzleHttp\Promise\unwrap($promises);
+        $results = unwrap($promises);
 
         $idx1 = 0;
         foreach ($this->_parallelClient as $client) {
@@ -80,7 +84,7 @@ class ParallelClientManager
      *
      * @return void
      */
-    public function reset()
+    public function reset(): void
     {
         foreach ($this->_parallelClient as $client) {
             $client->reset();

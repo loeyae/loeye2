@@ -12,11 +12,20 @@
 
 namespace loeye\commands;
 
+use loeye\config\app\ConfigDefinition;
+use loeye\config\app\DeltaDefinition;
+use loeye\config\validate\DeltaConfigDefinition;
+use loeye\config\validate\RulesetConfigDefinition;
 use loeye\console\Command;
 use \Symfony\Component\Console\{
     Input\InputInterface,
     Output\OutputInterface
 };
+use ReflectionClass;
+use ReflectionException;
+use Symfony\Component\Config\Definition\ConfigurationInterface;
+use Symfony\Component\Config\Definition\Dumper\YamlReferenceDumper;
+use Symfony\Component\Filesystem\Filesystem;
 
 /**
  * GenerateConfig
@@ -35,14 +44,14 @@ class GenerateConfig extends Command {
         ['file', 'f', 'required' => false, 'help' => 'file name', 'default' => 'master']
     ];
     static protected $configDefinition = [
-        'app-master'  => \loeye\config\app\ConfigDefinition::class,
-        'app-delta'   => \loeye\config\app\DeltaDefinition::class,
+        'app-master'  => ConfigDefinition::class,
+        'app-delta'   => DeltaDefinition::class,
         'cache'       => \loeye\config\cache\ConfigDefinition::class,
         'database'    => \loeye\config\database\ConfigDefinition::class,
         'module'      => \loeye\config\module\ConfigDefinition::class,
         'router'      => \loeye\config\router\ConfigDefinition::class,
-        'valid-rule'  => \loeye\config\validate\RulesetConfigDefinition::class,
-        'valid-delta' => \loeye\config\validate\DeltaConfigDefinition::class,
+        'valid-rule'  => RulesetConfigDefinition::class,
+        'valid-delta' => DeltaConfigDefinition::class,
         'ruleset'     => \loeye\config\general\RulesetConfigDefinition::class,
         'delta'       => \loeye\config\general\DeltaConfigDefinition::class,
     ];
@@ -51,38 +60,45 @@ class GenerateConfig extends Command {
     /**
      * process
      *
-     * @param \Symfony\Component\Console\Input\InputInterface $input
-     * @param \Symfony\Component\Console\Output\OutputInterface $output
+     * @param InputInterface $input
+     * @param OutputInterface $output
      *
      * @return void
+     * @throws ReflectionException
      */
-    public function process(InputInterface $input, OutputInterface $output)
+    public function process(InputInterface $input, OutputInterface $output): void
     {
         $property      = $input->getArgument('property');
         $type          = $input->getArgument('type');
         $name          = $input->getOption('file');
         $file          = $this->getConfigPath($property, $type, $name);
-        $dumper        = new \Symfony\Component\Config\Definition\Dumper\YamlReferenceDumper();
+        $dumper        = new YamlReferenceDumper();
         $configuration = $this->getConfiguration($type);
-        $content       = $dumper->dump($configuration);
-        $fileSystem    = new \Symfony\Component\Filesystem\Filesystem();
-        $fileSystem->dumpFile($file, $content);
-        $output->writeln(sprintf("output file: %1s", $file));
+        if (null !== $configuration) {
+            $content = $dumper->dump($configuration);
+            $fileSystem = new Filesystem();
+            $fileSystem->dumpFile($file, $content);
+            $output->writeln(sprintf('output file: %1s', $file));
+        }
     }
 
 
     /**
      * getConfiguration
-     * 
+     *
      * @param string $type
-     * 
-     * @return string
+     *
+     * @return ConfigurationInterface|null
+     * @throws ReflectionException
      */
-    protected function getConfiguration($type)
+    protected function getConfiguration($type): ?ConfigurationInterface
     {
         if (array_key_exists($type, static::$configDefinition)) {
-            $reflection = new \ReflectionClass(static::$configDefinition[$type]);
-            return $reflection->newInstanceArgs();
+            $reflection = new ReflectionClass(static::$configDefinition[$type]);
+            $object = $reflection->newInstanceArgs();
+            if ($object instanceof ConfigurationInterface) {
+                return $object;
+            }
         }
         return null;
     }
@@ -96,7 +112,7 @@ class GenerateConfig extends Command {
      * @param string $file
      * @return string
      */
-    protected function getConfigPath($property, $type, $file = 'master')
+    protected function getConfigPath($property, $type, $file = 'master'): ?string
     {
         switch ($type) {
             case 'app-master':

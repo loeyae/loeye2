@@ -17,6 +17,10 @@
 
 namespace loeye\client;
 
+use GuzzleHttp\Cookie\CookieJar;
+use GuzzleHttp\Cookie\SetCookie;
+use Psr\Http\Message\ResponseInterface;
+
 /**
  * Response
  *
@@ -25,39 +29,39 @@ namespace loeye\client;
 class Response
 {
 
-    const STATUS_OK = 200;
+    public const STATUS_OK = 200;
 
     /**
      * request
      *
-     * @var \loeye\client\Request
+     * @var Request
      */
     private $_req;
 
     /**
      * response
      *
-     * @var \GuzzleHttp\Psr\Http\Message\ResponseInterface
+     * @var ResponseInterface
      */
     private $_res;
 
     /**
      * cookie
      *
-     * @var \GuzzleHttp\Cookie\CookieJar
+     * @var CookieJar
      */
     private $_cookies;
 
     /**
      *
-     * @param \loeye\client\Request $request
+     * @param Request $request
      *
      */
     public function __construct(Request $request)
     {
         $this->_req     = $request;
         $this->_res     = $request->getResponse();
-        $this->_cookies = new \GuzzleHttp\Cookie\CookieJar();
+        $this->_cookies = new CookieJar();
         if ($cookieHeader   = $this->_res->getHeader('Set-Cookie')) {
             foreach ($cookieHeader as $cookie) {
                 $sc = SetCookie::fromString($cookie);
@@ -65,7 +69,7 @@ class Response
                     $sc->setDomain($request->getUri()->getHost());
                 }
                 if (0 !== strpos($sc->getPath(), '/')) {
-                    $sc->setPath($this->getCookiePathFromRequest($request));
+                    $sc->setPath($request->getUri()->getPath());
                 }
                 $this->_cookies->setCookie($sc);
             }
@@ -75,9 +79,9 @@ class Response
     /**
      * getRequest
      *
-     * @return \loeye\client\Request
+     * @return Request
      */
-    public function getRequest()
+    public function getRequest(): Request
     {
         return $this->_req;
     }
@@ -87,7 +91,7 @@ class Response
      *
      * @return string
      */
-    public function getContent()
+    public function getContent(): string
     {
         return $this->_res->getBody()->getContents();
     }
@@ -97,7 +101,7 @@ class Response
      *
      * @return int
      */
-    public function getStatusCode()
+    public function getStatusCode(): int
     {
         return $this->_res->getStatusCode();
     }
@@ -107,9 +111,9 @@ class Response
      *
      * @return int
      */
-    public function getErrorCode()
+    public function getErrorCode(): int
     {
-        return $this->_res->getStatusCode() == self::STATUS_OK ? 0 : $this->_res->getStatusCode();
+        return $this->_res->getStatusCode() === self::STATUS_OK ? 0 : $this->_res->getStatusCode();
     }
 
     /**
@@ -117,9 +121,9 @@ class Response
      *
      * @return string
      */
-    public function getErrorMsg()
+    public function getErrorMsg(): string
     {
-        return $this->_res->getStatusCode() == self::STATUS_OK ? '' : $this->_res->getReasonPhrase();
+        return $this->_res->getStatusCode() === self::STATUS_OK ? '' : $this->_res->getReasonPhrase();
     }
 
     /**
@@ -141,12 +145,13 @@ class Response
      *
      * @param string|null $name name
      *
-     * @return array
+     * @return mixed
      */
     public function getCookie($name = null)
     {
         if ($name) {
-            return $this->_cookies->getCookieByName($name)->toArray();
+            $cookie = $this->_cookies->getCookieByName($name);
+            return $cookie ? $cookie->toArray() : null;
         }
         return $this->_cookies->toArray();
     }
@@ -154,9 +159,9 @@ class Response
     /**
      * getCookieJar
      *
-     * @return \GuzzleHttp\Cookie\CookieJar
+     * @return CookieJar
      */
-    public function getCookieJar()
+    public function getCookieJar(): CookieJar
     {
         return $this->_cookies;
     }

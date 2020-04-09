@@ -17,6 +17,8 @@ use \Symfony\Component\Console\{
     Input\InputInterface,
     Output\OutputInterface
 };
+use RuntimeException;
+use SplFileObject;
 
 /**
  * Lang2mo
@@ -36,17 +38,17 @@ class Lang2mo extends Command
     /**
      * process
      *
-     * @param \Symfony\Component\Console\Input\InputInterface $input
-     * @param \Symfony\Component\Console\Output\OutputInterface $output
+     * @param InputInterface $input
+     * @param OutputInterface $output
      *
      * @return void
      */
-    public function process(InputInterface $input, OutputInterface $output)
+    public function process(InputInterface $input, OutputInterface $output): void
     {
-        $PROPERTY = $input->getArgument("property");
+        $PROPERTY = $input->getArgument('property');
         $appConfig = $this->loadAppConfig($PROPERTY);
         $EXT  = 'llt';
-        $CDIR = 'LC_MESSAGES';
+        $CHDIR = 'LC_MESSAGES';
 
         if (!function_exists('gettext')) {
             exit('gettext is not exists');
@@ -56,9 +58,9 @@ class Lang2mo extends Command
         $DATE = date('Y-m-d H:iO');
 
         $langDir  = PROJECT_LOCALE_DIR . DIRECTORY_SEPARATOR . $PROPERTY . DIRECTORY_SEPARATOR;
-        $cacheDir = PROJECT_BASE_CACHE_DIR . DIRECTORY_SEPARATOR . $EXT;
-        if (!is_dir($cacheDir)) {
-            mkdir($cacheDir, 0777);
+        $cacheDir = RUNTIME_CACHE_DIR . DIRECTORY_SEPARATOR . $EXT;
+        if (!file_exists($cacheDir) && !mkdir($cacheDir, 0777) && !is_dir($cacheDir)) {
+            throw new RuntimeException(sprintf('Directory "%s" was not created', $cacheDir));
         }
 
         $localSetting = $appConfig->getSetting('local');
@@ -74,12 +76,12 @@ class Lang2mo extends Command
                 $langSetting = $baseSetting;
             }
             $langCacheDir = $cacheDir . DIRECTORY_SEPARATOR . $lang;
-            if (!is_dir($langCacheDir)) {
-                mkdir($langCacheDir, 0777);
+            if (!file_exists($langCacheDir) && !mkdir($langCacheDir, 0777) && !is_dir($langCacheDir)) {
+                throw new RuntimeException(sprintf('Directory "%s" was not created', $langCacheDir));
             }
-            $langCacheDir .= DIRECTORY_SEPARATOR . $CDIR;
-            if (!is_dir($langCacheDir)) {
-                mkdir($langCacheDir, 0777);
+            $langCacheDir .= DIRECTORY_SEPARATOR . $CHDIR;
+            if (!file_exists($langCacheDir) && !mkdir($langCacheDir, 0777) && !is_dir($langCacheDir)) {
+                throw new RuntimeException(sprintf('Directory "%s" was not created', $langCacheDir));
             }
             $poFile   = $langCacheDir . DIRECTORY_SEPARATOR . $domain . '.po';
             $POHEADER = <<<EOF
@@ -117,17 +119,17 @@ EOF;
                 $splFile->fwrite(PHP_EOL);
             }
 
-            $descriptorspec = array(
-                0 => array("pipe", "r"),
-                1 => array("pipe", "w"),
-                2 => array("pipe", "w")
+            $descriptors = array(
+                0 => array('pipe', 'r'),
+                1 => array('pipe', 'w'),
+                2 => array('pipe', 'w')
             );
             $moFile         = $langCacheDir . DIRECTORY_SEPARATOR . $domain . '.mo';
             $cmd            = 'msgfmt -o ' . $moFile . ' ' . $poFile;
-            $process        = proc_open($cmd, $descriptorspec, $pipes, null, null);
+            $process        = proc_open($cmd, $descriptors, $pipes, null, null);
             if (is_resource($process)) {
                 fclose($pipes[0]);
-                $output = stream_get_contents($pipes[1]);
+                $outputs = stream_get_contents($pipes[1]);
 
                 $err = stream_get_contents($pipes[2]);
                 if (!empty($err)) {
@@ -138,7 +140,7 @@ EOF;
                 fclose($pipes[2]);
                 fclose($pipes[1]);
                 proc_close($process);
-                //    file_put_contents($mofile, $output);
+                //    file_put_contents($moFile, $outputs);
             } else {
                 $output->writeln("failed to execute cmd \"$cmd\"");
             }

@@ -33,6 +33,8 @@ use Doctrine\ORM\QueryBuilder;
 use Doctrine\ORM\TransactionRequiredException;
 use loeye\error\BusinessException;
 use loeye\lib\Secure;
+use loeye\std\CacheTrait;
+use loeye\std\ConfigTrait;
 use Symfony\Component\Cache\Adapter\ApcuAdapter;
 
 /**
@@ -43,8 +45,8 @@ use Symfony\Component\Cache\Adapter\ApcuAdapter;
 class DB
 {
 
-    use \loeye\std\ConfigTrait;
-    use \loeye\std\CacheTrait;
+    use ConfigTrait;
+    use CacheTrait;
 
     const BUNDLE = 'database';
 
@@ -140,7 +142,6 @@ class DB
      *
      * @param AppConfig $appConfig AppConfig
      * @return \Doctrine\Common\Cache\Cache
-     * @throws Exception
      */
     protected function getCache(AppConfig $appConfig): \Doctrine\Common\Cache\Cache
     {

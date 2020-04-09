@@ -17,14 +17,16 @@
 
 namespace loeye\config\cache;
 
+use loeye\base\Cache;
 use \loeye\config\TreeBuilder;
+use Symfony\Component\Config\Definition\ConfigurationInterface;
 
 /**
  * ConfigDefinition
  *
  * @author   Zhang Yi <loeyae@gmail.com>
  */
-class ConfigDefinition implements \Symfony\Component\Config\Definition\ConfigurationInterface {
+class ConfigDefinition implements ConfigurationInterface {
 
 
     /**
@@ -42,12 +44,12 @@ class ConfigDefinition implements \Symfony\Component\Config\Definition\Configura
                              ->scalarNode(0)->isRequired()->defaultValue('master')->end()
                          ->end()
                      ->end()
-                     ->arrayNode(\loeye\base\Cache::CACHE_TYPE_APC)->canBeUnset()
+                     ->arrayNode(Cache::CACHE_TYPE_APC)->canBeUnset()
                          ->children()
                              ->integerNode('lifetime')->isRequired()->end()
                          ->end()
                      ->end()
-                     ->arrayNode(\loeye\base\Cache::CACHE_TYPE_MEMCACHED)->canBeUnset()
+                     ->arrayNode(Cache::CACHE_TYPE_MEMCACHED)->canBeUnset()
                          ->children()
                              ->scalarNode('persistent_id')->cannotBeEmpty()->end()
                              ->integerNode('lifetime')->end()
@@ -62,7 +64,7 @@ class ConfigDefinition implements \Symfony\Component\Config\Definition\Configura
                              ->end()
                          ->end()
                      ->end()
-                     ->arrayNode(\loeye\base\Cache::CACHE_TYPE_REDIS)->canBeUnset()
+                     ->arrayNode(Cache::CACHE_TYPE_REDIS)->canBeUnset()
                          ->children()
                              ->scalarNode('persistent')->cannotBeEmpty()->end()
                              ->scalarNode('host')->cannotBeEmpty()->end()
@@ -72,19 +74,19 @@ class ConfigDefinition implements \Symfony\Component\Config\Definition\Configura
                              ->integerNode('lifetime')->end()
                          ->end()
                      ->end()
-                     ->arrayNode(\loeye\base\Cache::CACHE_TYPE_PHP_ARRAY)->canBeUnset()
+                     ->arrayNode(Cache::CACHE_TYPE_PHP_ARRAY)->canBeUnset()
                          ->children()
                              ->scalarNode('file')->cannotBeEmpty()->end()
                              ->integerNode('lifetime')->end()
                          ->end()
                      ->end()
-                     ->arrayNode(\loeye\base\Cache::CACHE_TYPE_PHP_FILE)->canBeUnset()
+                     ->arrayNode(Cache::CACHE_TYPE_PHP_FILE)->canBeUnset()
                          ->children()
                              ->scalarNode('directory')->cannotBeEmpty()->end()
                              ->integerNode('lifetime')->end()
                          ->end()
                      ->end()
-                     ->arrayNode(\loeye\base\Cache::CACHE_TYPE_FILE)->canBeUnset()
+                     ->arrayNode(Cache::CACHE_TYPE_FILE)->canBeUnset()
                          ->children()
                              ->scalarNode('directory')->cannotBeEmpty()->end()
                              ->integerNode('lifetime')->end()

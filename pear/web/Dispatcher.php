@@ -29,6 +29,7 @@ use loeye\error\BusinessException;
 use loeye\error\ResourceException;
 use loeye\lib\ModuleParse;
 use loeye\std\ParallelPlugin;
+use Psr\Cache\InvalidArgumentException;
 use ReflectionException;
 use function loeye\base\ExceptionHandler;
 
@@ -80,6 +81,8 @@ class Dispatcher extends \loeye\std\Dispatcher
             $view = $this->getView();
             $this->executeView($view);
             $this->executeOutput();
+        } catch (InvalidArgumentException $e) {
+            ExceptionHandler($e, $this->context);
         } catch (Exception $exc) {
             ExceptionHandler($exc, $this->context);
         } catch (\Exception $exc) {
@@ -114,6 +117,7 @@ class Dispatcher extends \loeye\std\Dispatcher
      * @return void
      * @throws Exception
      * @throws ReflectionException
+     * @throws InvalidArgumentException
      */
     protected function executeModule(): void
     {
@@ -182,11 +186,12 @@ class Dispatcher extends \loeye\std\Dispatcher
 
 
     /**
-     * _excuteRouter
+     * _executeRouter
      *
      * @param string $routerDir router dir
      *
      * @return string|null
+     * @throws BusinessException
      */
     private function _executeRouter($routerDir): ?string
     {
@@ -354,7 +359,7 @@ class Dispatcher extends \loeye\std\Dispatcher
                         $pluginObj = Factory::getPlugin($plugin);
                         if ($pluginObj instanceof ParallelPlugin) {
                             $pluginObj->prepare($this->context, $setting);
-                            $this->context->getParallelClientManager()->excute();
+                            $this->context->getParallelClientManager()->execute();
                             $this->context->getParallelClientManager()->reset();
                         }
                         $returnStatus = $pluginObj->process($this->context, $setting);
@@ -422,7 +427,7 @@ class Dispatcher extends \loeye\std\Dispatcher
             $settingList[$id] = $setting;
         }
 
-        $this->context->getParallelClientManager()->excute();
+        $this->context->getParallelClientManager()->execute();
         $this->context->getParallelClientManager()->reset();
 
         foreach ($pluginObjList as $id => $pluginObj) {
@@ -631,6 +636,7 @@ class Dispatcher extends \loeye\std\Dispatcher
      * @param string $moduleId module id
      *
      * @return string
+     * @throws BusinessException
      */
     protected function parseUrl($moduleId = null): string
     {

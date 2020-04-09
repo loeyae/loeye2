@@ -42,7 +42,7 @@ class Cookie
      *
      * @return boolean
      */
-    static public function setCookie
+    public static function setCookie
             (
             $name,
             $value = null,
@@ -63,7 +63,7 @@ class Cookie
      *
      * @return string
      */
-    static public function getCookie($name)
+    public static function getCookie($name)
     {
         if (filter_has_var(INPUT_COOKIE, $name)) {
             return filter_input(INPUT_COOKIE, $name);
@@ -78,7 +78,7 @@ class Cookie
      *
      * @return boolean
      */
-    static public function destructCookie($name)
+    public static function destructCookie($name)
     {
         return setcookie($name, null, -1, '/');
     }
@@ -92,7 +92,7 @@ class Cookie
      *
      * @return boolean
      */
-    static public function setLoeyeCookie($name, $value, $crypt = false)
+    public static function setLoeyeCookie($name, $value, $crypt = false)
     {
         static $userMessageInfo;
         static $cryptFields;
@@ -123,7 +123,7 @@ class Cookie
      *
      * @return mixed
      */
-    static public function getLoeyeCookie($name = null, $decode = true)
+    public static function getLoeyeCookie($name = null, $decode = true)
     {
         if (filter_has_var(INPUT_COOKIE, self::USRE_MESSAGE_INFO)) {
             $userMessageInfo = json_decode(filter_input(INPUT_COOKIE, self::USRE_MESSAGE_INFO), true);
@@ -153,7 +153,7 @@ class Cookie
      *
      * @return string
      */
-    static public function crypt($data, $decode = false, $key = null)
+    public static function crypt($data, $decode = false, $key = null)
     {
         $key = empty($key) ? self::uniqueId() : $key;
         return Secure::crypt($key, $data, $decode);
@@ -164,7 +164,7 @@ class Cookie
      *
      * @return string
      */
-    static public function uniqueId()
+    public static function uniqueId()
     {
         $sessionId = session_id();
         if ($sessionId) {
@@ -185,7 +185,7 @@ class Cookie
      *
      * @return string
      */
-    static public function createCrumb($name)
+    public static function createCrumb($name)
     {
         $uid    = self::uniqueId();
         $string = $name . md5(($name . $uid));
@@ -200,7 +200,7 @@ class Cookie
      *
      * @return boolean
      */
-    static public function validateCrumb($name, $crumb)
+    public static function validateCrumb($name, $crumb)
     {
         $ocrumb = self::createCrumb($name);
         return ($ocrumb == $crumb);

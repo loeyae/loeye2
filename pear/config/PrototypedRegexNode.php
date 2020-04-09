@@ -24,7 +24,7 @@ namespace loeye\config;
  */
 class PrototypedRegexNode extends PrototypedArrayNode {
 
-    
+
     /**
      * Returns a prototype for the child node that is associated to $key in the value array.
      * For general child nodes, this will be $this->prototype.
@@ -61,11 +61,12 @@ class PrototypedRegexNode extends PrototypedArrayNode {
      * Now, the key becomes 'name001' and the child node becomes 'value001' and
      * the prototype of child node 'name001' should be a ScalarNode instead of an ArrayNode instance.
      *
+     * @param string $key
      * @return mixed The prototype instance
      */
     private function getPrototypeForChild(string $key)
     {
-        $prototype = isset($this->valuePrototypes[$key]) ? $this->valuePrototypes[$key] : $this->prototype;
+        $prototype = $this->valuePrototypes[$key] ?? $this->prototype;
         $prototype->setName($key);
 
         return $prototype;

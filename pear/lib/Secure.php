@@ -17,6 +17,8 @@
 
 namespace loeye\lib;
 
+use http\Exception\RuntimeException;
+
 /**
  * Description of Secure
  *
@@ -32,7 +34,7 @@ class Secure
      *
      * @return string
      */
-    static public function getKey($value)
+    public static function getKey($value)
     {
         return md5(serialize($value));
     }
@@ -44,7 +46,7 @@ class Secure
      *
      * @return string
      */
-    static public function uniqueId($secret = null)
+    public static function uniqueId($secret = null)
     {
         if (filter_has_var(INPUT_SERVER, 'REQUEST_TIME_FLOAT')) {
             $REQUEST_TIME_FLOAT = filter_input(INPUT_SERVER, 'REQUEST_TIME_FLOAT', FILTER_SANITIZE_NUMBER_FLOAT);
@@ -85,43 +87,48 @@ class Secure
      *
      * @return string
      */
-    static public function crypt($key, $data, $decode = false)
+    public static function crypt($key, $data, $decode = false): string
     {
         $len          = ceil(strlen($key) / 3) * 3;
-        $secretkey    = base64_encode(str_pad($key, $len, $key[0], STR_PAD_RIGHT));
-        $secretkeyLen = strlen($secretkey);
+        $secretKey    = base64_encode(str_pad($key, $len, $key[0], STR_PAD_RIGHT));
+        $secretKeyLen = strlen($secretKey);
 
-        $string = ($decode == true) ? base64_decode($data) : rawurlencode($data) . $secretkey;
+        $string = ($decode === true) ? base64_decode($data) : rawurlencode($data) . $secretKey;
         if ($string === false) {
             return $data;
         }
         $keySize = 64;
-        if ($secretkeyLen > $keySize) {
-            $mkey = substr($secretkey, 0, $keySize);
+        if ($secretKeyLen > $keySize) {
+            $mkey = substr($secretKey, 0, $keySize);
         } else {
-            $mkey = str_pad($secretkey, $keySize, $key[0], STR_PAD_RIGHT);
+            $mkey = str_pad($secretKey, $keySize, $key[0], STR_PAD_RIGHT);
         }
 
         $method = 'AES-256-CBC';
         $ivLength = openssl_cipher_iv_length($method);
 
-        if ($decode == true) {
-            $iv = substr($string, 0 - $ivLength);
-            $result = rtrim(openssl_decrypt(substr($string, 0, 0-$ivLength), $method, $mkey, OPENSSL_RAW_DATA, $iv), "\0");
-            if (substr($result, -($secretkeyLen)) == $secretkey) {
-                $result = substr($result, 0, -($secretkeyLen));
-                return rawurldecode($result);
+        if ($decode === false) {
+            $cryptoStrong = null;
+            $iv = openssl_random_pseudo_bytes($ivLength, $cryptoStrong);
+            if ($cryptoStrong === false || $iv === false) {
+                throw new \RuntimeException('crypto failed');
             }
-            return '';
+            $strLen = strlen($string);
+            $padLen = $strLen % 8;
+            if ($padLen !== 0) {
+                $string = str_pad($string, $strLen + $padLen, "\0", STR_PAD_RIGHT);
+            }
+            $mcryptString = base64_encode(openssl_encrypt($string, $method, $mkey, OPENSSL_RAW_DATA, $iv) . $iv);
+            return trim($mcryptString, '=');
         }
-        $iv = openssl_random_pseudo_bytes($ivLength);
-        $strlen = strlen($string);
-        $padlen = $strlen % 8;
-        if ($padlen != 0) {
-            $string = str_pad($string, $strlen + $padlen, "\0", STR_PAD_RIGHT);
+
+        $decodeIv = substr($string, 0 - $ivLength);
+        $result = rtrim(openssl_decrypt(substr($string, 0, 0-$ivLength), $method, $mkey, OPENSSL_RAW_DATA, $decodeIv), "\0");
+        if (substr($result, -($secretKeyLen)) === $secretKey) {
+            $result = substr($result, 0, -($secretKeyLen));
+            return rawurldecode($result);
         }
-        $mcryptString = base64_encode(openssl_encrypt($string, $method, $mkey, OPENSSL_RAW_DATA, $iv).$iv);
-        return trim($mcryptString, '=');
+        return '';
     }
 
     /**
@@ -134,7 +141,7 @@ class Secure
      *
      * @return string
      */
-    static public function getKeyDb($property, $key, $group = null, $read = false)
+    public static function getKeyDb($property, $key, $group = null, $read = false)
     {
         static $keyDbSetting = [];
         $cache               = SimpleCache::getInstance($property, 'keydb');
@@ -151,7 +158,8 @@ class Secure
                 }
                 $settings = self::readKeydb($file, $XMReader);
                 if (!empty($settings)) {
-                    $keyDbSetting = array_merge_recursive($keyDbSetting, $settings);
+                    $init = $keyDbSetting;
+                    $keyDbSetting = array_merge_recursive($init, $settings);
                 }
             }
             if ($keyDbSetting) {
@@ -199,11 +207,11 @@ class Secure
      *
      * @return void
      */
-    static public function setKeyDb($property, $keydb, $key, $value, $group = null, $expiry = 0)
+    public static function setKeyDb($property, $keydb, $key, $value, $group = null, $expiry = 0)
     {
         $baseDir = PROJECT_KEYDB_DIR . '/' . $property;
-        if (!file_exists($baseDir)) {
-            mkdir($baseDir, 0777, true);
+        if (!file_exists($baseDir) && !mkdir($baseDir, 0777, true) && !is_dir($baseDir)) {
+            throw new \RuntimeException(sprintf('Directory "%s" was not created', $baseDir));
         }
         $filename = $baseDir . '/' . $keydb . '.keydb';
         $settings = array();
@@ -348,7 +356,7 @@ class Secure
      *
      * @return string
      */
-    static public function encodeUid($id, $createTime)
+    public static function encodeUid($id, $createTime)
     {
         $num1 = date('Y', $createTime) % 36;
         $num2 = ceil(date('Z', $createTime) / 15) % 36;
@@ -364,7 +372,7 @@ class Secure
      *
      * @return string
      */
-    static public function decodeUid($uid)
+    public static function decodeUid($uid)
     {
         $data = explode('#', $uid);
         array_pop($data);

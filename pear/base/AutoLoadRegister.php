@@ -86,7 +86,7 @@ class AutoLoadRegister
      *
      * @return boolean
      */
-    public static function addDir($dir, $prepend = false)
+    public static function addDir($dir, $prepend = false): bool
     {
         $dir = static::realAliasFile($dir);
         if (in_array($dir, static::$dirMap, true) || !is_dir($dir)) {

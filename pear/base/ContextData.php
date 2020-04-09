@@ -17,8 +17,6 @@
 
 namespace loeye\base;
 
-use self;
-
 /**
  * ContextData
  *

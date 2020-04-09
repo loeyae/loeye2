@@ -39,7 +39,7 @@ class ValidatePlugin extends Plugin
     const ERROR_KEY      = 'ValidatePlugin_validate_error';
     const DATA_KEY       = 'ValidatePlugin_filter_data';
 
-    static public $inputTypes = [
+    public static $inputTypes = [
         \INPUT_REQUEST,
         self::INPUT_ORIGIN,
         \INPUT_POST,

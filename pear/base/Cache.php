@@ -75,14 +75,14 @@ class Cache
     public function __construct(AppConfig $appConfig, $type = null)
     {
         $property = $appConfig->getPropertyName();
-        $settins = $appConfig->getSetting('application.cache');
-        if (is_string($settins)) {
-            $this->defaultType = $settins;
-        } else if (is_numeric($settins)) {
-            $this->defaultLifetime = (int)$settins;
+        $settings = $appConfig->getSetting('application.cache');
+        if (is_string($settings)) {
+            $this->defaultType = $settings;
+        } else if (is_numeric($settings)) {
+            $this->defaultLifetime = (int)$settings;
         } else {
-            $this->defaultType = $settins['default'] ?? self::CACHE_TYPE_FILE;
-            $this->defaultLifetime = $settins['lifetime'] ?? 0;
+            $this->defaultType = $settings['default'] ?? self::CACHE_TYPE_FILE;
+            $this->defaultLifetime = $settings['lifetime'] ?? 0;
         }
         $config = $this->cacheConfig($appConfig);
         $this->_buildInstance($property, $type, $config);

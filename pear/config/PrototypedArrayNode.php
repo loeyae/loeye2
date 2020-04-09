@@ -16,8 +16,9 @@
  */
 
 namespace loeye\config;
+use RuntimeException;
+use Symfony\Component\Config\Definition\Exception\DuplicateKeyException;
 use \Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
-use \Symfony\Component\Config\Definition\Exception\UnsetKeyException;
 
 /**
  * PrototypedArrayNode
@@ -44,16 +45,19 @@ class PrototypedArrayNode extends \Symfony\Component\Config\Definition\Prototype
         }
 
         $value = $this->remapXml($value);
-        $isAssoc = array_keys($value) !== range(0, \count($value) - 1);
+        $isAssoc = array_keys($value) !== range(0, count($value) - 1);
         $normalized = [];
         foreach ($value as $k => $v) {
-            if (null !== $this->keyAttribute && \is_array($v)) {
-                if (!isset($v[$this->keyAttribute]) && \is_int($k) && !$isAssoc) {
-                    $ex = new InvalidConfigurationException(sprintf('The attribute "%s" must be set for path "%s".', $this->keyAttribute, $this->getPath()));
+            if (null !== $this->keyAttribute && is_array($v)) {
+                if (!isset($v[$this->keyAttribute]) && is_int($k) && !$isAssoc) {
+                    $ex = new InvalidConfigurationException(sprintf('The attribute "%s" must be set for path "%s".',
+                        $this->keyAttribute, $this->getPath()));
                     $ex->setPath($this->getPath());
 
                     throw $ex;
-                } elseif (isset($v[$this->keyAttribute])) {
+                }
+
+                if (isset($v[$this->keyAttribute])) {
                     $k = $v[$this->keyAttribute];
 
                     // remove the key attribute when required
@@ -64,20 +68,22 @@ class PrototypedArrayNode extends \Symfony\Component\Config\Definition\Prototype
                     // if only "value" is left
                     if (array_keys($v) === ['value']) {
                         $v = $v['value'];
-                        if ($this->prototype instanceof ArrayNode && ($children = $this->prototype->getChildren()) && \array_key_exists('value', $children)) {
+                        if ($this->prototype instanceof ArrayNode && ($children = $this->prototype->getChildren()) &&
+                            array_key_exists('value', $children)) {
                             $valuePrototype = current($this->valuePrototypes) ?: clone $children['value'];
                             $valuePrototype->parent = $this;
                             $originalClosures = $this->prototype->normalizationClosures;
-                            if (\is_array($originalClosures)) {
+                            if (is_array($originalClosures)) {
                                 $valuePrototypeClosures = $valuePrototype->normalizationClosures;
-                                $valuePrototype->normalizationClosures = \is_array($valuePrototypeClosures) ? array_merge($originalClosures, $valuePrototypeClosures) : $originalClosures;
+                                $valuePrototype->normalizationClosures = is_array($valuePrototypeClosures) ?
+                                    array_merge($originalClosures, $valuePrototypeClosures) : $originalClosures;
                             }
                             $this->valuePrototypes[$k] = $valuePrototype;
                         }
                     }
                 }
 
-                if (\array_key_exists($k, $normalized)) {
+                if (array_key_exists($k, $normalized)) {
                     $ex = new DuplicateKeyException(sprintf('Duplicate key "%s" for path "%s".', $k, $this->getPath()));
                     $ex->setPath($this->getPath());
 
@@ -132,11 +138,12 @@ class PrototypedArrayNode extends \Symfony\Component\Config\Definition\Prototype
      * Now, the key becomes 'name001' and the child node becomes 'value001' and
      * the prototype of child node 'name001' should be a ScalarNode instead of an ArrayNode instance.
      *
+     * @param string $key
      * @return mixed The prototype instance
      */
     private function getPrototypeForChild(string $key)
     {
-        $prototype = isset($this->valuePrototypes[$key]) ? $this->valuePrototypes[$key] : $this->prototype;
+        $prototype = $this->valuePrototypes[$key] ?? $this->prototype;
         $prototype->setName($key);
 
         return $prototype;
@@ -151,7 +158,7 @@ class PrototypedArrayNode extends \Symfony\Component\Config\Definition\Prototype
      * @return mixed The merged values
      *
      * @throws InvalidConfigurationException
-     * @throws \RuntimeException
+     * @throws RuntimeException
      */
     protected function mergeValues($leftSide, $rightSide)
     {

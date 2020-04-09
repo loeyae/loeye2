@@ -18,13 +18,14 @@
 namespace loeye\config\validate;
 
 use \loeye\config\TreeBuilder;
+use Symfony\Component\Config\Definition\ConfigurationInterface;
 
 /**
  * RulesetConfigDefinition
  *
  * @author   Zhang Yi <loeyae@gmail.com>
  */
-class RulesetConfigDefinition implements \Symfony\Component\Config\Definition\ConfigurationInterface {
+class RulesetConfigDefinition implements ConfigurationInterface {
 
 
     /**

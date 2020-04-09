@@ -17,7 +17,19 @@
 
 namespace loeye\base;
 
-use loeye\error\{LogicException, BusinessException, DataException};
+use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\Tools\Pagination\Paginator;
+use IntlDateFormatter;
+use loeye\client\Client;
+use loeye\web\Dispatcher;
+use loeye\web\Template;
+use loeye\error\{LogicException, BusinessException, DataException, ResourceException};
+use Psr\Cache\InvalidArgumentException;
+use ReflectionClass;
+use ReflectionException;
+use ReflectionMethod;
+use SmartyException;
+use Symfony\Component\Cache\Exception\CacheException;
 
 /**
  * Description of Utils
@@ -30,12 +42,12 @@ class Utils
     /**
      * addParallelClient
      *
-     * @param \loeye\client\Client $client client
+     * @param Client $client client
      * @param Context $context context
      *
      * @return void
      */
-    static public function addParallelClient(\loeye\client\Client $client, Context $context)
+    public static function addParallelClient(Client $client, Context $context): void
     {
         $context->getParallelClientManager()->addClient($client);
     }
@@ -46,21 +58,21 @@ class Utils
      * @param string $locale locale
      * @param int $time time
      * @param string $timezone timezone
-     * @param int $datetype datetype
-     * @param int $timetype timetype
+     * @param int $dateType date type
+     * @param int $timeType time type
      * @param string $pattern pattern
      *
      * @return string
      */
-    static public function dateFormat(
+    public static function dateFormat(
         $locale, $time, $timezone = 'Asia/Shanghai',
-        $datetype = \IntlDateFormatter::LONG, $timetype = \IntlDateFormatter::MEDIUM,
+        $dateType = IntlDateFormatter::LONG, $timeType = IntlDateFormatter::MEDIUM,
         $pattern = 'yyyy-MM-dd HH:mm:ss'
-    )
+    ): string
     {
-        $calendar = \IntlDateFormatter::GREGORIAN;
-        $dfmt = datefmt_create($locale, $datetype, $timetype, $timezone, $calendar, $pattern);
-        return datefmt_format($dfmt, $time);
+        $calendar = IntlDateFormatter::GREGORIAN;
+        $dateFormat = datefmt_create($locale, $dateType, $timeType, $timezone, $calendar, $pattern);
+        return date_format($dateFormat, $time);
     }
 
     /**
@@ -69,9 +81,9 @@ class Utils
      * @param mixed $var
      * @throws DataException
      */
-    static public function checkNotNull($var)
+    public static function checkNotNull($var): void
     {
-        if (is_null($var)) {
+        if ($var === null) {
             throw new DataException(DataException::DATA_NOT_FOUND_ERROR_MSG, DataException::DATA_NOT_FOUND_ERROR_CODE);
         }
     }
@@ -84,59 +96,39 @@ class Utils
      * @param string $key key
      *
      * @return mixed
+     * @throws Exception
      */
-    static public function checkValue($data, $value, $key = null)
+    public static function checkValue($data, $value, $key = null)
     {
         if (empty($key)) {
             if ($data !== $value) {
                 self::throwException(DataException::DATA_NOT_EQUALS_MSG, DataException::DATA_NOT_EQUALS, ['expected' => $value, 'actual' => $data], DataException::class);
             }
             return $data;
-        } else if ($data instanceof Context) {
+        }
+
+        if ($data instanceof Context) {
             self::checkKeyExist($data, $key);
             $origin = $data->get($key);
             if ($origin !== $value) {
                 self::throwException(DataException::CONTEXT_VALUE_NOT_EQUALS_MSG, DataException::CONTEXT_VALUE_NOT_EQUALS, ['key' => $key, 'expected' => $value], DataException::class);
             }
             return $origin;
-        } else if (is_array($data)) {
+        }
+
+        if (is_array($data)) {
             self::checkKeyExist($data, $key);
             $origin = $data[$key];
             if ($origin !== $value) {
                 self::throwException(DataException::ARRAY_VALUE_NOT_EQUALS_MSG, DataException::ARRAY_VALUE_NOT_EQUALS, ['key' => $key, 'data' => print_r($data, true), 'expected' => $value], DataException::class);
             }
             return $origin;
-        } else {
-            if ($data !== $value) {
-                self::throwException(DataException::DATA_NOT_EQUALS_MSG, DataException::DATA_NOT_EQUALS, ['expected' => $value, 'actual' => $data], DataException::class);
-            }
-            return $data;
         }
-    }
 
-    /**
-     * ckeckExist
-     *
-     * @param Context|array $data data
-     * @param string $key key
-     *
-     * @return mixed
-     */
-    static public function ckeckExist($data, $key)
-    {
-        if ($data instanceof Context) {
-            if (!$data->isExist($key)) {
-                self::throwException(LogicException::CONTEXT_KEY_NOT_FOUND_MSG, LogicException::CONTEXT_KEY_NOT_FOUND, ['key' => $key], LogicException::class);
-            }
-            return $data->get($key);
-        } else if (is_array($data)) {
-            if (!isset($data[$key])) {
-                self::throwException(LogicException::DATA_KEY_NOT_FOUND_MSG, LogicException::DATA_KEY_NOT_FOUND, ['key' => $key, 'data' => print_r($data, true)], LogicException::class);
-            }
-            return $data[$key];
-        } else {
-            self::throwException(LogicException::DATA_KEY_NOT_FOUND_MSG, LogicException::DATA_KEY_NOT_FOUND, ['key' => $key, 'data' => print_r($data, true)], LogicException::class);
+        if ($data !== $value) {
+            self::throwException(DataException::DATA_NOT_EQUALS_MSG, DataException::DATA_NOT_EQUALS, ['expected' => $value, 'actual' => $data], DataException::class);
         }
+        return $data;
     }
 
     /**
@@ -147,21 +139,27 @@ class Utils
      *
      * @return mixed
      */
-    static public function checkKeyExist($data, $key)
+    public static function checkKeyExist($data, $key)
     {
         if ($data instanceof Context) {
             if (!$data->isExistKey($key)) {
-                self::throwException(LogicException::CONTEXT_KEY_NOT_FOUND_MSG, LogicException::CONTEXT_KEY_NOT_FOUND, ['key' => $key], LogicException::class);
+                self::throwException(LogicException::CONTEXT_KEY_NOT_FOUND_MSG,
+                    LogicException::CONTEXT_KEY_NOT_FOUND, ['key' => $key], LogicException::class);
             }
             return $data->get($key);
-        } else if (is_array($data)) {
+        }
+
+        if (is_array($data)) {
             if (!isset($data[$key])) {
-                self::throwException(LogicException::DATA_KEY_NOT_FOUND_MSG, LogicException::DATA_KEY_NOT_FOUND, ['key' => $key, 'data' => print_r($data, true)], LogicException::class);
+                self::throwException(LogicException::DATA_KEY_NOT_FOUND_MSG,
+                    LogicException::DATA_KEY_NOT_FOUND, ['key' => $key, 'data' => print_r($data, true)], LogicException::class);
             }
             return $data[$key];
-        } else {
-            self::throwException(LogicException::DATA_KEY_NOT_FOUND_MSG, LogicException::DATA_KEY_NOT_FOUND, ['key' => $key, 'data' => print_r($data, true)], LogicException::class);
         }
+
+        self::throwException(LogicException::DATA_KEY_NOT_FOUND_MSG, LogicException::DATA_KEY_NOT_FOUND, ['key' =>
+            $key, 'data' => print_r($data, true)], LogicException::class);
+        return null;
     }
 
     /**
@@ -169,34 +167,43 @@ class Utils
      *
      * @param Context|array $data data
      * @param string $key key
-     * @param boolean $ignore ingore 0
+     * @param boolean $ignore ignore 0
      *
      * @return mixed
      */
-    static public function checkNotEmpty($data, $key, $ignore = true)
+    public static function checkNotEmpty($data, $key, $ignore = true)
     {
         if ($data instanceof Context) {
             if ($data->isEmpty($key, $ignore)) {
-                self::throwException(LogicException::CONTEXT_VALUE_IS_EMPTY_MSG, LogicException::CONTEXT_VALUE_IS_EMPTY, ['key' => $key], LogicException::class);
+                self::throwException(LogicException::CONTEXT_VALUE_IS_EMPTY_MSG,
+                    LogicException::CONTEXT_VALUE_IS_EMPTY, ['key' => $key], LogicException::class);
             }
             return $data->get($key);
-        } else if (is_array($data)) {
+        }
+
+        if (is_array($data)) {
             if (!isset($data[$key])) {
-                self::throwException(LogicException::DATA_VALUE_IS_EMPTY_MSG, LogicException::DATA_VALUE_IS_EMPTY, ['key' => $key, 'data' => print_r($data, true)], LogicException::class);
+                self::throwException(LogicException::DATA_VALUE_IS_EMPTY_MSG,
+                    LogicException::DATA_VALUE_IS_EMPTY, ['key' => $key, 'data' => print_r($data, true)],
+                    LogicException::class);
             }
             if ($ignore) {
                 if (empty($data[$key]) && !is_numeric($data[$key])) {
-                    self::throwException(LogicException::DATA_VALUE_IS_EMPTY_MSG, LogicException::DATA_VALUE_IS_EMPTY, ['key' => $key, 'data' => print_r($data, true)], LogicException::class);
+                    self::throwException(LogicException::DATA_VALUE_IS_EMPTY_MSG,
+                        LogicException::DATA_VALUE_IS_EMPTY, ['key' => $key, 'data' => print_r($data, true)],
+                        LogicException::class);
                 }
-            } else {
-                if (empty($data[$key])) {
-                    self::throwException(LogicException::DATA_VALUE_IS_EMPTY_MSG, LogicException::DATA_VALUE_IS_EMPTY, ['key' => $key, 'data' => print_r($data, true)], LogicException::class);
-                }
+            } else if (empty($data[$key])) {
+                self::throwException(LogicException::DATA_VALUE_IS_EMPTY_MSG,
+                    LogicException::DATA_VALUE_IS_EMPTY, ['key' => $key, 'data' => print_r($data, true)],
+                    LogicException::class);
             }
             return $data[$key];
-        } else {
-            self::throwException(LogicException::DATA_VALUE_IS_EMPTY_MSG, LogicException::DATA_VALUE_IS_EMPTY, ['key' => $key, 'data' => print_r($data, true)], LogicException::class);
         }
+
+        self::throwException(LogicException::DATA_VALUE_IS_EMPTY_MSG, LogicException::DATA_VALUE_IS_EMPTY, ['key' =>
+            $key, 'data' => print_r($data, true)], LogicException::class);
+        return null;
     }
 
     /**
@@ -209,7 +216,7 @@ class Utils
      *
      * @return void
      */
-    static public function addErrors($errors, Context $context, $setting, $default = null)
+    public static function addErrors($errors, Context $context, $setting, $default = null): void
     {
         if (empty($errors)) {
             return;
@@ -222,7 +229,8 @@ class Utils
         } else if (!empty($default)) {
             $key = $default;
         } else {
-            self::throwException('error key for set not exists in setting', BusinessException::INVALID_PLUGIN_SET_CODE, [], BusinessException::class);
+            self::throwException('error key for set not exists in setting',
+                BusinessException::INVALID_PLUGIN_SET_CODE, [], BusinessException::class);
         }
         $context->addErrors($key, $errors);
     }
@@ -236,7 +244,7 @@ class Utils
      *
      * @return mixed
      */
-    static public function getErrors(Context $context, $setting, $default = null)
+    public static function getErrors(Context $context, $setting, $default = null)
     {
         $key = null;
         if (!empty($setting['err'])) {
@@ -246,7 +254,8 @@ class Utils
         } else if (!empty($default)) {
             $key = $default;
         } else {
-            self::throwException('error key for get not exists in setting', BusinessException::INVALID_PLUGIN_SET_CODE, [], BusinessException::class);
+            self::throwException('error key for get not exists in setting',
+                BusinessException::INVALID_PLUGIN_SET_CODE, [], BusinessException::class);
         }
         return $context->getErrors($key);
     }
@@ -258,9 +267,9 @@ class Utils
      * @param array $setting setting
      * @param string $default default key
      *
-     * @return mixed
+     * @return void
      */
-    static public function removeErrors(Context $context, $setting, $default = null)
+    public static function removeErrors(Context $context, $setting, $default = null): void
     {
         $key = null;
         if (!empty($setting['err'])) {
@@ -270,9 +279,10 @@ class Utils
         } else if (!empty($default)) {
             $key = $default;
         } else {
-            self::throwException('error key for remove not exists in setting', BusinessException::INVALID_PLUGIN_SET_CODE, [], BusinessException::class);
+            self::throwException('error key for remove not exists in setting',
+                BusinessException::INVALID_PLUGIN_SET_CODE, [], BusinessException::class);
         }
-        return $context->removeErrors($key);
+        $context->removeErrors($key);
     }
 
     /**
@@ -285,9 +295,9 @@ class Utils
      *
      * @return void
      */
-    static public function setContextData($data, Context $context, $setting, $default = null)
+    public static function setContextData($data, Context $context, $setting, $default = null): void
     {
-        if (is_null($data)) {
+        if ($data === null) {
             return;
         }
         $key = null;
@@ -300,18 +310,15 @@ class Utils
         } else if (!empty($default)) {
             $key = $default;
         } else {
-            self::throwException('data key for set not exists in setting', BusinessException::INVALID_PLUGIN_SET_CODE, [], BusinessException::class);
+            self::throwException('data key for set not exists in setting',
+                BusinessException::INVALID_PLUGIN_SET_CODE, [], BusinessException::class);
         }
-        if (isset($setting['expire'])) {
-            $expire = $setting['expire'];
-        } else {
-            $expire = $context->getExpire();
-        }
+        $expire = $setting['expire'] ?? $context->getExpire();
         $context->set($key, $data, $expire);
     }
 
     /**
-     * checkContenxtCacheData
+     * checkContextCacheData
      *
      * @param Context $context context
      * @param array $setting setting
@@ -319,7 +326,7 @@ class Utils
      *
      * @return boolean
      */
-    static public function checkContextCacheData(Context $context, $setting, $default = null): bool
+    public static function checkContextCacheData(Context $context, $setting, $default = null): bool
     {
         $key = null;
         if (!empty($setting['out'])) {
@@ -346,9 +353,9 @@ class Utils
      * @param array $setting setting
      * @param string $default default
      *
-     * @return mixed
+     * @return void
      */
-    static public function unsetContextData(Context $context, $setting, $default = null)
+    public static function unsetContextData(Context $context, $setting, $default = null): void
     {
         $key = null;
         if (!empty($setting['in'])) {
@@ -360,9 +367,10 @@ class Utils
         } else if (!empty($default)) {
             $key = $default;
         } else {
-            self::throwException('data key for unset not exists in setting', BusinessException::INVALID_PLUGIN_SET_CODE, [], BusinessException::class);
+            self::throwException('data key for unset not exists in setting',
+                BusinessException::INVALID_PLUGIN_SET_CODE, [], BusinessException::class);
         }
-        return $context->unsetKey($key);
+        $context->unsetKey($key);
     }
 
     /**
@@ -374,7 +382,7 @@ class Utils
      *
      * @return mixed
      */
-    static public function getContextData(Context $context, $setting, $default = null)
+    public static function getContextData(Context $context, $setting, $default = null)
     {
         $key = null;
         if (!empty($setting['in'])) {
@@ -386,7 +394,8 @@ class Utils
         } else if (!empty($default)) {
             $key = $default;
         } else {
-            self::throwException("data key for get not exists in setting", BusinessException::INVALID_PLUGIN_SET_CODE, [], BusinessException::class);
+            self::throwException('data key for get not exists in setting',
+                BusinessException::INVALID_PLUGIN_SET_CODE, [], BusinessException::class);
         }
         return $context->get($key);
     }
@@ -401,7 +410,7 @@ class Utils
      *
      * @return mixed
      */
-    static public function checkNotEmptyContextData(Context $context, $setting, $default = null, $ignore = true)
+    public static function checkNotEmptyContextData(Context $context, $setting, $default = null, $ignore = true)
     {
         $key = null;
         if (!empty($setting['in'])) {
@@ -413,7 +422,8 @@ class Utils
         } else if (!empty($default)) {
             $key = $default;
         } else {
-            self::throwException('input key not exists in setting', BusinessException::INVALID_PLUGIN_SET_CODE, [], BusinessException::class);
+            self::throwException('input key not exists in setting', BusinessException::INVALID_PLUGIN_SET_CODE, [],
+                BusinessException::class);
         }
         return self::checkNotEmpty($context, $key, $ignore);
     }
@@ -427,14 +437,14 @@ class Utils
      *
      * @return mixed
      */
-    static public function getData($data, $key, $default = null)
+    public static function getData($data, $key, $default = null)
     {
         if ($data instanceof Context) {
             return $data->get($key, $default);
-        } else if (is_array($data)) {
-            if (isset($data[$key])) {
-                return $data[$key];
-            }
+        }
+
+        if (is_array($data) && isset($data[$key])) {
+            return $data[$key];
         }
         return $default;
     }
@@ -442,17 +452,17 @@ class Utils
     /**
      * keyFilter
      *
-     * @param \loeye\base\Conext|array $data data
+     * @param Context|array $data data
      * @param array $required required keys
      * @param array $options options keys
      * @param array $least least one exist keys
-     * @param boolean $ignore ingore 0
+     * @param boolean $ignore ignore 0
      *
      * @return array
      */
-    static public function keyFilter(
+    public static function keyFilter(
         $data, array $required = array(), array $options = array(), array $least = array(), $ignore = true
-    )
+    ): array
     {
         $result = array();
         if (empty($data) || !is_array($data)) {
@@ -474,7 +484,9 @@ class Utils
             $pattern = array_combine($least, $least);
             $keyList = array_intersect_key($data, $pattern);
             if (empty($keyList)) {
-                self::throwException(LogicException::DATA_AT_LEAST_EXIST_ONE_KEY_ERROR, LogicException::DATA_AT_LEAST_EXIST_ONE_KEY, ['keyList' => implode(',', $least), 'data' => $data], LogicException::class);
+                self::throwException(LogicException::DATA_AT_LEAST_EXIST_ONE_KEY_ERROR,
+                    LogicException::DATA_AT_LEAST_EXIST_ONE_KEY, ['keyList' => implode(',', $least), 'data' =>
+                        $data], LogicException::class);
             }
             foreach ($keyList as $key => $value) {
                 $result[$key] = $value;
@@ -487,12 +499,12 @@ class Utils
      * filterResult
      *
      * @param mixed $result result
-     * @param mixed                 &$data data
-     * @param \loeye\abse\Exception &$error error
+     * @param mixed &$data data
+     * @param \Exception &$error error
      *
      * @return void
      */
-    static public function filterResult($result, &$data, &$error)
+    public static function filterResult($result, &$data, &$error): void
     {
         if ($result instanceof \Exception) {
             $error = $result;
@@ -506,17 +518,17 @@ class Utils
      *
      * @param array $result result
      * @param array &$data data
-     * @param array &$errors errors
+     * @param mixed &$errors errors
      *
      * @return void
      */
-    static public function filterResultArray($result, &$data, &$errors)
+    public static function filterResultArray($result, &$data, &$errors): void
     {
         $data = array();
-        $errors = array();
         if ($result instanceof \Exception) {
             $errors = $result;
         } else if (is_array($result)) {
+            $errors = [];
             foreach ($result as $key => $value) {
                 if ($value instanceof \Exception) {
                     $errors[] = $value;
@@ -534,9 +546,9 @@ class Utils
      *
      * @param mixed $result result
      *
-     * @return boole
+     * @return bool
      */
-    static public function hasException($result)
+    public static function hasException($result): bool
     {
         return $result instanceof \Exception;
     }
@@ -550,9 +562,8 @@ class Utils
      * @param string $exception class name
      *
      * @return void
-     * @throws Exception
      */
-    static public function throwException($errorMsg, $errorCode = 500, array $parameter = [], $exception = null)
+    public static function throwException($errorMsg, $errorCode = 500, array $parameter = [], $exception = null): void
     {
         $logMsg = "[logic] ${errorMsg}";
         self::log($logMsg, Logger::LOEYE_LOGGER_TYPE_ERROR);
@@ -568,15 +579,14 @@ class Utils
      * @param mixed $error error
      *
      * @return void
-     * @throws Exception
      */
-    static public function throwError($error)
+    public static function throwError($error): void
     {
         if (self::hasException($error)) {
             throw $error;
-        } else {
-            self::throwException(serialize($error));
         }
+
+        self::throwException(serialize($error));
     }
 
     /**
@@ -586,7 +596,7 @@ class Utils
      *
      * @return string
      */
-    static public function mbUcfirst($string)
+    public static function mbUcfirst($string): string
     {
         $ucFirstChar = mb_strtoupper(mb_substr($string, 0, 1));
         return ($ucFirstChar . mb_substr($string, 1));
@@ -600,15 +610,15 @@ class Utils
      *
      * @return void
      */
-    static public function includeView($file, array $parameter = array())
+    public static function includeView($file, array $parameter = array()): void
     {
         if (!is_file($file)) {
-            $dno = mb_strrpos($file, ".");
+            $dno = mb_strrpos($file, '.');
             $file = PROJECT_VIEWS_DIR . '/'
-                . strtr(mb_substr($file, 0, $dno), ".", "/") . mb_substr($file, $dno);
+                . str_replace('.', '/', mb_substr($file, 0, $dno)) . mb_substr($file, $dno);
         }
         if (is_array($parameter) && !empty($parameter)) {
-            extract($parameter);
+            extract($parameter, EXTR_OVERWRITE);
         }
         include $file;
     }
@@ -616,15 +626,17 @@ class Utils
     /**
      * setPageCache
      *
-     * @param \loeye\base\AppConfig $appConfig appConfig
+     * @param AppConfig $appConfig appConfig
      * @param string $moduleId module id
      * @param string $page page source
      * @param int $expire expire
      * @param array $params params
      *
      * @return void
+     * @throws Exception
+     * @throws CacheException
      */
-    static public function setPageCache(AppConfig $appConfig, $moduleId, $page, $expire = 0, $params = [])
+    public static function setPageCache(AppConfig $appConfig, $moduleId, $page, $expire = 0, $params = []): void
     {
         $fileKey = $moduleId;
         if (!empty($params)) {
@@ -638,11 +650,14 @@ class Utils
     /**
      * getPageCache
      *
-     * @param \loeye\base\AppConfig $appConfig appConfig
+     * @param AppConfig $appConfig appConfig
      * @param string $moduleId module id
      * @param array $params params
      *
      * @return string|null
+     * @throws CacheException
+     * @throws Exception
+     * @throws InvalidArgumentException
      */
     public static function getPageCache(AppConfig $appConfig, $moduleId, $params = []): ?string
     {
@@ -661,21 +676,23 @@ class Utils
      * @param Context $context context
      * @param string $file file name
      *
-     * @return string
+     * @return void
+     * @throws ResourceException
+     * @throws SmartyException
      */
-    static public function includeTpl(Context $context, $file)
+    public static function includeTpl(Context $context, $file): void
     {
         if (!is_file($file)) {
-            $dno = mb_strrpos($file, ".");
-            $file = PROJECT_VIEWS_BASE_DIR . '/'
-                . strtr(mb_substr($file, 0, $dno), ".", "/") . mb_substr($file, $dno);
+            $dno = mb_strrpos($file, '.');
+            $file = PROJECT_VIEWS_DIR . '/'
+                . str_replace('.', '/', mb_substr($file, 0, $dno)) . mb_substr($file, $dno);
         }
         $template = $context->getTemplate();
         if (!($template instanceof Template)) {
             include $file;
-        } else {
-            return $template->fetch($file);
         }
+
+        echo $template->fetch($file);
     }
 
     /**
@@ -686,7 +703,7 @@ class Utils
      *
      * @return void
      */
-    static public function includeModule($moduleId, $parameter = array())
+    public static function includeModule($moduleId, $parameter = array()): void
     {
         if (!empty($parameter)) {
             foreach ((array)$parameter as $key => $value) {
@@ -696,7 +713,7 @@ class Utils
                 $_REQUEST[$key] = $value;
             }
         }
-        $dispatcher = new \loeye\web\Dispatcher();
+        $dispatcher = new Dispatcher();
         $dispatcher->dispatch($moduleId);
     }
 
@@ -707,9 +724,9 @@ class Utils
      *
      * @return string
      */
-    static public function usc2ToUtf8($string)
+    public static function usc2ToUtf8($string): string
     {
-        return preg_replace_callback("#\\\u([0-9a-f]{4})#i", function ($matches) {
+        return preg_replace_callback("#\\\u([0-9a-f]{4})#i", static function ($matches) {
             return iconv('UCS-2', 'UTF-8', pack('H4', $matches[1]));
         }, $string);
     }
@@ -721,7 +738,7 @@ class Utils
      *
      * @return string
      */
-    static public function asciiToUtf8($string)
+    public static function asciiToUtf8($string): string
     {
         $matches = array();
         $offset = 0;
@@ -734,7 +751,7 @@ class Utils
                 $offset = $matches[0][1] + mb_strlen($code);
             }
         } else {
-            while (preg_match('#[0-9]{2}#', $string, $matches, PREG_OFFSET_CAPTURE, $offset)) {
+            while (preg_match('#\d{2}#', $string, $matches, PREG_OFFSET_CAPTURE, $offset)) {
                 $code = $matches[0][0];
                 $decode .= chr($code);
                 $offset = $matches[0][1] + mb_strlen($code);
@@ -750,9 +767,10 @@ class Utils
      *
      * @return int
      */
-    static public function getArrayLevel($array)
+    public static function getArrayLevel($array): int
     {
         if (is_array($array)) {
+            $arr = [];
             foreach ($array as $val) {
                 $level = 1;
                 if (is_array($val)) {
@@ -773,7 +791,7 @@ class Utils
      *
      * @return mixed
      */
-    static public function callUserFuncArray($data, $setting)
+    public static function callUserFuncArray($data, $setting)
     {
         try {
             if (isset($setting['callback'])) {
@@ -789,9 +807,7 @@ class Utils
                     $object,
                     $function,
                 );
-                unset($setting['class']);
-                unset($setting['src']);
-                unset($setting['method']);
+                unset($setting['class'], $setting['src'], $setting['method']);
             } else {
                 $callback = $setting;
             }
@@ -801,13 +817,13 @@ class Utils
             } else {
                 $parameter = (array)$setting;
             }
-            $result = call_user_func_array($callback, array_merge($parameterArr, $parameter));
-            return $result;
+            return call_user_func_array($callback, array_merge($parameterArr, $parameter));
         } catch (\Exception $e) {
             self::errorLog($e);
             self::throwException(
                 BusinessException::INVALID_PARAMETER_MSG, BusinessException::INVALID_PARAMETER_CODE, [], BusinessException::class);
         }
+        return null;
     }
 
     /**
@@ -819,10 +835,10 @@ class Utils
      *
      * @return void
      */
-    static public function log($message, $messageType = Logger::LOEYE_LOGGER_TYPE_NOTICE, $trace = [])
+    public static function log($message, $messageType = Logger::LOEYE_LOGGER_TYPE_NOTICE, $trace = [])
     {
         $name = defined('PROJECT_PROPERTY') ? PROJECT_PROPERTY : PROJECT_NAMESPACE;
-        if ($messageType == Logger::LOEYE_LOGGER_TYPE_CONTEXT_TRACE) {
+        if ($messageType === Logger::LOEYE_LOGGER_TYPE_CONTEXT_TRACE) {
             $logfile = RUNTIME_LOG_DIR . DIRECTORY_SEPARATOR
                 . PROJECT_NAMESPACE . DIRECTORY_SEPARATOR . 'trace-' . $name . '.log';
             $messageType = Logger::LOEYE_LOGGER_TYPE_DEBUG;
@@ -839,9 +855,6 @@ class Utils
                 }
                 if (!isset($t['line'])) {
                     $t['line'] = 0;
-                }
-                if ($t['file'] != __FILE__ && empty($trace)) {
-                    $trace = $t;
                 }
                 if (!isset($t['function'])) {
                     $t['function'] = 'unknown';
@@ -948,56 +961,56 @@ class Utils
      *
      * @return void
      */
-    static public function logContextTrace(Context $context, $traceKey = null, $ignoreData = true)
+    public static function logContextTrace(Context $context, $traceKey = null, $ignoreData = true): void
     {
         if (!$traceKey) {
             $traceKey = LOEYE_CONTEXT_TRACE_KEY;
         }
-        $tracInfo = $context->getTraceData($traceKey);
-        if (empty($tracInfo)) {
+        $traceInfo = $context->getTraceData($traceKey);
+        if (empty($traceInfo)) {
             return;
         }
-        $startInfo = array_shift($tracInfo);
-        $message = ["context trace info:"];
+        $startInfo = array_shift($traceInfo);
+        $message = ['context trace info:'];
         $message[] = "# ${traceKey} init";
         $message[] = "#  time: ${startInfo['trace_time']}";
-        if (count($tracInfo) > 1 && empty(current($tracInfo)['plugin_setting'])) {
-            $pluginStartInfo = array_shift($tracInfo);
-            $message[] = "# start ";
+        if (count($traceInfo) > 1 && empty(current($traceInfo)['plugin_setting'])) {
+            $pluginStartInfo = array_shift($traceInfo);
+            $message[] = '# start ';
             $message[] = "#  time: ${pluginStartInfo['trace_time']}";
             $t = $pluginStartInfo['trace_time'] - $startInfo['trace_time'];
             $message[] = "#  consuming: $t";
-            if ($ignoreData == false) {
-                $message[] = "#  current context: " . json_encode($pluginStartInfo['context_data']);
+            if ($ignoreData === false) {
+                $message[] = '#  current context: ' . json_encode($pluginStartInfo['context_data']);
             }
-            $prevtime = $pluginStartInfo['trace_time'];
+            $prevTime = $pluginStartInfo['trace_time'];
         } else {
-            $prevtime = $startInfo['trace_time'];
+            $prevTime = $startInfo['trace_time'];
         }
-        $endInfo = end($tracInfo);
+        $endInfo = end($traceInfo);
         if (!isset($endInfo['plugin_setting'])) {
-            array_pop($tracInfo);
+            array_pop($traceInfo);
         }
-        reset($tracInfo);
-        foreach ($tracInfo as $trace) {
-            if (isset($trace['plugin_setting']) && isset($trace['plugin_setting']['name'])) {
+        reset($traceInfo);
+        foreach ($traceInfo as $trace) {
+            if (isset($trace['plugin_setting']['name'])) {
                 $p = $trace['plugin_setting']['name'];
                 $message[] = "# ${p}";
             } else {
                 $message[] = "# ${traceKey} process ";
             }
             $message[] = "# time: ${trace['trace_time']} ";
-            $t = $trace['trace_time'] - $prevtime;
+            $t = $trace['trace_time'] - $prevTime;
             $message[] = "# consuming: $t";
-            if ($ignoreData == false) {
-                $message[] = "# plugin setting: " . json_encode($trace['plugin_setting']);
-                $message[] = "# current context: " . json_encode($trace['context_data']);
+            if ($ignoreData === false) {
+                $message[] = '# plugin setting: ' . json_encode($trace['plugin_setting']);
+                $message[] = '# current context: ' . json_encode($trace['context_data']);
             }
-            $prevtime = $trace['trace_time'];
+            $prevTime = $trace['trace_time'];
         }
         $message[] = "# ${traceKey} end ";
         $message[] = "# time: ${endInfo['trace_time']}";
-        $et = $endInfo['trace_time'] - $prevtime;
+        $et = $endInfo['trace_time'] - $prevTime;
         $message[] = "# consuming: ${et}";
         $tt = $endInfo['trace_time'] - $startInfo['trace_time'];
         $message[] = "# total consuming: $tt";
@@ -1019,18 +1032,19 @@ class Utils
      * @param string $str2
      * @return bool
      */
-    static public function startwith($str1, $str2)
+    public static function startWith($str1, $str2): bool
     {
         return strpos($str1, $str2) === 0;
     }
 
     /**
+     * endWith
      *
-     * @param type $str1
-     * @param type $str2
-     * @return type
+     * @param string $str1
+     * @param string $str2
+     * @return bool
      */
-    static public function endwith($str1, $str2)
+    public static function endWith($str1, $str2): bool
     {
         return substr_compare($str1, $str2, -strlen($str2)) === 0;
     }
@@ -1041,14 +1055,14 @@ class Utils
      * 　　* step1.原字符串转小写,原字符串中的分隔符用空格替换,在字符串开头加上分隔符
      * 　　* step2.将字符串中每个单词的首字母转换为大写,再去空格,去字符串首部附加的分隔符.
      *
-     * @param string $uncamelizedWords
+     * @param string $unCamelizeWords
      * @param string $separator
      * @return string
      */
-    static public function camelize($uncamelizedWords, $separator = '_')
+    public static function camelize($unCamelizeWords, $separator = '_'): string
     {
-        $uncamelizedWords = $separator . str_replace($separator, " ", strtolower($uncamelizedWords));
-        return ltrim(str_replace(" ", "", ucwords($uncamelizedWords)), $separator);
+        $unCamelizeWords = $separator . str_replace($separator, ' ', strtolower($unCamelizeWords));
+        return ltrim(str_replace(' ', '', ucwords($unCamelizeWords)), $separator);
     }
 
     /**
@@ -1060,24 +1074,25 @@ class Utils
      * @param string $separator
      * @return string
      */
-    static public function uncamelize($camelCaps, $separator = '_')
+    public static function uncamelize($camelCaps, $separator = '_'): string
     {
-        return strtolower(preg_replace('/([a-z])([A-Z])/', "$1" . $separator . "$2", $camelCaps));
+        return strtolower(preg_replace('/([a-z])([A-Z])/', '$1' . $separator . '$2', $camelCaps));
     }
 
     /**
      * setWriteMethodValue
      *
-     * @param object $entity
-     * @param string $field
-     * @param mixed $value
+     * @param object $entity instance of object
+     * @param string $field field
+     * @param mixed $value value
      * @return void
+     * @throws ReflectionException
      */
-    static public function setWriteMethodValue($entity, $field, $value): void
+    public static function setWriteMethodValue($entity, $field, $value): void
     {
-        $method = "set" . ucfirst($field);
+        $method = 'set' . ucfirst($field);
         if (method_exists($entity, $method)) {
-            $refMethod = new \ReflectionMethod($entity, $method);
+            $refMethod = new ReflectionMethod($entity, $method);
             $refMethod->invokeArgs($entity, [$value]);
         }
     }
@@ -1085,31 +1100,34 @@ class Utils
     /**
      * getReadMethodValue
      *
-     * @param object $entity
-     * @param string $field
+     * @param object $entity instance of object
+     * @param string $field field
      * @return mixed
+     * @throws ReflectionException
      */
-    static public function getReadMethodValue($entity, $field)
+    public static function getReadMethodValue($entity, $field)
     {
-        $method = "get" . ucfirst($field);
+        $method = 'get' . ucfirst($field);
         $value = null;
         if (method_exists($entity, $method)) {
-            $refMethod = new \ReflectionMethod($entity, $method);
+            $refMethod = new ReflectionMethod($entity, $method);
             $value = $refMethod->invoke($entity);
         }
         return $value;
     }
 
     /**
+     * source2entity
      *
      * @param array|object $source
      * @param string $class
      *
      * @return object
+     * @throws ReflectionException
      */
-    static public function source2entity($source, $class)
+    public static function source2entity($source, $class)
     {
-        $rfc = new \ReflectionClass($class);
+        $rfc = new ReflectionClass($class);
         $object = $rfc->newInstanceArgs();
         self::copyProperties($source, $object);
         return $object;
@@ -1120,19 +1138,21 @@ class Utils
      *
      * @param array|object $source
      * @param object $object
+     * @return object
+     * @throws ReflectionException
      */
-    static public function copyProperties($source, $object)
+    public static function copyProperties($source, $object)
     {
         if (is_array($source)) {
             foreach ($source as $key => $value) {
                 self::setWriteMethodValue($object, self::camelize($key), $value);
             }
         } else if (is_object($source)) {
-            $sourceRefClass = new \ReflectionClass($source);
-            $methodList = $sourceRefClass->getMethods(\ReflectionMethod::IS_PUBLIC);
+            $sourceRefClass = new ReflectionClass($source);
+            $methodList = $sourceRefClass->getMethods(ReflectionMethod::IS_PUBLIC);
             foreach ($methodList as $method) {
                 $methodName = $method->getName();
-                if (self::startwith($methodName, "get")) {
+                if (self::startWith($methodName, "get")) {
                     $value = $method->invokeArgs($source, []);
                     self::setWriteMethodValue($object, substr($methodName, 3), $value);
                 }
@@ -1144,17 +1164,18 @@ class Utils
     /**
      * copy list properties
      *
-     * @param array $source
-     * @param type $target
+     * @param array $source source data
+     * @param string $target target class name
      * @return array
+     * @throws ReflectionException
      */
-    static public function copyListProperties($source, $target)
+    public static function copyListProperties($source, $target): array
     {
         $out = [];
         if (empty($source)) {
             return $out;
         }
-        $tar = new \ReflectionClass($target);
+        $tar = new ReflectionClass($target);
         foreach ($source as $src) {
             $out[] = self::copyProperties($src, $tar->newInstanceArgs());
         }
@@ -1164,12 +1185,13 @@ class Utils
     /**
      * convert entity to array
      *
-     * @param \Doctrine\ORM\EntityManager $em
-     * @param object $entity
-     * @param array $ignore
-     * @return type
+     * @param EntityManager $em entity manager
+     * @param mixed $entity entity
+     * @param array $ignore ignore
+     * @return array
+     * @throws ReflectionException
      */
-    static public function entity2array(\Doctrine\ORM\EntityManager $em, $entity, $ignore = [])
+    public static function entity2array(EntityManager $em, $entity, $ignore = []): array
     {
         if (is_object($entity)) {
             $r = [];
@@ -1182,7 +1204,7 @@ class Utils
             foreach ($metadata->associationMappings as $key => $association) {
                 $target = $association['targetEntity'];
                 $ignoreClass = $ignore;
-                if (in_array($target, $ignoreClass)) {
+                if (in_array($target, $ignoreClass, true)) {
                     continue;
                 }
                 $rs = null;
@@ -1203,15 +1225,15 @@ class Utils
     /**
      * convert entity list to array list
      *
-     * @param \Doctrine\ORM\EntityManager $em
-     * @param array $entities
-     * @param array $ignore
-     * @return type
+     * @param EntityManager $em entity manager
+     * @param array $entities entities
+     * @param array $ignore ignore
+     * @return array
      */
-    static public function entities2array(\Doctrine\ORM\EntityManager $em, $entities, $ignore = [])
+    public static function entities2array(EntityManager $em, $entities, $ignore = []): array
     {
-        array_walk($entities, function (&$item, $key, $udata) {
-            $item = Utils::entity2array($udata['em'], $item, $udata['ignore']);
+        array_walk($entities, static function (&$item, $key, $uData) {
+            $item = Utils::entity2array($uData['em'], $item, $uData['ignore']);
         }, ['em' => $em, 'ignore' => $ignore]);
         return $entities;
     }
@@ -1219,18 +1241,20 @@ class Utils
     /**
      * paginator2array
      *
-     * @param \Doctrine\ORM\EntityManager $em
-     * @param \Doctrine\ORM\Tools\Pagination\Paginator $paginator
+     * @param EntityManager $em
+     * @param Paginator $paginator
      *
      * @return array
+     * @throws ReflectionException
      */
-    static public function paginator2array(\Doctrine\ORM\EntityManager $em, \Doctrine\ORM\Tools\Pagination\Paginator $paginator)
+    public static function paginator2array(EntityManager $em, Paginator $paginator): array
     {
         $result = array();
         foreach ($paginator as $post) {
-            array_push($result, self::entity2array($em, $post));
+            $result[] = self::entity2array($em, $post);
         }
-        return ["total" => $paginator->count(), "start" => $paginator->getQuery()->getFirstResult(), "offset" => $paginator->getQuery()->getMaxResults(), "list" => $result];
+        return ['total' => $paginator->count(), 'start' => $paginator->getQuery()->getFirstResult(), 'offset' =>
+            $paginator->getQuery()->getMaxResults(), 'list' => $result];
     }
 
 }

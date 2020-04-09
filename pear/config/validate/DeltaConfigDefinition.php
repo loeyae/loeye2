@@ -18,13 +18,14 @@
 namespace loeye\config\validate;
 
 use \loeye\config\TreeBuilder;
+use Symfony\Component\Config\Definition\ConfigurationInterface;
 
 /**
  * DeltaConfigDefinition
  *
  * @author   Zhang Yi <loeyae@gmail.com>
  */
-class DeltaConfigDefinition implements \Symfony\Component\Config\Definition\ConfigurationInterface {
+class DeltaConfigDefinition implements ConfigurationInterface {
 
 
     /**

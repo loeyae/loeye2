@@ -17,6 +17,10 @@
 
 namespace loeye\client;
 
+use loeye\base\Configuration;
+use loeye\error\BusinessException;
+use loeye\std\ConfigTrait;
+
 /**
  * Client
  *
@@ -25,19 +29,19 @@ namespace loeye\client;
 abstract class Client
 {
 
-    use \loeye\std\ConfigTrait;
+    use ConfigTrait;
 
     /**
      * request status ok
      *
      * @var int
      */
-    const REQUEST_STATUS_OK = 200;
+    public const REQUEST_STATUS_OK = 200;
 
     /**
      * @var string config bundle
      */
-    const BUNDLE = 'client';
+    public const BUNDLE = 'client';
 
     /**
      * service base url
@@ -48,7 +52,7 @@ abstract class Client
     /**
      * Configuration
      *
-     * @var \loeye\base\Configuration
+     * @var Configuration
      */
     protected $config;
     protected $timeout = 5;
@@ -68,14 +72,15 @@ abstract class Client
      * @param string $bundle bundle
      *
      * @return void
+     * @throws BusinessException
      */
     public function __construct($bundle = null)
     {
         $this->config = $this->propertyConfig(static::BUNDLE, $bundle);
         $config = $this->config->get('service');
         if (empty($config['server_url']) || !is_string($config['server_url'])) {
-            throw new \loeye\error\BusinessException(\loeye\error\BusinessException::INVALID_CONFIG_SET_MSG,
-                \loeye\error\BusinessException::INVALID_CONFIG_SET_CODE, ['setting' => 'server_url']);
+            throw new BusinessException(BusinessException::INVALID_CONFIG_SET_MSG,
+                BusinessException::INVALID_CONFIG_SET_CODE, ['setting' => 'server_url']);
         }
         $this->baseUrl = $config['server_url'];
         if (!empty($config['timeout']) && $config['timeout'] > 0 && $config['timeout'] <= 30) {
@@ -92,7 +97,7 @@ abstract class Client
      *
      * @return void
      */
-    public function setHeader($name, $value)
+    public function setHeader($name, $value): void
     {
         $this->_headers[$name] = $value;
     }
@@ -102,7 +107,7 @@ abstract class Client
      *
      * @return array
      */
-    public function getHeader()
+    public function getHeader(): array
     {
         return $this->_headers;
     }
@@ -112,7 +117,7 @@ abstract class Client
      *
      * @return void
      */
-    public function setParallel()
+    public function setParallel(): void
     {
         $this->_isParallel = true;
     }
@@ -120,9 +125,9 @@ abstract class Client
     /**
      * getParallelMode
      *
-     * @return void
+     * @return bool
      */
-    public function getParallelMode()
+    public function getParallelMode(): bool
     {
         return $this->_isParallel;
     }
@@ -132,7 +137,7 @@ abstract class Client
      *
      * @return Request[]
      */
-    public function getParallelRequest()
+    public function getParallelRequest(): array
     {
         return $this->_parallelRequest;
     }
@@ -142,7 +147,7 @@ abstract class Client
      *
      * @return array
      */
-    public function getParallelRequestInfo()
+    public function getParallelRequestInfo(): array
     {
         return $this->_parallelRequestInfo;
     }
@@ -156,7 +161,7 @@ abstract class Client
      *
      * @return void
      */
-    protected function request($cmd, Request $req, &$ret)
+    protected function request($cmd, Request $req, &$ret): void
     {
         $header = array();
         if (!isset($this->_headers['Expect'])) {
@@ -181,7 +186,7 @@ abstract class Client
      *
      * @return void
      */
-    public function reset()
+    public function reset(): void
     {
         $this->_isParallel = false;
         $this->_parallelRequest = array();
@@ -197,7 +202,7 @@ abstract class Client
      *
      * @return void
      */
-    private function _parallelRequest($cmd, Request $req, &$ret = false)
+    private function _parallelRequest($cmd, Request $req, &$ret = false): void
     {
         $this->_parallelRequestInfo[] = array(
             'cmd' => $cmd,
@@ -242,7 +247,7 @@ abstract class Client
      * responseHandle
      *
      * @param string $cmd command
-     * @param \loeye\client\Response $resp response
+     * @param Response $resp response
      *
      * @return mixed
      */
@@ -258,7 +263,7 @@ abstract class Client
      *
      * @return void
      */
-    protected function setReq(Request $req, $method, $path, $requestData = null)
+    protected function setReq(Request $req, $method, $path, $requestData = null): void
     {
         $req->setMethod($method);
         $req->setTimeOut($this->timeout);

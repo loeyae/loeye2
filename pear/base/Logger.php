@@ -17,6 +17,7 @@
 
 namespace loeye\base;
 
+use DateTimeZone;
 use Monolog;
 use Monolog\Formatter\LineFormatter;
 use Monolog\Handler\RotatingFileHandler;
@@ -64,7 +65,7 @@ class Logger
             }
             $handler->setFormatter($formatter);
             $logger = new Monolog\Logger($name);
-            Monolog\Logger::setTimezone(new \DateTimeZone('Asia/Shanghai'));
+            Monolog\Logger::setTimezone(new DateTimeZone('Asia/Shanghai'));
             $logger->pushHandler($handler);
             self::$logger[$key] = $logger;
         }
@@ -114,7 +115,7 @@ class Logger
                 break;
         }
         $log = [$message, '(' . $file . ':' . $line . ')', 'Stack trace:'];
-        $log =array_merge($log, self::getTraceInfo());
+        $log = array_merge($log, self::getTraceInfo());
         self::log($log, $type);
     }
 
@@ -156,6 +157,18 @@ class Logger
         $log[] = 'Stack trace:';
         $log = array_merge($log, self::getTraceInfo());
         self::log($log, $type);
+    }
+
+    /**
+     * exception
+     *
+     * @param \Exception $exc
+     *
+     * @return void
+     */
+    public static function exception(\Exception $exc): void
+    {
+        self::trace($exc->getMessage(), $exc->getCode(), $exc->getFile(), $exc->getLine(), self::LOEYE_LOGGER_TYPE_ERROR);
     }
 
     /**

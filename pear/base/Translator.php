@@ -17,6 +17,7 @@
 
 namespace loeye\base;
 
+use FilesystemIterator;
 use MessageFormatter;
 use Symfony\Component\Translation as I18n;
 
@@ -41,7 +42,6 @@ class Translator
      * __construct
      *
      * @param AppConfig $appConfig AppConfig instance
-     * @throws Exception
      */
     public function __construct(AppConfig $appConfig = null)
     {
@@ -73,7 +73,6 @@ class Translator
      * @param AppConfig $appConfig AppConfig instance
      *
      * @return void
-     * @throws Exception
      */
     protected function initProjectResource(AppConfig $appConfig = null): void
     {
@@ -96,7 +95,7 @@ class Translator
      */
     protected function initResourceDir($resourceDir): void
     {
-        foreach (new \FilesystemIterator($resourceDir, \FilesystemIterator::KEY_AS_FILENAME) as $key => $item) {
+        foreach (new FilesystemIterator($resourceDir, FilesystemIterator::KEY_AS_FILENAME) as $key => $item) {
             if (!$item->isFile()) {
                 continue;
             }

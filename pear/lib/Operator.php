@@ -48,7 +48,7 @@ class Operator
      *
      * @return string
      */
-    static public function getPattern()
+    public static function getPattern()
     {
         $logic       = implode('|', self::$logic);
         $operator    = implode('|', self::$operator);
@@ -66,7 +66,7 @@ class Operator
      *
      * @return bool
      */
-    static public function operate($expression)
+    public static function operate($expression)
     {
         $pattern = LoeyeOperator::getPattern();
         $matches = array();
@@ -94,7 +94,7 @@ class Operator
      *
      * @return boolean|array
      */
-    static public function match($pattern, $subject)
+    public static function match($pattern, $subject)
     {
         $matches = array();
         if (preg_match($pattern, $subject, $matches)) {
@@ -113,7 +113,7 @@ class Operator
      *
      * @return boolean
      */
-    static public function excute(
+    public static function excute(
             $subject1, $operator = null, $subject2 = null, $preoperator = null
     )
     {
@@ -139,7 +139,7 @@ class Operator
      *
      * @return bool
      */
-    static public function logicOperation($subject1, $operator, $subject2)
+    public static function logicOperation($subject1, $operator, $subject2)
     {
         switch ($operator) {
             case '||':

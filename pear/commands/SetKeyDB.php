@@ -16,6 +16,7 @@ use \Symfony\Component\Console\{
     Input\InputInterface,
     Output\OutputInterface
 };
+use loeye\lib\Secure;
 
 /**
  * SetKeyDB
@@ -35,17 +36,17 @@ class SetKeyDB extends Command
         ['group', 'required' => false, 'help' => 'keydb group', 'default' => null],
         ['expiry', 'required' => false, 'help' => 'expiry time', 'default' => 0],
     ];
-    protected $params = [];
+    protected $params;
 
     /**
      * process
      *
-     * @param \Symfony\Component\Console\Input\InputInterface $input
-     * @param \Symfony\Component\Console\Output\OutputInterface $output
+     * @param InputInterface $input
+     * @param OutputInterface $output
      *
      * @return void
      */
-    public function process(InputInterface $input, OutputInterface $output)
+    public function process(InputInterface $input, OutputInterface $output): void
     {
         $property = $input->getArgument('property');
         $keydb = $input->getArgument('keydb');
@@ -53,7 +54,7 @@ class SetKeyDB extends Command
         $value = $input->getArgument('value');
         $group = $input->getArgument('group');
         $expiry = $input->getArgument('expiry');
-        \loeye\lib\Secure::setKeyDb($property, $keydb, $key, $value, $group, $expiry);
+        Secure::setKeyDb($property, $keydb, $key, $value, $group, $expiry);
         $output->writeln('done');
     }
 

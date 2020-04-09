@@ -17,14 +17,19 @@
 
 namespace loeye\config\app;
 
+use loeye\base\Cache;
 use \loeye\config\TreeBuilder;
+use Symfony\Component\Config\Definition\ConfigurationInterface;
+use const loeye\base\ENCRYPT_MODE_CRYPT;
+use const loeye\base\ENCRYPT_MODE_EXPLICIT;
+use const loeye\base\ENCRYPT_MODE_KEYDB;
 
 /**
  * DeltaDefinition
  *
  * @author   Zhang Yi <loeyae@gmail.com>
  */
-class DeltaDefinition implements \Symfony\Component\Config\Definition\ConfigurationInterface
+class DeltaDefinition implements ConfigurationInterface
 {
     //put your code here
     public function getConfigTreeBuilder(): \Symfony\Component\Config\Definition\Builder\TreeBuilder
@@ -48,21 +53,21 @@ class DeltaDefinition implements \Symfony\Component\Config\Definition\Configurat
                      ->arrayNode('application')->canBeUnset()
                          ->children()
                              ->enumNode('cache')->values([
-                                 \loeye\base\Cache::CACHE_TYPE_APC,
-                                 \loeye\base\Cache::CACHE_TYPE_ARRAY,
-                                 \loeye\base\Cache::CACHE_TYPE_FILE,
-                                 \loeye\base\Cache::CACHE_TYPE_MEMCACHED,
-                                 \loeye\base\Cache::CACHE_TYPE_PHP_ARRAY,
-                                 \loeye\base\Cache::CACHE_TYPE_PHP_FILE,
-                                 \loeye\base\Cache::CACHE_TYPE_REDIS])->end()
+                                 Cache::CACHE_TYPE_APC,
+                                 Cache::CACHE_TYPE_ARRAY,
+                                 Cache::CACHE_TYPE_FILE,
+                                 Cache::CACHE_TYPE_MEMCACHED,
+                                 Cache::CACHE_TYPE_PHP_ARRAY,
+                                 Cache::CACHE_TYPE_PHP_FILE,
+                                 Cache::CACHE_TYPE_REDIS])->end()
                              ->arrayNode('database')
                                 ->children()
                                     ->scalarNode('default')->end()
                                     ->booleanNode('is_dev_mode')->end()
                                     ->enumNode('encrypt_mode')->values([
-                                        \loeye\base\ENCRYPT_MODE_EXPLICIT,
-                                        \loeye\base\ENCRYPT_MODE_CRYPT,
-                                        \loeye\base\ENCRYPT_MODE_KEYDB,
+                                        ENCRYPT_MODE_EXPLICIT,
+                                        ENCRYPT_MODE_CRYPT,
+                                        ENCRYPT_MODE_KEYDB,
                                     ])->end()
                                     ->regexNode('*')->end()
                                 ->end()

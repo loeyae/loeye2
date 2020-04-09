@@ -17,6 +17,9 @@
 
 namespace loeye\web;
 
+use loeye\error\ResourceException;
+use SmartyException;
+
 /**
  * Template
  *
@@ -183,7 +186,7 @@ class Template
     {
         $file = $this->formatFilePath($tpl);
         if (!$this->smarty->templateExists($file)) {
-            throw new \loeye\error\ResourceException(\loeye\error\ResourceException::FILE_NOT_FOUND_MSG, \loeye\error\ResourceException::FILE_NOT_FOUND_CODE, ['file' => $file]);
+            throw new ResourceException(ResourceException::FILE_NOT_FOUND_MSG, ResourceException::FILE_NOT_FOUND_CODE, ['file' => $file]);
         }
         $this->smarty->display($file);
     }
@@ -191,15 +194,17 @@ class Template
     /**
      * fetch
      *
-     * @param string $tpl   tpl file
+     * @param string $tpl tpl file
      *
      * @return string
+     * @throws ResourceException
+     * @throws SmartyException
      */
     public function fetch($tpl)
     {
         $file = $this->formatFilePath($tpl);
         if (!$this->smarty->templateExists($file)) {
-            throw new \loeye\error\ResourceException('template not found', \loeye\error\ResourceException::FILE_NOT_FOUND_CODE);
+            throw new ResourceException('template not found', ResourceException::FILE_NOT_FOUND_CODE);
         }
         return $this->smarty->fetch($file);
     }

@@ -17,7 +17,10 @@
 
 namespace loeye\config;
 
+use Psr\Cache\InvalidArgumentException;
 use \Symfony\Component\Cache\Adapter\PhpFilesAdapter;
+use Symfony\Component\Cache\Exception\CacheException;
+use Symfony\Component\Config\Resource\GlobResource;
 use \Symfony\Component\Filesystem\Exception\IOException;
 use \Symfony\Component\Filesystem\Filesystem;
 
@@ -37,7 +40,7 @@ class ConfigCache {
 
     /**
      *
-     * @var \Symfony\Component\Cache\Adapter\PhpFilesAdapter 
+     * @var PhpFilesAdapter
      */
     protected $cacheAdapter;
     protected $directory;
@@ -49,10 +52,13 @@ class ConfigCache {
 
     /**
      * __construct
-     * 
+     *
      * @param string $path
+     * @param string $cacheDir
      * @param string $namespace
-     * @param GlobResource $resource
+     * @param PhpFilesAdapter|null $cacheAdapter
+     * @param ConfigResource $resource
+     * @throws CacheException
      */
     public function __construct($path, $cacheDir, $namespace, PhpFilesAdapter $cacheAdapter = null, ConfigResource $resource = null)
     {
@@ -86,7 +92,7 @@ class ConfigCache {
      */
     public function nsToPattern(): string
     {
-        return DIRECTORY_SEPARATOR . \strtr($this->namespace, ['.' => '/', '_' => '/', '-' => '/']);
+        return DIRECTORY_SEPARATOR . strtr($this->namespace, ['.' => '/', '_' => '/', '-' => '/']);
     }
 
 
@@ -97,7 +103,7 @@ class ConfigCache {
      */
     public function getMetaFile(): string
     {
-        return $this->directory . DIRECTORY_SEPARATOR . $this->namespace . DIRECTORY_SEPARATOR . \strval($this->resource) . '.meta';
+        return $this->directory . DIRECTORY_SEPARATOR . $this->namespace . DIRECTORY_SEPARATOR . $this->resource . '.meta';
     }
 
 
@@ -106,12 +112,12 @@ class ConfigCache {
      * 
      * @return GlobResource
      */
-    public function getResourceByMetaFile()
+    public function getResourceByMetaFile(): GlobResource
     {
         $resource = null;
-        if (\file_exists($this->metaFile)) {
+        if (file_exists($this->metaFile)) {
             $content  = file_get_contents($this->metaFile);
-            if ($resource = \unserialize($content)) {
+            if ($resource = unserialize($content, null)) {
                 $this->resource = $resource;
             }
         }
@@ -132,10 +138,11 @@ class ConfigCache {
 
     /**
      * write
-     * 
+     *
      * @param array $contents
+     * @throws InvalidArgumentException
      */
-    public function write(array $contents)
+    public function write(array $contents): void
     {
         $mode       = 0666;
         $umask      = umask();
@@ -153,15 +160,16 @@ class ConfigCache {
         }
         $this->cacheAdapter->commit();
     }
-    
-    
+
+
     /**
      * save
-     * 
+     *
      * @param string $key
      * @param mixed $value
+     * @throws InvalidArgumentException
      */
-    public function save($key, $value)
+    public function save($key, $value): void
     {
         $item = $this->cacheAdapter->getItem($key);
         $item->set($value);
@@ -173,7 +181,7 @@ class ConfigCache {
     /**
      * commit
      */
-    public function commit()
+    public function commit(): void
     {
         $this->cacheAdapter->commit();
         $this->needCommit = false;
@@ -182,9 +190,9 @@ class ConfigCache {
 
     /**
      * 
-     * @return \Symfony\Component\Cache\Adapter\PhpFilesAdapter
+     * @return PhpFilesAdapter
      */
-    public function cacheAdapter()
+    public function cacheAdapter(): PhpFilesAdapter
     {
         return $this->cacheAdapter;
     }

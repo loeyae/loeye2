@@ -36,7 +36,7 @@ final class Validation
      */
     public static function createValidator(): ValidatorInterface
     {
-        \Doctrine\Common\Annotations\AnnotationRegistry::registerLoader(function ($class) {
+        \Doctrine\Common\Annotations\AnnotationRegistry::registerLoader(static function ($class) {
             return class_exists($class);
         });
         return self::createValidatorBuilder()->enableAnnotationMapping()->getValidator();

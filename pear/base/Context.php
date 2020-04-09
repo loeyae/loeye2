@@ -418,6 +418,7 @@ class Context implements ArrayAccess
      * db
      *
      * @return DB
+     * @throws Exception
      */
     public function db(): DB
     {

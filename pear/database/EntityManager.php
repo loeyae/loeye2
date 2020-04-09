@@ -45,7 +45,7 @@ class EntityManager {
      *
      * @return \Doctrine\ORM\EntityManager
      */
-    static public function getManager($dbSetting, $property, \Doctrine\Common\Cache\Cache $cache = null)
+    public static function getManager($dbSetting, $property, \Doctrine\Common\Cache\Cache $cache = null)
     {
         // Second configure ORM
         // globally used cache driver, in production use APC or memcached

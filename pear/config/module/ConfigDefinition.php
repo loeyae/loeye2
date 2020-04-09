@@ -18,13 +18,14 @@
 namespace loeye\config\module;
 
 use \loeye\config\TreeBuilder;
+use Symfony\Component\Config\Definition\ConfigurationInterface;
 
 /**
  * ConfigDefinition
  *
  * @author   Zhang Yi <loeyae@gmail.com>
  */
-class ConfigDefinition implements \Symfony\Component\Config\Definition\ConfigurationInterface {
+class ConfigDefinition implements ConfigurationInterface {
 
 
     /**

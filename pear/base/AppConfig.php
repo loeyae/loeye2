@@ -92,7 +92,7 @@ class AppConfig implements ArrayAccess
      *
      * @return boolean
      */
-    public function offsetExists($offset): void
+    public function offsetExists($offset): bool
     {
         switch ($offset) {
             case 'property_name':
@@ -113,7 +113,6 @@ class AppConfig implements ArrayAccess
      * @param mixed $offset offset
      *
      * @return mixed
-     * @throws Exception
      */
     public function offsetGet($offset)
     {
@@ -167,13 +166,13 @@ class AppConfig implements ArrayAccess
      * @param mixed $default default value
      *
      * @return mixed
-     * @throws Exception
      */
     public function getSetting($key, $default = null)
     {
         if (empty($key)) {
-            throw new BusinessException(BusinessException::INVALID_CONFIG_SET_MSG,
-                BusinessException::INVALID_CONFIG_SET_CODE, ['setting' => 'setting ' . $key]);
+            Logger::trace(BusinessException::INVALID_CONFIG_SET_MSG,
+                BusinessException::INVALID_CONFIG_SET_CODE, __FILE__, __LINE__);
+            return null;
         }
         $keyList = explode('.', $key);
         $config = $this->_config;
@@ -203,7 +202,6 @@ class AppConfig implements ArrayAccess
      * getPropertyName
      *
      * @return string
-     * @throws Exception
      */
     public function getPropertyName(): string
     {
@@ -233,7 +231,6 @@ class AppConfig implements ArrayAccess
      * getTimezone
      *
      * @return string
-     * @throws Exception
      */
     public function getTimezone(): string
     {
@@ -254,7 +251,6 @@ class AppConfig implements ArrayAccess
      * @param string $locale locale
      *
      * @return void
-     * @throws Exception
      */
     public function setLocale($locale): void
     {
@@ -268,7 +264,6 @@ class AppConfig implements ArrayAccess
      * getLocale
      *
      * @return string
-     * @throws Exception
      */
     public function getLocale(): string
     {
@@ -284,7 +279,6 @@ class AppConfig implements ArrayAccess
      * getActiveProfile
      *
      * @return string
-     * @throws Exception
      */
     public function getActiveProfile(): string
     {

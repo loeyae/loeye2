@@ -18,6 +18,7 @@
 namespace loeye\base;
 
 use loeye\config\module\ConfigDefinition;
+use loeye\std\ConfigTrait;
 use loeye\error\{ResourceException, BusinessException};
 
 /**
@@ -28,7 +29,7 @@ use loeye\error\{ResourceException, BusinessException};
 class ModuleDefinition
 {
 
-    use \loeye\std\ConfigTrait;
+    use ConfigTrait;
 
     public const PLUGIN_REMOVE_FROM_MODULE = 'lyRemovePlugin';
     public const BUNDLE = 'modules';
@@ -267,7 +268,7 @@ class ModuleDefinition
      * @param string $moduleId module id
      *
      * @return bool
-     * @throws ResourceException
+     * @throws Exception
      */
     private function _initModule($moduleId): bool
     {

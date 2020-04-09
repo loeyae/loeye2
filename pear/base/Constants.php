@@ -41,57 +41,58 @@ if (!defined('PROJECT_NAMESPACE')) {
 }
 
 if (!defined('PROJECT_DIR')) {
-    $projectDir = realpath(LOEYE_DIR . D_S.'..'.D_S . PROJECT_NAMESPACE) ? realpath(LOEYE_DIR . D_S.'..'.D_S . PROJECT_NAMESPACE) : realpath(LOEYE_DIR .D_S.'..'.D_S.'..'.D_S.'..'.D_S.'..'.D_S . PROJECT_NAMESPACE);
+    $projectDir = realpath(dirname(LOEYE_DIR) . D_S . PROJECT_NAMESPACE) ? dirname(LOEYE_DIR) .
+        D_S . PROJECT_NAMESPACE : realpath(dirname(LOEYE_DIR, 4) . D_S . PROJECT_NAMESPACE);
     if (false === $projectDir) {
-        $projectDir = realpath(LOEYE_DIR.D_S.'..'.D_S.'tests');
-        define('RUNTIME_DIR', $projectDir .D_S.'runtime');
+        $projectDir = realpath(dirname(LOEYE_DIR) . D_S . 'tests');
+        define('RUNTIME_DIR', $projectDir . D_S . 'runtime');
         define('LOEYE_MODE', LOEYE_MODE_UNIT);
     }
     define('PROJECT_DIR', $projectDir);
 }
 
 if (!defined('PROJECT_CONFIG_DIR')) {
-    define('PROJECT_CONFIG_DIR', PROJECT_DIR . D_S.'conf');
+    define('PROJECT_CONFIG_DIR', PROJECT_DIR . D_S . 'conf');
 }
 
 if (!defined('PROJECT_KEYDB_DIR')) {
-    define('PROJECT_KEYDB_DIR', PROJECT_DIR . D_S.'keydb');
+    define('PROJECT_KEYDB_DIR', PROJECT_DIR . D_S . 'keydb');
 }
 
 if (!defined('PROJECT_LOCALE_DIR')) {
-    define('PROJECT_LOCALE_DIR', PROJECT_DIR . D_S.'resource');
+    define('PROJECT_LOCALE_DIR', PROJECT_DIR . D_S . 'resource');
 }
 
 if (!defined('PROJECT_ERRORPAGE_DIR')) {
-    define('PROJECT_ERRORPAGE_DIR', PROJECT_DIR . D_S.'errors');
+    define('PROJECT_ERRORPAGE_DIR', PROJECT_DIR . D_S . 'errors');
 }
 
 if (!defined('PROJECT_VIEWS_DIR')) {
-    define('PROJECT_VIEWS_DIR', PROJECT_DIR . D_S.'views');
+    define('PROJECT_VIEWS_DIR', PROJECT_DIR . D_S . 'views');
 }
 
 if (!defined('PROJECT_HANDLE_DIR')) {
-    define('PROJECT_HANDLE_DIR', PROJECT_DIR . D_S.'handles');
+    define('PROJECT_HANDLE_DIR', PROJECT_DIR . D_S . 'handles');
 }
 
 if (!defined('PROJECT_MODELS_DIR')) {
-    define('PROJECT_MODELS_DIR', PROJECT_DIR . D_S.'models');
+    define('PROJECT_MODELS_DIR', PROJECT_DIR . D_S . 'models');
 }
 
 if (!defined('PROJECT_DATA_DIR')) {
-    define('PROJECT_DATA_DIR', PROJECT_DIR . D_S.'data');
+    define('PROJECT_DATA_DIR', PROJECT_DIR . D_S . 'data');
 }
 
 if (!defined('RUNTIME_DIR')) {
-    define('RUNTIME_DIR', realpath(PROJECT_DIR .D_S.'..'.D_S.'runtime'));
+    define('RUNTIME_DIR', dirname(PROJECT_DIR) . D_S . 'runtime');
 }
 
 if (!defined('RUNTIME_CACHE_DIR')) {
-    define('RUNTIME_CACHE_DIR', RUNTIME_DIR .D_S.'cache');
+    define('RUNTIME_CACHE_DIR', RUNTIME_DIR . D_S . 'cache');
 }
 
 if (!defined('RUNTIME_LOG_DIR')) {
-    define('RUNTIME_LOG_DIR', RUNTIME_DIR . D_S.'log');
+    define('RUNTIME_LOG_DIR', RUNTIME_DIR . D_S . 'log');
 }
 
 const PROJECT_SUCCESS = '';

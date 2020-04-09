@@ -53,7 +53,7 @@ class SimpleCache
      *
      * @return self
      */
-    static public function getInstance($property, $type = 'config')
+    public static function getInstance($property, $type = 'config')
     {
         if (!isset(self::$_instance[$property])) {
             self::$_instance[$property] = new self($property, $type);

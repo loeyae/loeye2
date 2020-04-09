@@ -28,21 +28,21 @@ use ReflectionException;
  * @param Context $context context
  *
  * @return void
- * @throws Exception
- * @throws ReflectionException
  */
 function ExceptionHandler(\Exception $exc, Context $context)
 {
     if (!($exc instanceof Exception)) {
-        $errorCode    = $exc->getCode();
-        $errorMessage = $exc->getMessage();
-        Logger::trace($errorMessage, $errorCode, $exc->getFile(), $exc->getLine(), Logger::LOEYE_LOGGER_TYPE_ERROR);
+        Logger::exception($exc);
     }
     $format = null;
     $appConfig = $context->getAppConfig();
     if ($context->getRequest() instanceof Request) {
-        $format = $appConfig ? $appConfig->getSetting('application.response.format', $context->getRequest()
-            ->getFormatType()) : $context->getRequest()->getFormatType();
+        try {
+            $format = $appConfig ? $appConfig->getSetting('application.response.format', $context->getRequest()
+                ->getFormatType()) : $context->getRequest()->getFormatType();
+        } catch (Exception $e) {
+            Logger::exception($e);
+        }
     }
     switch ($format) {
         case 'xml':
@@ -51,22 +51,30 @@ function ExceptionHandler(\Exception $exc, Context $context)
             if (!$response instanceof Response) {
                 $response = new Response();
             }
-            $debug     = $appConfig ? $appConfig->getSetting('debug', false) : false;
-            $res       = ['status' => ['code' => LOEYE_REST_STATUS_BAD_REQUEST, 'message' => 'Internal Error']];
+            try {
+                $debug = $appConfig ? $appConfig->getSetting('debug', false) : false;
+            } catch (Exception $e) {
+                Logger::exception($e);
+                $debug = false;
+            }
+            $res = ['status' => ['code' => LOEYE_REST_STATUS_BAD_REQUEST, 'message' => 'Internal Error']];
             if ($debug) {
                 $res['data'] = [
-                    'code'      => $exc->getCode(),
-                    'message'   => $exc->getMessage(),
+                    'code' => $exc->getCode(),
+                    'message' => $exc->getMessage(),
                     'traceInfo' => $exc->getTraceAsString(),
                 ];
             } else {
                 $res['data'] = $exc->getCode();
             }
             $response->addOutput($res);
-            $renderObj = Factory::getRender($format);
-
-            $renderObj->header($response);
-            $renderObj->output($response);
+            try {
+                $renderObj = Factory::getRender($format);
+                $renderObj->header($response);
+                $renderObj->output($response);
+            } catch (ReflectionException $e) {
+                Logger::exception($e);
+            }
             break;
         default :
             $errorPage = null;
@@ -83,7 +91,11 @@ function ExceptionHandler(\Exception $exc, Context $context)
                     }
                 }
             }
-            echo Factory::includeErrorPage($context, $exc, $errorPage);
+            try {
+                echo Factory::includeErrorPage($context, $exc, $errorPage);
+            } catch (Exception $e) {
+                Logger::exception($e);
+            }
             break;
     }
 }
@@ -93,7 +105,8 @@ function ExceptionHandler(\Exception $exc, Context $context)
  *
  * @author   Zhang Yi <loeyae@gmail.com>
  */
-class Exception extends \Exception {
+class Exception extends \Exception
+{
 
     /**
      * default error code
@@ -110,12 +123,11 @@ class Exception extends \Exception {
      *
      * @param string $errorMessage error message
      * @param int $errorCode error code
-     *
      * @param array $parameter
      */
     public function __construct(string $errorMessage = self::DEFAULT_ERROR_MSG, int $errorCode = self::DEFAULT_ERROR_CODE, array $parameter = [])
     {
-        $translator = defined('PROJECT_PROPERTY') ? Factory::translator() : new Translator() ;
+        $translator = defined('PROJECT_PROPERTY') ? Factory::translator() : new Translator();
         $parameters = [];
         foreach ($parameter as $key => $value) {
             $$parameters['%' . $key . '%'] = $value;

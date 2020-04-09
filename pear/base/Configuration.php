@@ -291,7 +291,7 @@ class Configuration
         if (is_iterable($var)) {
             return array_map(array($this, 'getEnv'), (array)$var);
         }
-        if ($var && Utils::startwith($var, self::ENV_TAG)) {
+        if ($var && Utils::startWith($var, self::ENV_TAG)) {
             $l          = mb_strlen(self::ENV_TAG);
             $envSetting = mb_substr($var, $l, - 1);
             $envArray   = explode(':', $envSetting);

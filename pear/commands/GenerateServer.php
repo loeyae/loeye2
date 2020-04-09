@@ -2,32 +2,33 @@
 
 /**
  * GenerateServer.php
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"),
  * see LICENSE for more details: http://www.apache.org/licenses/LICENSE-2.0.
- * 
+ *
  * @author  Zhang Yi <loeyae@gmail.com>
  * @version SVN: $Id: Zhang Yi $
  */
 
 namespace loeye\commands;
 
+use Doctrine\Persistence\Mapping\ClassMetadata;
 use loeye\console\Command;
-use \Symfony\Component\Console\{
-    Input\InputInterface,
-    Output\OutputInterface
-};
+use Symfony\Component\Console\{Input\InputInterface, Output\OutputInterface, Style\SymfonyStyle};
+use loeye\console\helper\EntityGeneratorTraite;
+use loeye\database\Server;
 
 /**
  * GenerateServer
  *
  * @author   Zhang Yi <loeyae@gmail.com>
  */
-class GenerateServer extends Command {
+class GenerateServer extends Command
+{
 
-    use \loeye\console\helper\EntityGeneratorTraite;
+    use EntityGeneratorTraite;
 
-    protected $args   = [
+    protected $args = [
         ['property', 'required' => true, 'help' => 'The application property name.']
     ];
     protected $params = [
@@ -35,8 +36,8 @@ class GenerateServer extends Command {
         ['filter', 'f', 'required' => false, 'help' => 'filter', 'default' => null],
         ['force', null, 'required' => false, 'help' => 'force update file', 'default' => false],
     ];
-    protected $name             = 'loeye:generate-server';
-    protected $desc             = 'generate server with entity';
+    protected $name = 'loeye:generate-server';
+    protected $desc = 'generate server with entity';
     protected static $_template = '<?php
 
 namespace <namespace>;
@@ -56,16 +57,17 @@ class <className> extends <serverName>
 
     /**
      * generateFile
-     * 
-     * @param \Symfony\Component\Console\Style\SymfonyStyle $ui
-     * @param \Doctrine\Persistence\Mapping\ClassMetadata   $metadata
-     * @param string                                        $namespace
-     * @param string                                        $destPath
+     *
+     * @param SymfonyStyle $ui
+     * @param ClassMetadata $metadata
+     * @param string $namespace
+     * @param string $destPath
+     * @param boolean $force
      */
-    protected function generateFile(\Symfony\Component\Console\Style\SymfonyStyle $ui, \Doctrine\Persistence\Mapping\ClassMetadata $metadata, $namespace, $destPath, $force)
+    protected function generateFile(SymfonyStyle $ui, ClassMetadata $metadata, $namespace, $destPath, $force): void
     {
-        $className     = $this->getClassNmae($metadata->reflClass->name);
-        $entityClass   = $this->getEntityClass($metadata->reflClass->name);
+        $className = $this->getClassName($metadata->reflClass->name);
+        $entityClass = $this->getEntityClass($metadata->reflClass->name);
         $fullClassName = $namespace . '\\' . $className;
         $ui->text(sprintf('Processing Server "<info>%s</info>"', $fullClassName));
         $this->writeServerClass($namespace, $className, $entityClass, $destPath, $force);
@@ -73,12 +75,12 @@ class <className> extends <serverName>
 
 
     /**
-     * 
+     *
      * @param InputInterface $input
-     * 
+     *
      * @return string
      */
-    protected function getDestPath(InputInterface $input)
+    protected function getDestPath(InputInterface $input): string
     {
         return PROJECT_MODELS_DIR . D_S . 'server' . D_S . $input->getArgument('property');
     }
@@ -86,23 +88,23 @@ class <className> extends <serverName>
 
     /**
      * getEntityClass
-     * 
+     *
      * @param string $className
-     * @return type
+     * @return string
      */
-    protected function getEntityClass($className)
+    protected function getEntityClass($className): string
     {
         return '\\' . $className . '::class';
     }
 
 
     /**
-     * getClassNmae
-     * 
+     * getClassName
+     *
      * @param string $fullClassName
      * @return string
      */
-    protected function getClassNmae($fullClassName)
+    protected function getClassName($fullClassName): string
     {
         return substr($fullClassName, strrpos($fullClassName, '\\') + 1) . 'Server';
     }
@@ -110,18 +112,18 @@ class <className> extends <serverName>
 
     /**
      * generateServerClass
-     * 
+     *
      * @param string $namespace
      * @param string $className
      * @param string $entityClass
      * @return string
      */
-    protected function generateServerClass($namespace, $className, $entityClass)
+    protected function generateServerClass($namespace, $className, $entityClass): string
     {
         $variables = [
-            '<namespace>'   => $namespace,
-            '<serverName>'  => '\\loeye\\database\\Server',
-            '<className>'   => $className,
+            '<namespace>' => $namespace,
+            '<serverName>' => Server::class,
+            '<className>' => $className,
             '<entityClass>' => $entityClass,
         ];
 
@@ -131,14 +133,14 @@ class <className> extends <serverName>
 
     /**
      * writeServerClass
-     * 
-     * @param string  $namespace
-     * @param string  $className
+     *
+     * @param string $namespace
+     * @param string $className
      * @prara String  $entityClass
-     * @param string  $outputDirectory
+     * @param string $outputDirectory
      * @param boolean $force
      */
-    public function writeServerClass($namespace, $className, $entityClass, $outputDirectory, $force = false)
+    public function writeServerClass($namespace, $className, $entityClass, $outputDirectory, $force = false): void
     {
         $code = $this->generateServerClass($namespace, $className, $entityClass);
 

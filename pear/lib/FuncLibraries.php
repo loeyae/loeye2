@@ -33,7 +33,7 @@ class FuncLibraries
      *
      * @return boolean
      */
-    static public function lyHasError(\loeye\base\Context $context, $params = array())
+    public static function lyHasError(\loeye\base\Context $context, $params = array())
     {
         if (!empty($params)) {
             foreach ((array) $params as $errorKey) {
@@ -57,14 +57,15 @@ class FuncLibraries
      *
      * @return mixed
      */
-    static public function lyGetError(\loeye\base\Context $context, $params = array())
+    public static function lyGetError(\loeye\base\Context $context, $params = array())
     {
         if (!empty($params)) {
             $data = array();
             foreach ((array) $params as $errorKey) {
                 $errors = $context->getErrors($errorKey);
                 if (!empty($errors)) {
-                    $data = array_merge_recursive($data, $errors);
+                    $init = $data;
+                    $data = array_merge_recursive($init, $errors);
                 }
             }
             return $data;
@@ -83,7 +84,7 @@ class FuncLibraries
      *
      * @return boolean
      */
-    static public function lyCallback(\loeye\base\Context $context, $params = array())
+    public static function lyCallback(\loeye\base\Context $context, $params = array())
     {
         if (!empty($params)) {
             $params    = (array) $params;
@@ -107,7 +108,7 @@ class FuncLibraries
      *
      * @return type
      */
-    static public function lyHasPageCache(\loeye\base\Context $context, $params = array())
+    public static function lyHasPageCache(\loeye\base\Context $context, $params = array())
     {
         $data = [];
         if (!empty($params)) {
@@ -135,7 +136,7 @@ class FuncLibraries
      *
      * @return type
      */
-    static public function lyGetPageCache(\loeye\base\Context $context, $params = array())
+    public static function lyGetPageCache(\loeye\base\Context $context, $params = array())
     {
         $data = [];
         if (!empty($params)) {
@@ -164,7 +165,7 @@ class FuncLibraries
      *
      * @return type
      */
-    static public function lyHasContextCache(\loeye\base\Context $context, $params = array())
+    public static function lyHasContextCache(\loeye\base\Context $context, $params = array())
     {
         if (!empty($params)) {
             foreach ((array) $params as $key) {
@@ -185,7 +186,7 @@ class FuncLibraries
      *
      * @return type
      */
-    static public function lyGetContextCache(\loeye\base\Context $context, $params = array())
+    public static function lyGetContextCache(\loeye\base\Context $context, $params = array())
     {
         $data = [];
         if (!empty($params)) {

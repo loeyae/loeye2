@@ -30,11 +30,11 @@ class ExpressionFactory {
 
     const IS_NULL = 'IS NULL';
 
-    static public $compositeExpressionTypeMapping = [
+    public static $compositeExpressionTypeMapping = [
         CompositeExpression::TYPE_AND => [ExpressionBuilder::class, "andX"],
         CompositeExpression::TYPE_OR  => [ExpressionBuilder::class, "orX"],
     ];
-    static public $comparisonTypeMapping          = [
+    public static $comparisonTypeMapping          = [
         Comparison::EQ          => [ExpressionBuilder::class, 'eq'],
         Comparison::NEQ         => [ExpressionBuilder::class, 'neq'],
         Comparison::GT          => [ExpressionBuilder::class, 'gt'],
@@ -55,7 +55,7 @@ class ExpressionFactory {
      * @param array $data
      * @return Expression
      */
-    static public function createExpr(array $data)
+    public static function createExpr(array $data)
     {
         if (empty($data)) {
             return null;
@@ -88,7 +88,7 @@ class ExpressionFactory {
      *
      * @return array
      */
-    static public function createExprByArray(array $array)
+    public static function createExprByArray(array $array)
     {
         $exprs = [];
         foreach ($array as $key => $value) {
@@ -104,7 +104,7 @@ class ExpressionFactory {
      * @param type $value
      * @return \Doctrine\Common\Collections\Expr\Comparison
      */
-    static public function createExprByKv($key, $value)
+    public static function createExprByKv($key, $value)
     {
         if ($value === static::IS_NULL) {
             return new Comparison($key, Comparison::EQ, $value);
@@ -129,7 +129,7 @@ class ExpressionFactory {
      *
      * @return \Doctrine\Common\Collections\Expr\CompositeExpression
      */
-    static public function createCompositeExpression($type, $expressions = [])
+    public static function createCompositeExpression($type, $expressions = [])
     {
         return \call_user_func(static::$compositeExpressionTypeMapping[$type], $expressions);
     }
@@ -143,7 +143,7 @@ class ExpressionFactory {
      *
      * @return \Doctrine\Common\Collections\Expr\Comparison|null
      */
-    static public function createComparison($field, $value, $operator)
+    public static function createComparison($field, $value, $operator)
     {
         if (\array_key_exists($operator, static::$comparisonTypeMapping)) {
             return \call_user_func(static::$comparisonTypeMapping[$operator], $field, $value);

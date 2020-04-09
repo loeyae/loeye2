@@ -28,8 +28,8 @@ class RegexNode extends ArrayNode {
     /**
      * match
      *
-     * @param type $value
-     * @return type
+     * @param string $value
+     * @return bool
      */
     public function match($value)
     {
@@ -47,10 +47,10 @@ class RegexNode extends ArrayNode {
         if ($this->name == '*') {
             return '#.+#';
         }
-        if (\loeye\base\Utils::startwith($this->name, '/')) {
+        if (\loeye\base\Utils::startWith($this->name, '/')) {
             return $this->name;
         }
-        if (\loeye\base\Utils::startwith($this->name, '#')) {
+        if (\loeye\base\Utils::startWith($this->name, '#')) {
             return $this->name;
         }
         return '#'. $this->name .'#';

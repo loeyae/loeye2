@@ -36,26 +36,26 @@ class ExportNetbeansAnnotationProperties extends Command {
         ['short', 's', 'required' => false, 'help' => 'namespace use short name', 'default' => false]
     ];
     protected $template                = <<<'EOF'
-tag.{index}.documentation=<p style="font-weight: bold; font-size: 1.2em">@{annotition}</p>\r\n<p style="font-weight: bold; font-size: 1.1em">Description</p>\r\n<p>This <code>@{annotition}</code> annotation shows how to properly write documentation.</p>\r\n<p style="font-weight: bold; font-size: 1.1em">Example</p>\r\n<pre><code>\r\n/**\r\n * @{annotition}({params})\r\n */\r\nprivate $createTime;\r\n</code></pre>\r\n
-tag.{index}.insertTemplate=@{annotition}({params})
-tag.{index}.name={annotition}
+tag.{index}.documentation=<p style="font-weight: bold; font-size: 1.2em">@{annotation}</p>\r\n<p style="font-weight: bold; font-size: 1.1em">Description</p>\r\n<p>This <code>@{annotation}</code> annotation shows how to properly write documentation.</p>\r\n<p style="font-weight: bold; font-size: 1.1em">Example</p>\r\n<pre><code>\r\n/**\r\n * @{annotation}({params})\r\n */\r\nprivate $createTime;\r\n</code></pre>\r\n
+tag.{index}.insertTemplate=@{annotation}({params})
+tag.{index}.name={annotation}
 tag.{index}.types={types}
 EOF;
     protected $mapping                 = [
-        "ORM"   => [
+        'ORM' => [
             'namespace' => 'Doctrine\ORM\Mapping',
             'root'      => 'doctrine\orm\lib',
             'instance'  => \Doctrine\ORM\Mapping\Annotation::class,
             'short'     => 'ORM',
         ],
-        "Gedmo" => [
+        'Gedmo' => [
             'namespace' => 'Gedmo\Mapping\Annotation',
             'root'      => 'gedmo\doctrine-extensions\lib',
             'instance'  => \Doctrine\Common\Annotations\Annotation::class,
             'short'     => 'Gedmo',
         ],
-        "Assert" => [
-            "namespace" => 'Symfony\Component\Validator\Constraints',
+        'Assert' => [
+            'namespace' => 'Symfony\Component\Validator\Constraints',
             'root'      => 'symfony\validator\Constraints',
             'instance'  => \Symfony\Component\Validator\Constraint::class,
             'short'     => 'Assert',
@@ -148,7 +148,7 @@ EOF;
         $docParser   = new DocParser();
         $docParser->setImports(static::$globalImports);
         $docParser->setIgnoredAnnotationNamespaces(static::$globalIgnoredNames);
-        $composerDir = realpath(LOEYE_DIR . '/../vendor');
+        $composerDir = dirname(LOEYE_DIR) . '/vendor';
         $messages    = [];
         foreach ($this->mapping as $key => $item) {
             $dir = realpath($composerDir . D_S . $item['root'] . D_S . $item['namespace']) ?: realpath($composerDir . D_S . $item['root']);
@@ -265,7 +265,7 @@ EOF;
      */
     protected function build($annotation, $types, $params)
     {
-        $content = str_replace(['{index}', '{annotition}', '{types}', '{params}'], [$this->index, $annotation, $types, $params], $this->template);
+        $content = str_replace(['{index}', '{annotation}', '{types}', '{params}'], [$this->index, $annotation, $types, $params], $this->template);
         $this->index++;
         return $content;
     }

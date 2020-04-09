@@ -16,6 +16,7 @@ use \Symfony\Component\Console\{
     Input\InputInterface,
     Output\OutputInterface
 };
+use loeye\lib\Secure;
 
 /**
  * GetKeyDB
@@ -37,14 +38,14 @@ class GetKeyDB extends Command
     /**
      * process
      *
-     * @param \Symfony\Component\Console\Input\InputInterface $input
-     * @param \Symfony\Component\Console\Output\OutputInterface $output
+     * @param InputInterface $input
+     * @param OutputInterface $output
      *
      * @return void
      */
-    public function process(InputInterface $input, OutputInterface $output)
+    public function process(InputInterface $input, OutputInterface $output): void
     {
-        $value = \loeye\lib\Secure::getKeyDb($input->getArgument('property'), $input->getArgument('key'), $input->getArgument('group'));
+        $value = Secure::getKeyDb($input->getArgument('property'), $input->getArgument('key'), $input->getArgument('group'));
         $output->writeln($value);
     }
 

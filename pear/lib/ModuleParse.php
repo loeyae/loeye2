@@ -38,7 +38,7 @@ class ModuleParse
      *
      * @return mixed
      */
-    static public function parseInput($input, \loeye\base\Context $context)
+    public static function parseInput($input, \loeye\base\Context $context)
     {
         if (is_array($input)) {
             foreach ($input as $key => $value) {
@@ -113,7 +113,7 @@ class ModuleParse
      *
      * @return boolean
      */
-    static public function isParallel($key)
+    public static function isParallel($key)
     {
         if (static::PARALLEL_KEY === $key) {
             return true;
@@ -128,7 +128,7 @@ class ModuleParse
      *
      * @return boolean
      */
-    static public function isCondition($key)
+    public static function isCondition($key)
     {
         $key    = trim($key);
         $prefix = mb_substr($key, 0, 2);
@@ -143,7 +143,7 @@ class ModuleParse
      *
      * @return boolean
      */
-    static public function groupConditionResult($condition, \loeye\base\Context $context)
+    public static function groupConditionResult($condition, \loeye\base\Context $context)
     {
         $condition = trim($condition);
         $matches   = \loeye\lib\Operator::match('/^if\s?\(?([^\)]+)\)?\s?$/', $condition);
@@ -173,7 +173,7 @@ class ModuleParse
      *
      * @return boolean
      */
-    static public function conditionResult($condition, \loeye\base\Context $context)
+    public static function conditionResult($condition, \loeye\base\Context $context)
     {
         $pattern = \loeye\lib\Operator::getPattern();
         $matches = array();
