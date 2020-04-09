@@ -28,23 +28,37 @@ class Logger implements BaseLogger
 {
 
     protected $logger;
-    protected $starttime;
+    protected $startTime;
 
-    public function startQuery($sql, ?array $params = null, ?array $types = null)
+    /**
+     * startQuery
+     *
+     * @param string $sql
+     * @param array|null $params
+     * @param array|null $types
+     *
+     * @return void
+     */
+    public function startQuery($sql, ?array $params = null, ?array $types = null): void
     {
-        $this->starttime = microtime(true);
-        $message         = ['Sart Query @' . date('Y-m-d H:i:s u')];
+        $this->startTime = microtime(true);
+        $message         = ['Start Query @' . date('Y-m-d H:i:s u')];
         $message[]         = 'sql: ' . $sql;
         $message[]         = 'params: ' . print_r($params, true);
         $message[]         = 'types: ' . print_r($types, true);
         \loeye\base\Logger::log($message, \loeye\base\Logger::LOEYE_LOGGER_TYPE_DEBUG);
     }
 
-    public function stopQuery()
+    /**
+     * stopQuery
+     *
+     * @return void
+     */
+    public function stopQuery(): void
     {
-        $endtime = microtime(true);
+        $endTime = microtime(true);
         $message = ['End Query @' . date('Y-m-d H:i:s u')];
-        $message = ['time over: ' . ($endtime - $this->starttime)];
+        $message[] = 'time over: ' . ($endTime - $this->startTime);
         \loeye\base\Logger::log($message, \loeye\base\Logger::LOEYE_LOGGER_TYPE_DEBUG);
     }
 

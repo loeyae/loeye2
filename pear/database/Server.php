@@ -17,6 +17,10 @@
 
 namespace loeye\database;
 
+use loeye\base\AppConfig;
+use loeye\base\DB;
+use loeye\base\Exception;
+
 /**
  * Server
  *
@@ -29,7 +33,7 @@ class Server
 
     /**
      *
-     * @var \loeye\base\DB;
+     * @var DB;
      */
     protected $db;
 
@@ -41,16 +45,24 @@ class Server
 
     /**
      *
-     * @var \loeye\base\AppConfig
+     * @var AppConfig
      */
     protected $appConfig;
 
-    public function __construct(\loeye\base\AppConfig $appConfig, $type = null, $singleConnection = true)
+    public function __construct(AppConfig $appConfig, $type = null, $singleConnection = true)
     {
         if ($singleConnection) {
-            $this->db = \loeye\base\DB::getInstance($appConfig, $type, is_bool($singleConnection) ? null : (string) $singleConnection);
+            try {
+                $this->db = DB::getInstance($appConfig, $type, is_bool($singleConnection) ? null : (string)$singleConnection);
+            } catch (Exception $e) {
+                \loeye\base\Logger::exception($e);
+            }
         } else {
-            $this->db = new \loeye\base\DB($appConfig, $type);
+            try {
+                $this->db = new DB($appConfig, $type);
+            } catch (Exception $e) {
+                \loeye\base\Logger::exception($e);
+            }
         }
     }
 

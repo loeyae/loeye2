@@ -17,6 +17,13 @@
 
 namespace loeye\database;
 
+use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\ORMException;
+use Doctrine\ORM\TransactionRequiredException;
+use loeye\base\Utils;
+use loeye\error\DataException;
+use ReflectionException;
+
 /**
  * EntityTrait
  *
@@ -41,13 +48,22 @@ trait EntityTrait
      *
      * @param array|Object $data
      *
-     * @return obejct
+     * @return Entity|null
      */
     public function insert($data): ?Entity
     {
-        $entity = \loeye\base\Utils::source2entity($data, $this->entityClass);
-        $this->db->save($entity);
-        return $entity;
+        try {
+            $entity = Utils::source2entity($data, $this->entityClass);
+            $this->db->save($entity);
+            return $entity;
+        } catch (OptimisticLockException $e) {
+            \loeye\base\Logger::exception($e);
+        } catch (ORMException $e) {
+            \loeye\base\Logger::exception($e);
+        } catch (ReflectionException $e) {
+            \loeye\base\Logger::exception($e);
+        }
+        return null;
     }
 
     /**
@@ -55,11 +71,20 @@ trait EntityTrait
      *
      * @param mixed $id
      *
-     * @return obejct|null
+     * @return Entity|null
      */
     public function get($id): ?Entity
     {
-        return $this->db->entity($this->entityClass, $id);
+        try {
+            return $this->db->entity($this->entityClass, $id);
+        } catch (OptimisticLockException $e) {
+            \loeye\base\Logger::exception($e);
+        } catch (TransactionRequiredException $e) {
+            \loeye\base\Logger::exception($e);
+        } catch (ORMException $e) {
+            \loeye\base\Logger::exception($e);
+        }
+        return null;
     }
 
     /**
@@ -67,15 +92,26 @@ trait EntityTrait
      * @param mixed $id
      * @param mixed $data
      *
-     * @return type
+     * @return Entity|null
      */
-    public function update($id, $data): Entity
+    public function update($id, $data): ?Entity
     {
-        $entity = $this->get($id);
-        \loeye\base\Utils::checkNotNull($entity);
-        \loeye\base\Utils::copyProperties($data, $entity);
-        $this->db->save($entity);
-        return $entity;
+        try {
+            $entity = $this->get($id);
+            Utils::checkNotNull($entity);
+            Utils::copyProperties($data, $entity);
+            $this->db->save($entity);
+            return $entity;
+        } catch (OptimisticLockException $e) {
+            \loeye\base\Logger::exception($e);
+        } catch (ORMException $e) {
+            \loeye\base\Logger::exception($e);
+        } catch (ReflectionException $e) {
+            \loeye\base\Logger::exception($e);
+        } catch (DataException $e) {
+            \loeye\base\Logger::exception($e);
+        }
+        return null;
     }
 
     /**
@@ -87,9 +123,16 @@ trait EntityTrait
      */
     public function delete($id): bool
     {
-        $entity = $this->get($id);
-        \loeye\base\Utils::checkNotNull($entity);
-        return $this->db->remove($entity);
+        try {
+            $entity = $this->get($id);
+            Utils::checkNotNull($entity);
+            return $this->db->remove($entity);
+        } catch (OptimisticLockException | ORMException $e) {
+            \loeye\base\Logger::exception($e);
+        } catch (DataException $e) {
+            \loeye\base\Logger::exception($e);
+        }
+        return false;
     }
 
 }

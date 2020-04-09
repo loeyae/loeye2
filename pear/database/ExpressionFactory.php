@@ -19,7 +19,9 @@ namespace loeye\database;
 
 use Doctrine\Common\Collections\Expr\Comparison;
 use Doctrine\Common\Collections\Expr\CompositeExpression;
+use Doctrine\Common\Collections\Expr\Expression;
 use Doctrine\Common\Collections\ExpressionBuilder;
+use loeye\error\DAOException;
 
 /**
  * ExpressionFactory
@@ -28,11 +30,11 @@ use Doctrine\Common\Collections\ExpressionBuilder;
  */
 class ExpressionFactory {
 
-    const IS_NULL = 'IS NULL';
+    public const IS_NULL = 'IS NULL';
 
     public static $compositeExpressionTypeMapping = [
-        CompositeExpression::TYPE_AND => [ExpressionBuilder::class, "andX"],
-        CompositeExpression::TYPE_OR  => [ExpressionBuilder::class, "orX"],
+        CompositeExpression::TYPE_AND => [ExpressionBuilder::class, 'andX'],
+        CompositeExpression::TYPE_OR  => [ExpressionBuilder::class, 'orX'],
     ];
     public static $comparisonTypeMapping          = [
         Comparison::EQ          => [ExpressionBuilder::class, 'eq'],
@@ -51,22 +53,23 @@ class ExpressionFactory {
 
     /**
      * createExpr
-     * 
+     *
      * @param array $data
-     * @return Expression
+     * @return Expression|null
+     * @throws DAOException
      */
-    public static function createExpr(array $data)
+    public static function createExpr(array $data): ?Expression
     {
         if (empty($data)) {
             return null;
         }
         if (isset($data[0])) {
             if (is_array($data[0])) {
-                $expres = [];
+                $expires = [];
                 foreach ($data as $value) {
-                    $expres[] = self::createExpr($value);
+                    $expires[] = self::createExpr($value);
                 }
-                return new CompositeExpression(CompositeExpression::TYPE_AND, $expres);
+                return new CompositeExpression(CompositeExpression::TYPE_AND, $expires);
             }
             $count = count($data);
             if ($count > 2) {
@@ -75,11 +78,11 @@ class ExpressionFactory {
             if ($count > 1) {
                 return self::createExprByKv($data[0], $data[1]);
             }
-            throw new \loeye\error\DAOException();
-        } else {
-            $expres = self::createExprByArray($data);
-            return new CompositeExpression(CompositeExpression::TYPE_AND, $expres);
+            throw new DAOException();
         }
+
+        $expires = self::createExprByArray($data);
+        return new CompositeExpression(CompositeExpression::TYPE_AND, $expires);
     }
 
     /**
@@ -87,51 +90,53 @@ class ExpressionFactory {
      * @param array $array
      *
      * @return array
+     * @throws DAOException
      */
-    public static function createExprByArray(array $array)
+    public static function createExprByArray(array $array): array
     {
-        $exprs = [];
+        $exps = [];
         foreach ($array as $key => $value) {
-            $exprs[] = static::createExprByKv($key, $value);
+            $exps[] = static::createExprByKv($key, $value);
         }
-        return $exprs;
+        return $exps;
     }
 
     /**
      * createExprByKv
      *
-     * @param type $key
-     * @param type $value
-     * @return \Doctrine\Common\Collections\Expr\Comparison
+     * @param mixed $key
+     * @param mixed $value
+     * @return Expression
+     * @throws DAOException
      */
-    public static function createExprByKv($key, $value)
+    public static function createExprByKv($key, $value): Expression
     {
         if ($value === static::IS_NULL) {
             return new Comparison($key, Comparison::EQ, $value);
         }
-        if (\is_numeric($key)) {
-            throw new \loeye\error\DAOException();
+        if (is_numeric($key)) {
+            throw new DAOException();
         }
-        if (\array_key_exists(\strtoupper($key), static::$compositeExpressionTypeMapping)) {
-            return static::createCompositeExpression(\strtoupper($key), static::createExpr($value));
+        if (array_key_exists(strtoupper($key), static::$compositeExpressionTypeMapping)) {
+            return static::createCompositeExpression(strtoupper($key), static::createExpr($value));
         }
         if (is_iterable($value)) {
             return static::createComparison($key, $value, Comparison::IN);
-        } else {
-            return static::createComparison($key, $value, Comparison::EQ);
         }
+
+        return static::createComparison($key, $value, Comparison::EQ);
     }
 
     /**
      *
-     * @param type $type
-     * @param type $expressions
+     * @param string $type
+     * @param mixed $expressions
      *
-     * @return \Doctrine\Common\Collections\Expr\CompositeExpression
+     * @return Expression
      */
-    public static function createCompositeExpression($type, $expressions = [])
+    public static function createCompositeExpression($type, $expressions = null): Expression
     {
-        return \call_user_func(static::$compositeExpressionTypeMapping[$type], $expressions);
+        return call_user_func(static::$compositeExpressionTypeMapping[$type], $expressions);
     }
 
     /**
@@ -141,12 +146,12 @@ class ExpressionFactory {
      * @param mixed  $value
      * @param string $operator
      *
-     * @return \Doctrine\Common\Collections\Expr\Comparison|null
+     * @return Comparison|null
      */
-    public static function createComparison($field, $value, $operator)
+    public static function createComparison($field, $value, $operator): ?Comparison
     {
-        if (\array_key_exists($operator, static::$comparisonTypeMapping)) {
-            return \call_user_func(static::$comparisonTypeMapping[$operator], $field, $value);
+        if (array_key_exists($operator, static::$comparisonTypeMapping)) {
+            return call_user_func(static::$comparisonTypeMapping[$operator], $field, $value);
         }
         return null;
     }
