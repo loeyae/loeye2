@@ -201,7 +201,7 @@ class Cookie
      *
      * @return boolean
      */
-    public static function validateCrumb($name, $crumb)
+    public static function validateCrumb($name, $crumb): bool
     {
         $oCrumb = self::createCrumb($name);
         return ($oCrumb === $crumb);
