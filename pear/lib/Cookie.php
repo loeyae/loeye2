@@ -25,9 +25,9 @@ namespace loeye\lib;
 class Cookie
 {
 
-    const UNIQUE_ID_NAME = 'LOUID';
-    const USRE_MESSAGE_INFO = 'LOUSI';
-    const CRYPT_COOKIE_FIELDS = 'loc';
+    public const UNIQUE_ID_NAME = 'LOUID';
+    public const USRE_MESSAGE_INFO = 'LOUSI';
+    public const CRYPT_COOKIE_FIELDS = 'loc';
 
     /**
      * setCookie
@@ -51,7 +51,7 @@ class Cookie
             $domain = null,
             $secure = false,
             $httponly = false
-    )
+    ): bool
     {
         return setcookie($name, $value, $expire, $path, $domain, $secure, $httponly);
     }
@@ -61,9 +61,9 @@ class Cookie
      *
      * @param string $name name
      *
-     * @return string
+     * @return string|null
      */
-    public static function getCookie($name)
+    public static function getCookie($name): ?string
     {
         if (filter_has_var(INPUT_COOKIE, $name)) {
             return filter_input(INPUT_COOKIE, $name);
@@ -78,7 +78,7 @@ class Cookie
      *
      * @return boolean
      */
-    public static function destructCookie($name)
+    public static function destructCookie($name): bool
     {
         return setcookie($name, null, -1, '/');
     }
@@ -92,7 +92,7 @@ class Cookie
      *
      * @return boolean
      */
-    public static function setLoeyeCookie($name, $value, $crypt = false)
+    public static function setLoeyeCookie($name, $value, $crypt = false): bool
     {
         static $userMessageInfo;
         static $cryptFields;
@@ -106,7 +106,7 @@ class Cookie
         }
         if ($crypt) {
             $userMessageInfo[$name] = self::crypt($value);
-            if (!in_array($name, $cryptFields)) {
+            if (!in_array($name, $cryptFields, true)) {
                 $cryptFields[] = $name;
             }
         } else {
@@ -120,6 +120,7 @@ class Cookie
      * getLoeyeCookie
      *
      * @param string $name name
+     * @param bool $decode
      *
      * @return mixed
      */
@@ -130,14 +131,14 @@ class Cookie
             $cryptFields     = json_decode(self::crypt($userMessageInfo[self::CRYPT_COOKIE_FIELDS], true), true);
             if (!empty($cryptFields) && $decode) {
                 foreach ($userMessageInfo as $key => $value) {
-                    if (in_array($key, $cryptFields)) {
+                    if (in_array($key, $cryptFields, true)) {
                         $userMessageInfo[$key] = self::crypt($value, true);
                     }
                 }
             }
             $userMessageInfo[self::CRYPT_COOKIE_FIELDS] = $cryptFields;
             if (!empty($name)) {
-                return isset($userMessageInfo[$name]) ? $userMessageInfo[$name] : null;
+                return $userMessageInfo[$name] ?? null;
             }
             return $userMessageInfo;
         }
@@ -153,7 +154,7 @@ class Cookie
      *
      * @return string
      */
-    public static function crypt($data, $decode = false, $key = null)
+    public static function crypt($data, $decode = false, $key = null): string
     {
         $key = empty($key) ? self::uniqueId() : $key;
         return Secure::crypt($key, $data, $decode);
@@ -164,7 +165,7 @@ class Cookie
      *
      * @return string
      */
-    public static function uniqueId()
+    public static function uniqueId(): string
     {
         $sessionId = session_id();
         if ($sessionId) {
@@ -185,7 +186,7 @@ class Cookie
      *
      * @return string
      */
-    public static function createCrumb($name)
+    public static function createCrumb($name): string
     {
         $uid    = self::uniqueId();
         $string = $name . md5(($name . $uid));
@@ -202,8 +203,8 @@ class Cookie
      */
     public static function validateCrumb($name, $crumb)
     {
-        $ocrumb = self::createCrumb($name);
-        return ($ocrumb == $crumb);
+        $oCrumb = self::createCrumb($name);
+        return ($oCrumb === $crumb);
     }
 
 }
