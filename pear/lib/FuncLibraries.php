@@ -17,6 +17,12 @@
 
 namespace loeye\lib;
 
+use loeye\base\Cache;
+use loeye\base\Context;
+use loeye\base\Exception;
+use Psr\Cache\InvalidArgumentException;
+use Symfony\Component\Cache\Exception\CacheException;
+
 /**
  * FuncLibraries
  *
@@ -28,15 +34,15 @@ class FuncLibraries
     /**
      * lyHasError
      *
-     * @param \loeye\base\Context $context context
-     * @param array               $params  params
+     * @param Context $context context
+     * @param array $params params
      *
      * @return boolean
      */
-    public static function lyHasError(\loeye\base\Context $context, $params = array())
+    public static function lyHasError(Context $context, $params = array()): bool
     {
         if (!empty($params)) {
-            foreach ((array) $params as $errorKey) {
+            foreach ((array)$params as $errorKey) {
                 $errors = $context->getErrors($errorKey);
                 if (!empty($errors)) {
                     return true;
@@ -52,16 +58,16 @@ class FuncLibraries
     /**
      * lyGetError
      *
-     * @param \loeye\base\Context $context context
-     * @param array               $params  params
+     * @param Context $context context
+     * @param array $params params
      *
      * @return mixed
      */
-    public static function lyGetError(\loeye\base\Context $context, $params = array())
+    public static function lyGetError(Context $context, $params = array())
     {
         if (!empty($params)) {
             $data = array();
-            foreach ((array) $params as $errorKey) {
+            foreach ((array)$params as $errorKey) {
                 $errors = $context->getErrors($errorKey);
                 if (!empty($errors)) {
                     $init = $data;
@@ -69,33 +75,32 @@ class FuncLibraries
                 }
             }
             return $data;
-        } else {
-            $errors = $context->getErrors();
-            return $errors;
         }
-        return null;
+
+        $errors = $context->getErrors();
+        return $errors;
     }
 
     /**
      * lyCallback
      *
-     * @param \loeye\base\Context $context context
-     * @param array               $params  params
+     * @param Context $context context
+     * @param array $params params
      *
      * @return boolean
      */
-    public static function lyCallback(\loeye\base\Context $context, $params = array())
+    public static function lyCallback(Context $context, $params = array()): bool
     {
         if (!empty($params)) {
-            $params    = (array) $params;
-            $funcname  = array_shift($params);
+            $params = (array)$params;
+            $funName = array_shift($params);
             $parameter = array();
             if (!empty($params)) {
                 foreach ($params as $key) {
                     $parameter[] = $context->get($key);
                 }
             }
-            return call_user_func_array($funcname, $parameter);
+            return call_user_func_array($funName, $parameter);
         }
         return false;
     }
@@ -103,44 +108,53 @@ class FuncLibraries
     /**
      * lyHasPageCache
      *
-     * @param \loeye\base\Context $context context
-     * @param array               $params  params
+     * @param Context $context context
+     * @param array $params params
      *
-     * @return type
+     * @return bool
+     * @throws InvalidArgumentException
+     * @throws CacheException
+     * @throws Exception
      */
-    public static function lyHasPageCache(\loeye\base\Context $context, $params = array())
+    public static function lyHasPageCache(Context $context, $params = array()): bool
     {
-        $data = [];
-        if (!empty($params)) {
-            foreach ((array) $params as $key) {
-                if (isset($_REQUEST[$key])) {
-                    $data[$key] = $_REQUEST[$key];
-                }
-            }
-        }
-        $fileKey = $context->getRequest()->getModuleId();
-        if (!empty($data)) {
-            sort($data);
-            $fileKey .= '?' . http_build_query($data);
-        }
-        $cache   = new \loeye\base\Cache($context->getAppConfig());
+        $fileKey = self::getFileKey($context, $params);
+        $cache = new Cache($context->getAppConfig());
         $content = $cache->get($fileKey);
-        return $content != false;
+        return $content !== false;
     }
 
     /**
      * lyGetPageCache
      *
-     * @param \loeye\base\Context $context context
-     * @param array               $params  params
+     * @param Context $context context
+     * @param array $params params
      *
-     * @return type
+     * @return mixed
+     * @throws CacheException
+     * @throws Exception
+     * @throws InvalidArgumentException
      */
-    public static function lyGetPageCache(\loeye\base\Context $context, $params = array())
+    public static function lyGetPageCache(Context $context, $params = array())
+    {
+        $fileKey = self::getFileKey($context, $params);
+        $cache = new Cache($context->getAppConfig());
+        return $cache->get($fileKey);
+    }
+
+    /**
+     * getFileKey
+     *
+     * @param Context $context
+     * @param array $params
+     *
+     * @return string
+     */
+    protected static function getFileKey(Context $context, $params = []): string
     {
         $data = [];
         if (!empty($params)) {
-            foreach ((array) $params as $key) {
+            foreach ((array)$params as $key) {
                 if (isset($_REQUEST[$key])) {
                     $data[$key] = $_REQUEST[$key];
                 }
@@ -152,25 +166,23 @@ class FuncLibraries
             sort($data);
             $fileKey .= '?' . http_build_query($data);
         }
-        $cache   = new SimpleFileCache($context->getAppConfig()->getPropertyName() . '/temp', $fileKey);
-        $content = $cache->get('source');
-        return $content;
+        return $fileKey;
     }
 
     /**
      * lyHasContextCache
      *
-     * @param \loeye\base\Context $context context
-     * @param array               $params  params
+     * @param Context $context context
+     * @param array $params params
      *
-     * @return type
+     * @return bool
      */
-    public static function lyHasContextCache(\loeye\base\Context $context, $params = array())
+    public static function lyHasContextCache(Context $context, $params = array()): bool
     {
         if (!empty($params)) {
-            foreach ((array) $params as $key) {
+            foreach ((array)$params as $key) {
                 $ret = $context->isExpire($key);
-                if ($ret != false) {
+                if ($ret !== false) {
                     return false;
                 }
             }
@@ -181,17 +193,17 @@ class FuncLibraries
     /**
      * lyGetContextCache
      *
-     * @param \loeye\base\Context $context context
-     * @param array               $params  params
+     * @param Context $context context
+     * @param array $params params
      *
-     * @return type
+     * @return array
      */
-    public static function lyGetContextCache(\loeye\base\Context $context, $params = array())
+    public static function lyGetContextCache(Context $context, $params = array()): array
     {
         $data = [];
         if (!empty($params)) {
-            foreach ((array) $params as $key) {
-                if ($context->isExpire($key) == false) {
+            foreach ((array)$params as $key) {
+                if ($context->isExpire($key) === false) {
                     $data[$key] = $context->get($key);
                 }
             }

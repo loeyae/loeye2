@@ -48,13 +48,13 @@ class Operator
      *
      * @return string
      */
-    public static function getPattern()
+    public static function getPattern(): string
     {
-        $logic       = implode('|', self::$logic);
-        $operator    = implode('|', self::$operator);
-        $preoperator = implode('|', self::$preoperator);
+        $logic = implode('|', self::$logic);
+        $operator = implode('|', self::$operator);
+        $preOperator = implode('|', self::$preoperator);
 
-        $pattern = '(' . $preoperator . ')?\s?';
+        $pattern = '(' . $preOperator . ')?\s?';
         $pattern .= '(?:([$_:\w\[\.\]]+)(?:\s?(' . $operator . ')\s?([^' . $logic . ']+))?)';
         return '/(?:(' . $logic . ')\s)?' . $pattern . '/';
     }
@@ -66,22 +66,22 @@ class Operator
      *
      * @return bool
      */
-    public static function operate($expression)
+    public static function operate($expression): bool
     {
-        $pattern = LoeyeOperator::getPattern();
+        $pattern = static::getPattern();
         $matches = array();
-        $offset  = 0;
-        $result  = false;
+        $offset = 0;
+        $result = false;
         while (preg_match($pattern, $expression, $matches, PREG_OFFSET_CAPTURE, $offset)) {
             $logicOperator = $matches[1][0] or $logicOperator = '||';
-            $subject1      = (!empty($matches[3])) ? $matches[3][0] : null;
-            $operator      = (!empty($matches[4])) ? $matches[4][0] : null;
-            $subject2      = (!empty($matches[5])) ? $matches[5][0] : null;
-            $preoperator   = (!empty($matches[2])) ? $matches[2][0] : null;
-            $current       = self::excute($subject1, $operator, $subject2, $preoperator);
-            $result        = LoeyeOperator::logicOperation($result, $logicOperator, $current);
-            $end           = end($matches);
-            $offset        = $end[1] + mb_strlen($end[0]);
+            $subject1 = (!empty($matches[3])) ? $matches[3][0] : null;
+            $operator = (!empty($matches[4])) ? $matches[4][0] : null;
+            $subject2 = (!empty($matches[5])) ? $matches[5][0] : null;
+            $preOperator = (!empty($matches[2])) ? $matches[2][0] : null;
+            $current = self::execute($subject1, $operator, $subject2, $preOperator);
+            $result = static::logicOperation($result, $logicOperator, $current);
+            $end = end($matches);
+            $offset = $end[1] + mb_strlen($end[0]);
         }
         return $result;
     }
@@ -104,28 +104,28 @@ class Operator
     }
 
     /**
-     * excute
+     * execute
      *
-     * @param string $subject1    subject
-     * @param string $operator    operator
-     * @param string $subject2    subject
-     * @param string $preoperator preoperator
+     * @param string $subject1 subject
+     * @param string $operator operator
+     * @param string $subject2 subject
+     * @param string $preOperator pre operator
      *
      * @return boolean
      */
-    public static function excute(
-            $subject1, $operator = null, $subject2 = null, $preoperator = null
-    )
+    public static function execute(
+        $subject1, $operator = null, $subject2 = null, $preOperator = null
+    ): bool
     {
-        if ($operator == null && $subject2 == null) {
-            $return = ($subject1 == true);
-        } else if (in_array($operator, self::$operator)) {
+        if ($operator === null && $subject2 === null) {
+            $return = ($subject1 === true);
+        } else if (in_array($operator, self::$operator, true)) {
             $return = self::_operation($subject1, $operator, $subject2);
         } else {
             return false;
         }
-        if (in_array($preoperator, self::$preoperator)) {
-            return self::_preoperation($preoperator, $return);
+        if (in_array($preOperator, self::$preoperator, true)) {
+            return self::_preOperation($preOperator, $return);
         }
         return $return;
     }
@@ -139,14 +139,12 @@ class Operator
      *
      * @return bool
      */
-    public static function logicOperation($subject1, $operator, $subject2)
+    public static function logicOperation($subject1, $operator, $subject2): bool
     {
-        switch ($operator) {
-            case '||':
-                $return = ($subject1 || $subject2);
-                break;
-            default :
-                $return = ($subject1 && $subject2);
+        if ($operator === '||') {
+            $return = ($subject1 || $subject2);
+        } else {
+            $return = ($subject1 && $subject2);
         }
         return $return;
     }
@@ -154,13 +152,13 @@ class Operator
     /**
      * _operation
      *
-     * @param string $subject1 subject
-     * @param string $operator operator
-     * @param string $subject2 subject
+     * @param string|null $subject1 subject
+     * @param string|null $operator operator
+     * @param string|null $subject2 subject
      *
      * @return boolean
      */
-    static private function _operation($subject1, $operator, $subject2)
+    private static function _operation($subject1, $operator, $subject2): bool
     {
         if ($subject1 === 'null') {
             $subject1 = null;
@@ -170,54 +168,53 @@ class Operator
         }
         switch (trim($operator)) {
             case '==':
-                $return   = ($subject1 === $subject2);
+                $return = ($subject1 === $subject2);
                 break;
             case '>':
-                $return   = ($subject1 > $subject2);
+                $return = ($subject1 > $subject2);
                 break;
             case '<':
-                $return   = ($subject1 < $subject2);
+                $return = ($subject1 < $subject2);
                 break;
             case '>=':
-                $return   = ($subject1 >= $subject2);
+                $return = ($subject1 >= $subject2);
                 break;
             case '<=':
-                $return   = ($subject1 <= $subject2);
+                $return = ($subject1 <= $subject2);
                 break;
             case '!=':
-                $return   = ($subject1 != $subject2);
+                $return = ($subject1 != $subject2);
                 break;
             case '!==':
-                $return   = ($subject1 !== $subject2);
+                $return = ($subject1 !== $subject2);
                 break;
             case 'in':
-                $subject2 = explode(',', $subject2);
-                $return   = in_array($subject1, $subject2);
+                $subject3 = explode(',', $subject2);
+                $return = in_array($subject1, $subject3, true);
                 break;
             case 'instanceof':
-                $return   = ($subject1 instanceof $subject2);
+                $return = ($subject1 instanceof $subject2);
                 break;
             default:
-                $return   = ($subject1 == $subject2);
+                $return = ($subject1 == $subject2);
                 break;
         }
         return $return;
     }
 
     /**
-     * _preoperation
+     * pre operation
      *
-     * @param string $preoperator preoperator
-     * @param string $subject     subject
+     * @param string $preOperator pre operator
+     * @param mixed $subject subject
      *
      * @return boolean
      */
-    static private function _preoperation($preoperator, $subject)
+    private static function _preOperation($preOperator, $subject): bool
     {
-        switch ($preoperator) {
-            default:
-                $return = !$subject;
-                break;
+        $return = false;
+        if ($preOperator) {
+            $return = !$subject;
         }
         return $return;
     }

@@ -17,10 +17,11 @@
 
 namespace loeye\lib;
 
-use Symfony\Component\Cache\Adapter\{
-    ApcuAdapter,
-    PhpFilesAdapter
-};
+use Symfony\Component\Cache\Adapter\{AdapterInterface, ApcuAdapter, PhpFilesAdapter};
+use Psr\Cache\InvalidArgumentException;
+use Symfony\Component\Cache\CacheItem;
+use Symfony\Component\Cache\Exception\CacheException;
+use Traversable;
 
 /**
  * SimpleCache
@@ -30,9 +31,18 @@ use Symfony\Component\Cache\Adapter\{
 class SimpleCache
 {
 
+    /**
+     * @var AdapterInterface
+     */
     private $cache;
     private static $_instance = [];
 
+    /**
+     * SimpleCache constructor.
+     * @param $property
+     * @param string $type
+     * @throws CacheException
+     */
     public function __construct($property, $type = 'config')
     {
         $namespace       = PROJECT_NAMESPACE . '.' . $property . '.' . $type;
@@ -49,11 +59,13 @@ class SimpleCache
     /**
      * getInstance
      *
-     * @param type $property
+     * @param string $property
+     * @param string $type
      *
      * @return self
+     * @throws CacheException
      */
-    public static function getInstance($property, $type = 'config')
+    public static function getInstance($property, $type = 'config'): self
     {
         if (!isset(self::$_instance[$property])) {
             self::$_instance[$property] = new self($property, $type);
@@ -66,21 +78,42 @@ class SimpleCache
         $this->cache->commit();
     }
 
-    public function getKey($bundle)
+    /**
+     * getKey
+     *
+     * @param $bundle
+     * @return string
+     */
+    public function getKey($bundle): string
     {
-        return strtr($bundle, '/', '.');
+        return str_replace('/', '.', $bundle);
     }
 
-    public function set($bundle, $settins, $lifeTime = null)
+    /**
+     * set
+     *
+     * @param $bundle
+     * @param $settings
+     * @param null $lifeTime
+     * @throws InvalidArgumentException
+     */
+    public function set($bundle, $settings, $lifeTime = null): void
     {
         $key  = $this->getKey($bundle);
         $item = $this->cache->getItem($key);
-        $item->set($settins);
+        $item->set($settings);
         $item->expiresAfter($lifeTime);
         $this->cache->saveDeferred($item);
     }
 
-    public function setMulti($values, $lifeTime = null)
+    /**
+     * setMulti
+     *
+     * @param $values
+     * @param null $lifeTime
+     * @throws InvalidArgumentException
+     */
+    public function setMulti($values, $lifeTime = null): void
     {
         $keys = [];
         $vs   = [];
@@ -98,6 +131,13 @@ class SimpleCache
         $this->cache->commit();
     }
 
+    /**
+     * get
+     *
+     * @param $bundle
+     * @return mixed
+     * @throws InvalidArgumentException
+     */
     public function get($bundle)
     {
         $key  = $this->getKey($bundle);
@@ -105,23 +145,66 @@ class SimpleCache
         return $item->get();
     }
 
+    /**
+     * getMulti
+     *
+     * @param $bundles
+     * @return iterable|CacheItem[]|Traversable
+     * @throws InvalidArgumentException
+     */
     public function getMulti($bundles)
     {
         $keys  = array_map(array($this, 'getKey'), $bundles);
-        $items = $this->cache->getItems($keys);
-        return $items;
+        return $this->cache->getItems($keys);
     }
 
-    public function has($bundle)
+    /**
+     * has
+     *
+     * @param $bundle
+     * @return bool
+     * @throws InvalidArgumentException
+     */
+    public function has($bundle): bool
     {
         $key = $this->getKey($bundle);
         return $this->cache->hasItem($key);
     }
 
-    public function delete($bundle)
+    /**
+     * delete
+     *
+     * @param $bundle
+     * @return bool
+     * @throws InvalidArgumentException
+     */
+    public function delete($bundle): bool
     {
         $key = $this->getKey($bundle);
         return $this->cache->deleteItem($key);
+    }
+
+    /**
+     * compress
+     *
+     * @param mixed $data   data
+     * @param bool  $encode is encode
+     *
+     * @return mixed
+     */
+    public static function compress($data, $encode = true)
+    {
+        if ($encode) {
+            if (extension_loaded('zlib')) {
+                return zlib_encode(serialize($data), ZLIB_ENCODING_GZIP, 9);
+            }
+            return serialize($data);
+        } else {
+            if (extension_loaded('zlib')) {
+                return unserialize(zlib_decode($data), null);
+            }
+            return unserialize($data, null);
+        }
     }
 
 }

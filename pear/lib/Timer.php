@@ -17,6 +17,8 @@
 
 namespace loeye\lib;
 
+use loeye\base\Exception;
+
 /**
  * Timer
  *
@@ -40,7 +42,7 @@ class Timer
      *
      * @return void
      */
-    public function start()
+    public function start(): void
     {
         $this->startTime = microtime(true);
     }
@@ -50,7 +52,7 @@ class Timer
      *
      * @return void
      */
-    public function stop()
+    public function stop(): void
     {
         $this->endTime = microtime(true);
     }
@@ -60,7 +62,7 @@ class Timer
      *
      * @return float
      */
-    public function getStart()
+    public function getStart(): float
     {
         return $this->startTime;
     }
@@ -70,7 +72,7 @@ class Timer
      *
      * @return float
      */
-    public function getEnd()
+    public function getEnd(): float
     {
         return $this->endTime;
     }
@@ -79,14 +81,15 @@ class Timer
      * getDuration
      *
      * @return float second
+     * @throws Exception
      */
-    public function getDuration()
+    public function getDuration(): float
     {
-        if ($this->startTime == null) {
-            throw new \Exception("timer is not started");
+        if ($this->startTime === null) {
+            throw new Exception('timer is not started');
         }
-        if ($this->endTime == null) {
-            throw new \Exception("timer is not stoped");
+        if ($this->endTime === null) {
+            throw new Exception('timer is not stop');
         }
         return number_format(($this->endTime - $this->startTime) * 1000, 4, '.', '') . ' ms';
     }

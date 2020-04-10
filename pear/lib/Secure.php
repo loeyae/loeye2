@@ -17,7 +17,14 @@
 
 namespace loeye\lib;
 
-use http\Exception\RuntimeException;
+use FilesystemIterator;
+use Psr\Cache\InvalidArgumentException;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
+use RuntimeException;
+use Symfony\Component\Cache\Exception\CacheException;
+use XMLReader;
+use XMLWriter;
 
 /**
  * Description of Secure
@@ -34,7 +41,7 @@ class Secure
      *
      * @return string
      */
-    public static function getKey($value)
+    public static function getKey($value): string
     {
         return md5(serialize($value));
     }
@@ -46,7 +53,7 @@ class Secure
      *
      * @return string
      */
-    public static function uniqueId($secret = null)
+    public static function uniqueId($secret = null): string
     {
         if (filter_has_var(INPUT_SERVER, 'REQUEST_TIME_FLOAT')) {
             $REQUEST_TIME_FLOAT = filter_input(INPUT_SERVER, 'REQUEST_TIME_FLOAT', FILTER_SANITIZE_NUMBER_FLOAT);
@@ -72,25 +79,24 @@ class Secure
             $REMOTE_ADDR = mt_rand(1000, 9999);
         }
 
-        $string   = $HTTP_USER_AGENT . $REQUEST_TIME_FLOAT . $REMOTE_ADDR . $secret;
-        $string   .= md5(mt_rand(1, time()));
-        $uniqueId = hash('haval160,5', sha1($string));
-        return $uniqueId;
+        $string = $HTTP_USER_AGENT . $REQUEST_TIME_FLOAT . $REMOTE_ADDR . $secret;
+        $string .= md5(mt_rand(1, time()));
+        return hash('haval160,5', sha1($string));
     }
 
     /**
      * crypt
      *
-     * @param string $key    key
-     * @param string $data   data
-     * @param bool   $decode is decode
+     * @param string $key key
+     * @param string $data data
+     * @param bool $decode is decode
      *
      * @return string
      */
     public static function crypt($key, $data, $decode = false): string
     {
-        $len          = ceil(strlen($key) / 3) * 3;
-        $secretKey    = base64_encode(str_pad($key, $len, $key[0], STR_PAD_RIGHT));
+        $len = ceil(strlen($key) / 3) * 3;
+        $secretKey = base64_encode(str_pad($key, $len, $key[0], STR_PAD_RIGHT));
         $secretKeyLen = strlen($secretKey);
 
         $string = ($decode === true) ? base64_decode($data) : rawurlencode($data) . $secretKey;
@@ -111,7 +117,7 @@ class Secure
             $cryptoStrong = null;
             $iv = openssl_random_pseudo_bytes($ivLength, $cryptoStrong);
             if ($cryptoStrong === false || $iv === false) {
-                throw new \RuntimeException('crypto failed');
+                throw new RuntimeException('crypto failed');
             }
             $strLen = strlen($string);
             $padLen = $strLen % 8;
@@ -123,7 +129,7 @@ class Secure
         }
 
         $decodeIv = substr($string, 0 - $ivLength);
-        $result = rtrim(openssl_decrypt(substr($string, 0, 0-$ivLength), $method, $mkey, OPENSSL_RAW_DATA, $decodeIv), "\0");
+        $result = rtrim(openssl_decrypt(substr($string, 0, 0 - $ivLength), $method, $mkey, OPENSSL_RAW_DATA, $decodeIv), "\0");
         if (substr($result, -($secretKeyLen)) === $secretKey) {
             $result = substr($result, 0, -($secretKeyLen));
             return rawurldecode($result);
@@ -135,25 +141,26 @@ class Secure
      * getKeyDb
      *
      * @param string $property property name
-     * @param string $key      key
-     * @param string $group    group
-     * @param string $read     false
+     * @param string $key key
+     * @param string $group group
+     * @param bool $read false
      *
      * @return string
+     * @throws InvalidArgumentException
+     * @throws CacheException
      */
-    public static function getKeyDb($property, $key, $group = null, $read = false)
+    public static function getKeyDb($property, $key, $group = null, $read = false): string
     {
-        static $keyDbSetting = [];
-        $cache               = SimpleCache::getInstance($property, 'keydb');
-        $keyDbSetting        = $cache->get('keydb');
+        $cache = SimpleCache::getInstance($property, 'keydb');
+        $keyDbSetting = $cache->get('keydb');
         if (empty($keyDbSetting)) {
-            $baseDir      = PROJECT_KEYDB_DIR . '/' . $property;
-            $dirIterator  = new \RecursiveDirectoryIterator($baseDir, \FilesystemIterator::UNIX_PATHS);
-            $fileSystem   = new \RecursiveIteratorIterator($dirIterator);
+            $baseDir = PROJECT_KEYDB_DIR . '/' . $property;
+            $dirIterator = new RecursiveDirectoryIterator($baseDir, FilesystemIterator::UNIX_PATHS);
+            $fileSystem = new RecursiveIteratorIterator($dirIterator);
             $keyDbSetting = array();
-            $XMReader     = new \XMLReader();
+            $XMReader = new XMLReader();
             foreach ($fileSystem as $file) {
-                if ($file->getExtension() != 'keydb') {
+                if ($file->getExtension() !== 'keydb') {
                     continue;
                 }
                 $settings = self::readKeydb($file, $XMReader);
@@ -167,30 +174,37 @@ class Secure
             }
         }
         if ($read === true) {
-            return;
+            return null;
         }
         foreach ($keyDbSetting as $k => $child) {
             if ($group !== null) {
-                if ($k == $group && isset($child[$key])) {
-                    $time   = $child[$key]['timestamp'];
-                    $expiry = $child[$key]['expiry'];
-                    if ($time == $expiry) {
-                        return self::crypt($key, $child[$key]['value'], true);
-                    } else if (time() < $expiry) {
-                        return self::crypt($key, $child[$key]['value'], true);
-                    }
+                if ($k === $group && isset($child[$key])) {
+                    return self::getCryptKey($child, $key);
                 }
-            } else {
-                if (isset($child[$key])) {
-                    $time   = $child[$key]['timestamp'];
-                    $expiry = $child[$key]['expiry'];
-                    if ($time == $expiry) {
-                        return self::crypt($key, $child[$key]['value'], true);
-                    } else if (time() < $expiry) {
-                        return self::crypt($key, $child[$key]['value'], true);
-                    }
-                }
+            } else if (isset($child[$key])) {
+                return self::getCryptKey($child, $key);
             }
+        }
+        return null;
+    }
+
+    /**
+     * getCryptKey
+     *
+     * @param array $item
+     * @param string $key
+     * @return string|null
+     */
+    private static function getCryptKey($item, $key): ?string
+    {
+        $time = $item[$key]['timestamp'];
+        $expiry = $item[$key]['expiry'];
+        if ($time === $expiry) {
+            return self::crypt($key, $item[$key]['value'], true);
+        }
+
+        if (time() < $expiry) {
+            return self::crypt($key, $item[$key]['value'], true);
         }
         return null;
     }
@@ -199,19 +213,19 @@ class Secure
      * setKeyDb
      *
      * @param string $property property
-     * @param string $keydb    key db
-     * @param string $key      key
-     * @param string $value    value
-     * @param string $group    group
-     * @param int    $expiry   expiry
+     * @param string $keydb key db
+     * @param string $key key
+     * @param string $value value
+     * @param string $group group
+     * @param int $expiry expiry
      *
      * @return void
      */
-    public static function setKeyDb($property, $keydb, $key, $value, $group = null, $expiry = 0)
+    public static function setKeyDb($property, $keydb, $key, $value, $group = null, $expiry = 0): void
     {
         $baseDir = PROJECT_KEYDB_DIR . '/' . $property;
         if (!file_exists($baseDir) && !mkdir($baseDir, 0777, true) && !is_dir($baseDir)) {
-            throw new \RuntimeException(sprintf('Directory "%s" was not created', $baseDir));
+            throw new RuntimeException(sprintf('Directory "%s" was not created', $baseDir));
         }
         $filename = $baseDir . '/' . $keydb . '.keydb';
         $settings = array();
@@ -220,37 +234,39 @@ class Secure
         } else {
             $settings = self::readKeydb($filename);
         }
-        $XMLWriter = new \XMLWriter();
+        $XMLWriter = new XMLWriter();
         $XMLWriter->openUri($filename);
         $XMLWriter->setIndent(true);
-        $XMLWriter->startElement("keydb");
-        empty($group) && $group     = $keydb;
-        $writed    = 0;
+        $XMLWriter->startElement('keydb');
+        empty($group) && $group = $keydb;
+        $write = 0;
         foreach ($settings as $groupName => $groupSettings) {
-            $XMLWriter->startElement("keygroup");
-            $XMLWriter->writeAttribute("name", $groupName);
-            if ($group == $groupName) {
-                $writed = 1;
+            $XMLWriter->startElement('keygroup');
+            $XMLWriter->writeAttribute('name', $groupName);
+            if ($group === $groupName) {
+                $write = 1;
             }
             foreach ($groupSettings as $keyName => $keySetting) {
-                if ($writed == 1 && $keyName == $key) {
-                    $writed = 2;
+                if ($write === 1 && $keyName === $key) {
+                    $write = 2;
                     self::writeKeydb($XMLWriter, $key, $value, null, $expiry);
                     continue;
-                } else if ($writed == 2 && $keyName == $key) {
+                }
+
+                if ($write === 2 && $keyName === $key) {
                     continue;
                 }
-                $kvalue    = isset($keySetting['value']) ? $keySetting['value'] : '';
-                $timestamp = isset($keySetting['timestamp']) ? $keySetting['timestamp'] : 0;
-                $kexpiry   = isset($keySetting['expiry']) ? $keySetting['expiry'] : '';
-                self::writeKeydb($XMLWriter, $keyName, $kvalue, null, $kexpiry, $timestamp, true);
+                $kValue = $keySetting['value'] ?? '';
+                $timestamp = $keySetting['timestamp'] ?? 0;
+                $kExpiry = $keySetting['expiry'] ?? '';
+                self::writeKeydb($XMLWriter, $keyName, $kValue, null, $kExpiry, $timestamp, true);
             }
-            if ($writed == 1) {
+            if ($write === 1) {
                 self::writeKeydb($XMLWriter, $key, $value, null, $expiry);
             }
             $XMLWriter->fullEndElement();
         }
-        if ($writed == 0) {
+        if ($write === 0) {
             self::writeKeydb($XMLWriter, $key, $value, $group, $expiry);
         }
         $XMLWriter->fullEndElement();
@@ -260,36 +276,37 @@ class Secure
     /**
      * readKeydb
      *
-     * @param string     $file     file
-     * @param \XMLReader $XMReader XML reader
+     * @param string $file file
+     * @param XMLReader $XMReader XML reader
      *
      * @return array
      */
-    static private function readKeydb($file, \XMLReader $XMReader = null)
+    private static function readKeydb($file, XMLReader $XMReader = null): array
     {
         $keyDbSetting = array();
-        (!($XMReader instanceof \XMLReader)) && $XMReader     = new \XMLReader();
-        $openTag      = $XMReader->open($file, 'utf-8');
+        (!($XMReader instanceof XMLReader)) && $XMReader = new XMLReader();
+        $openTag = $XMReader->open($file, 'utf-8');
         if ($openTag === false) {
             return $keyDbSetting;
         }
         while ($XMReader->read()) {
-            if ($XMReader->nodeType !== \XMLReader::ELEMENT) {
+            if ($XMReader->nodeType !== XMLReader::ELEMENT) {
                 continue;
             }
+            $keygroup = $keyname = null;
             switch ($XMReader->name) {
-                case "keygroup":
-                    $keygroup                                       = $XMReader->getAttribute('name');
-                    $keyDbSetting[$keygroup]                        = array();
+                case 'keygroup':
+                    $keygroup = $XMReader->getAttribute('name');
+                    $keyDbSetting[$keygroup] = array();
                     break;
-                case "keyname":
-                    $keyname                                        = $XMReader->getAttribute('name');
-                    $keyDbSetting[$keygroup][$keyname]              = array();
+                case 'keyname':
+                    $keyname = $XMReader->getAttribute('name');
+                    $keyDbSetting[$keygroup][$keyname] = array();
                     break;
-                case "key":
-                    $keyDbSetting[$keygroup][$keyname]['value']     = $XMReader->getAttribute('value');
+                case 'key':
+                    $keyDbSetting[$keygroup][$keyname]['value'] = $XMReader->getAttribute('value');
                     $keyDbSetting[$keygroup][$keyname]['timestamp'] = $XMReader->getAttribute('timestamp');
-                    $keyDbSetting[$keygroup][$keyname]['expiry']    = $XMReader->getAttribute('expiry');
+                    $keyDbSetting[$keygroup][$keyname]['expiry'] = $XMReader->getAttribute('expiry');
                     break;
             }
             //$XMReader->next();
@@ -301,24 +318,25 @@ class Secure
     /**
      * writeKeydb
      *
-     * @param mixed  $xml    fime|XMLWriter
-     * @param string $key    key
-     * @param mixed  $value  value
-     * @param mixed  $group  group name
-     * @param int    $expiry expiry
-     * @param int    $time   time
+     * @param mixed $xml file|XMLWriter
+     * @param string $key key
+     * @param mixed $value value
+     * @param mixed $group group name
+     * @param int $expiry expiry
+     * @param int $time time
+     * @param bool $isSecure
      *
      * @return void
      */
-    static private function writeKeydb(
-            $xml, $key, $value, $group = null, $expiry = 0, $time = null, $isSecure = false
-    )
+    private static function writeKeydb(
+        $xml, $key, $value, $group = null, $expiry = 0, $time = null, $isSecure = false
+    ): void
     {
-        if (!($xml instanceof \XMLWriter)) {
-            $XMLWriter = new \XMLWriter();
+        if (!($xml instanceof XMLWriter)) {
+            $XMLWriter = new XMLWriter();
             $XMLWriter->openUri($xml);
             $XMLWriter->setIndent(true);
-            $XMLWriter->startElement("keydb");
+            $XMLWriter->startElement('keydb');
             if (empty($group)) {
                 $group = $key;
             }
@@ -326,23 +344,23 @@ class Secure
             $XMLWriter = $xml;
         }
         if (!empty($group)) {
-            $XMLWriter->startElement("keygroup");
-            $XMLWriter->writeAttribute("name", $group);
+            $XMLWriter->startElement('keygroup');
+            $XMLWriter->writeAttribute('name', $group);
         }
-        $XMLWriter->startElement("keyname");
-        $XMLWriter->writeAttribute("name", $key);
-        $XMLWriter->startElement("key");
-        $XMLWriter->writeAttribute("value", ($isSecure ? $value : self::crypt($key, $value)));
-        ($time == null) && ($time   = time());
+        $XMLWriter->startElement('keyname');
+        $XMLWriter->writeAttribute('name', $key);
+        $XMLWriter->startElement('key');
+        $XMLWriter->writeAttribute('value', ($isSecure ? $value : self::crypt($key, $value)));
+        ($time === null) && ($time = time());
         ($expiry = 0) ? ($expiry = $time) : ($expiry += $time);
-        $XMLWriter->writeAttribute("timestamp", $time);
-        $XMLWriter->writeAttribute("expiry", $expiry);
+        $XMLWriter->writeAttribute('timestamp', $time);
+        $XMLWriter->writeAttribute('expiry', $expiry);
         $XMLWriter->fullEndElement();
         $XMLWriter->fullEndElement();
         if (!empty($group)) {
             $XMLWriter->fullEndElement();
         }
-        if (!($xml instanceof \XMLWriter)) {
+        if (!($xml instanceof XMLWriter)) {
             $XMLWriter->fullEndElement();
             $XMLWriter->flush();
         }
@@ -351,12 +369,12 @@ class Secure
     /**
      * encodeUid
      *
-     * @param string $id         user id
-     * @param int    $createTime time stamp
+     * @param string $id user id
+     * @param int $createTime time stamp
      *
      * @return string
      */
-    public static function encodeUid($id, $createTime)
+    public static function encodeUid($id, $createTime): string
     {
         $num1 = date('Y', $createTime) % 36;
         $num2 = ceil(date('Z', $createTime) / 15) % 36;
@@ -372,7 +390,7 @@ class Secure
      *
      * @return string
      */
-    public static function decodeUid($uid)
+    public static function decodeUid($uid): string
     {
         $data = explode('#', $uid);
         array_pop($data);

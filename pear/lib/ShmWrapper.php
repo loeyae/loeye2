@@ -37,13 +37,13 @@ class ShmWrapper
      * __construct
      *
      * @param string $pathname path name
-     * @param string $proj     project id, This must be a one character string
+     * @param string $proId     project id, This must be a one character string
      *
      * @return void
      */
-    public function __construct($pathname, $proj)
+    public function __construct($pathname, $proId)
     {
-        $key         = ftok($pathname, $proj);
+        $key         = ftok($pathname, $proId);
         $this->key   = $key;
         $this->shmId = shm_attach($key);
     }
@@ -52,15 +52,15 @@ class ShmWrapper
      * getInstance
      *
      * @param string $pathname path name
-     * @param string $proj     project id, This must be a one character string
-     * @param int    $memsize  memory size
-     * @param int    $perm     permission bits. Default to 0666
+     * @param string $proId project id, This must be a one character string
+     * @param int $memSize
+     * @param int $perm permission bits. Default to 0666
      *
-     * @return \self
+     * @return self
      */
-    public static function getInstance($pathname, $proj, $memsize = 10000, $perm = 0666)
+    public static function getInstance($pathname, $proId, $memSize = 10000, $perm = 0666): ShmWrapper
     {
-        return new self($pathname, $proj, $memsize, $perm);
+        return new self($pathname, $proId);
     }
 
     /**
@@ -68,12 +68,9 @@ class ShmWrapper
      *
      * @return boolean
      */
-    public static function isAble()
+    public static function isAble(): bool
     {
-        if (function_exists('ftok') && function_exists('shm_attach') && PROJECT_CONF_CACHE_ENABLE && PROJECT_CONF_MEM_CACHE_ENABLE) {
-            return true;
-        }
-        return false;
+        return function_exists('ftok') && function_exists('shm_attach');
     }
 
     /**
@@ -82,9 +79,9 @@ class ShmWrapper
      * Disconnects from shared memory segment
      * </p>
      *
-     * @return void
+     * @return bool
      */
-    public function detach()
+    public function detach(): bool
     {
         return shm_detach($this->shmId);
     }
@@ -95,9 +92,9 @@ class ShmWrapper
      * Remove a semaphore
      * </p>
      *
-     * @return void
+     * @return bool
      */
-    public function remove()
+    public function remove(): bool
     {
         return shm_remove($this->shmId);
     }
@@ -108,16 +105,16 @@ class ShmWrapper
      * @param int   $key   key
      * @param mixed $value value
      *
-     * @return void
+     * @return bool
      */
-    public function put($key, $value)
+    public function put($key, $value): bool
     {
         $this->remove();
         $shmData = $value;
         if (is_bool($value)) {
             $shmData = new ShmDataWrapper($value);
         }
-        $content     = FileCache::compress($shmData);
+        $content     = SimpleCache::compress($shmData);
         $len         = strlen($content) + 128;
         $this->shmId = shm_attach($key, $len);
         return shm_put_var($this->shmId, $key, $value);
@@ -136,7 +133,7 @@ class ShmWrapper
             return null;
         }
         $data = shm_get_var($this->shmId, $key);
-        $item = FileCache::compress($data, false);
+        $item = SimpleCache::compress($data, false);
         if ($item instanceof ShmDataWrapper) {
             return $item->var;
         }
@@ -150,19 +147,19 @@ class ShmWrapper
      *
      * @return bool
      */
-    public function isExists($key)
+    public function isExists($key): bool
     {
         return shm_has_var($this->shmId, $key);
     }
 
     /**
-     * remveKey
+     * removeKey
      *
      * @param int $key key
      *
      * @return bool
      */
-    public function remveKey($key)
+    public function removeKey($key): bool
     {
         return shm_remove_var($this->shmId, $key);
     }

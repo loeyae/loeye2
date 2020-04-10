@@ -17,6 +17,8 @@
 
 namespace loeye\lib;
 
+use loeye\base\Context;
+
 /**
  * Description of ModuleParse
  *
@@ -25,81 +27,77 @@ namespace loeye\lib;
 class ModuleParse
 {
 
-    const MAGIC_VAR_REGEX_PATTERN = '/^\$_(GET|POST|REQUEST|SERVER|COOKIE|SESSION|CONST|CONTEXT)\[(.*?)\]$/';
-    const MAGIC_FUNC_REGEX_PATTERN = '/^__([a-z]\w*)\[(.*?)\]$/';
-    const CONDITION_KEY = 'if';
-    const PARALLEL_KEY = 'parallel';
+    public const MAGIC_VAR_REGEX_PATTERN = '/^\$_(GET|POST|REQUEST|SERVER|COOKIE|SESSION|CONST|CONTEXT)\[(.*?)\]$/';
+    public const MAGIC_FUNC_REGEX_PATTERN = '/^__([a-z]\w*)\[(.*?)\]$/';
+    public const CONDITION_KEY = 'if';
+    public const PARALLEL_KEY = 'parallel';
 
     /**
      * parseInput
      *
-     * @param mixed               $input   input
-     * @param \loeye\base\Context $context context
+     * @param mixed $input input
+     * @param Context $context context
      *
      * @return mixed
      */
-    public static function parseInput($input, \loeye\base\Context $context)
+    public static function parseInput($input, Context $context)
     {
         if (is_array($input)) {
             foreach ($input as $key => $value) {
-                $key = (string) (static::parseInput($key, $context));
-                if ($key == '') {
+                $key = (string)(static::parseInput($key, $context));
+                if ($key === '') {
                     continue;
                 }
                 $input[$key] = static::parseInput($value, $context);
             }
         } else {
-            $input   = trim($input);
+            $input = trim($input);
             $matches = array();
             if (preg_match(self::MAGIC_VAR_REGEX_PATTERN, $input, $matches)) {
-                $matcheKey   = isset($matches[1]) ? $matches[1] : null;
-                $matcheValue = isset($matches[2]) ? $matches[2] : null;
-                if (!empty($matcheKey) && !empty($matcheValue)) {
-                    $valueList   = explode('.', $matcheValue);
-                    $matcheValue = array_shift($valueList);
-                    $input       = null;
-                    switch ($matcheKey) {
+                $matchedKey = $matches[1] ?? null;
+                $matchedValue = $matches[2] ?? null;
+                if (!empty($matchedKey) && !empty($matchedValue)) {
+                    $valueList = explode('.', $matchedValue);
+                    $matchedValue = array_shift($valueList);
+                    $input = null;
+                    switch ($matchedKey) {
                         case 'CONTEXT':
-                            $input = $context->get($matcheValue);
+                            $input = $context->get($matchedValue);
                             break;
                         case 'CONST':
-                            $const = $matcheValue;
+                            $const = $matchedValue;
                             if (defined($const)) {
                                 $input = constant($const);
                             }
                             break;
                         case 'REQUEST':
-                            if (isset($_REQUEST[$matcheValue])) {
-                                $input = $_REQUEST[$matcheValue];
+                            if (isset($_REQUEST[$matchedValue])) {
+                                $input = $_REQUEST[$matchedValue];
                             }
                             break;
                         case 'SESSION':
-                            if (isset($_SESSION[$matcheValue])) {
-                                $input = $_SESSION[$matcheValue];
+                            if (isset($_SESSION[$matchedValue])) {
+                                $input = $_SESSION[$matchedValue];
                             }
                             break;
                         default :
-                            $inputType = 'INPUT_' . $matcheKey;
-                            $input     = filter_input(constant($inputType),
-                                    $matcheValue, FILTER_SANITIZE_STRING);
+                            $inputType = 'INPUT_' . $matchedKey;
+                            $input = filter_input(constant($inputType),
+                                $matchedValue, FILTER_SANITIZE_STRING);
                             break;
                     }
                     if (!empty($valueList)) {
                         foreach ($valueList as $value) {
-                            if (is_array($input) && isset($input[$value])) {
-                                $input = $input[$value];
-                            } else {
-                                $input = null;
-                            }
+                            $input = $input[$value] ?? null;
                         }
                     }
                 }
             } else if (preg_match(self::MAGIC_FUNC_REGEX_PATTERN, $input, $matches)) {
-                $func      = isset($matches[1]) ? $matches[1] : null;
-                $argList   = isset($matches[2]) ? $matches[2] : '';
+                $func = $matches[1] ?? null;
+                $argList = $matches[2] ?? '';
                 $parameter = explode(',', $argList);
                 if (!empty($func) && method_exists(FuncLibraries::class, $func)) {
-                    $input = \loeye\lib\FuncLibraries::$func($context, $parameter);
+                    $input = FuncLibraries::$func($context, $parameter);
                 }
             }
         }
@@ -113,12 +111,9 @@ class ModuleParse
      *
      * @return boolean
      */
-    public static function isParallel($key)
+    public static function isParallel($key): bool
     {
-        if (static::PARALLEL_KEY === $key) {
-            return true;
-        }
-        return false;
+        return static::PARALLEL_KEY === $key;
     }
 
     /**
@@ -128,63 +123,52 @@ class ModuleParse
      *
      * @return boolean
      */
-    public static function isCondition($key)
+    public static function isCondition($key): bool
     {
-        $key    = trim($key);
+        $key = trim($key);
         $prefix = mb_substr($key, 0, 2);
-        return $prefix == self::CONDITION_KEY;
+        return $prefix === self::CONDITION_KEY;
     }
 
     /**
      * groupConditionResult
      *
-     * @param string              $condition condition
-     * @param \loeye\base\Context $context   context
+     * @param string $condition condition
+     * @param Context $context context
      *
      * @return boolean
      */
-    public static function groupConditionResult($condition, \loeye\base\Context $context)
+    public static function groupConditionResult($condition, Context $context): bool
     {
         $condition = trim($condition);
-        $matches   = \loeye\lib\Operator::match('/^if\s?\(?([^\)]+)\)?\s?$/', $condition);
-        if ($matches == false) {
+        $matches = Operator::match('/^if\s?\(?([^\)]+)\)?\s?$/', $condition);
+        if ($matches === false) {
             return false;
         }
         $expression = $matches[1];
-        $pattern    = \loeye\lib\Operator::getPattern();
-        $matches    = array();
-        $offset     = 0;
-        $result     = false;
-        while (preg_match($pattern, $expression, $matches, PREG_OFFSET_CAPTURE, $offset)) {
-            $logicOperator = $matches[1][0] or $logicOperator = '||';
-            $current       = static::_getExpressionResult($matches, $context);
-            $result        = \loeye\lib\Operator::logicOperation($result, $logicOperator, $current);
-            $end           = end($matches);
-            $offset        = $end[1] + mb_strlen($end[0]);
-        }
-        return $result;
+        return self::conditionResult($expression, $context);
     }
 
     /**
      * conditionResult
      *
-     * @param string              $condition condition
-     * @param \loeye\base\Context $context   context
+     * @param string $condition condition
+     * @param Context $context context
      *
      * @return boolean
      */
-    public static function conditionResult($condition, \loeye\base\Context $context)
+    public static function conditionResult($condition, Context $context): bool
     {
-        $pattern = \loeye\lib\Operator::getPattern();
+        $pattern = Operator::getPattern();
         $matches = array();
-        $offset  = 0;
-        $result  = false;
+        $offset = 0;
+        $result = false;
         while (preg_match($pattern, $condition, $matches, PREG_OFFSET_CAPTURE, $offset)) {
             $logicOperator = $matches[1][0] or $logicOperator = '||';
-            $current       = static::_getExpressionResult($matches, $context);
-            $result        = \loeye\lib\Operator::logicOperation($result, $logicOperator, $current);
-            $end           = end($matches);
-            $offset        = $end[1] + mb_strlen($end[0]);
+            $current = static::_getExpressionResult($matches, $context);
+            $result = Operator::logicOperation($result, $logicOperator, $current);
+            $end = end($matches);
+            $offset = $end[1] + mb_strlen($end[0]);
         }
         return $result;
     }
@@ -192,18 +176,19 @@ class ModuleParse
     /**
      * _getExpressionResult
      *
-     * @param array               $matches matches
-     * @param \loeye\base\Context $context context
+     * @param array $matches matches
+     * @param Context $context context
      *
      * @return bool
      */
-    static private function _getExpressionResult($matches, \loeye\base\Context $context)
+    private static function _getExpressionResult($matches, Context $context): bool
     {
-        $preoperator = empty($matches[2][0]) ? null : $matches[2][0];
-        $subject1    = empty($matches[3][0]) ? $matches[3][0] : self::parseInput($matches[3][0], $context);
-        $operator    = empty($matches[4][0]) ? null : $matches[4][0];
-        $subject2    = (!isset($matches[5][0]) || $matches[5][0] == '') ? null : self::parseInput($matches[5][0], $context);
-        return \loeye\lib\Operator::excute($subject1, $operator, $subject2, $preoperator);
+        $preOperator = empty($matches[2][0]) ? null : $matches[2][0];
+        $subject1 = empty($matches[3][0]) ? $matches[3][0] : self::parseInput($matches[3][0], $context);
+        $operator = empty($matches[4][0]) ? null : $matches[4][0];
+        $subject2 = (!isset($matches[5][0]) || $matches[5][0] === '') ? null : self::parseInput($matches[5][0],
+            $context);
+        return Operator::execute($subject1, $operator, $subject2, $preOperator);
     }
 
 }
