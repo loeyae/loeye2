@@ -17,61 +17,64 @@
 
 namespace loeye\error;
 
+use loeye\base\Exception;
+
 /**
  * BusinessException
  *
  * @author   Zhang Yi <loeyae@gmail.com>
  */
-class BusinessException extends \loeye\base\Exception
+class BusinessException extends Exception
 {
 
     /**
      * default error code
      */
-    const DEFAULT_ERROR_CODE = 500000;
+    public const DEFAULT_ERROR_CODE = 500000;
 
     /**
      * default error message
      */
-    const DEFAULT_ERROR_MSG = "Business Error";
+    public const DEFAULT_ERROR_MSG = 'Business Error';
 
-    const INVALID_CONFIG_SET_CODE = 500001;
-    const INVALID_CONFIG_SET_MSG = "Invalid config %setting%";
+    public const INVALID_CONFIG_SET_CODE = 500001;
+    public const INVALID_CONFIG_SET_MSG = 'Invalid config %setting%';
 
-    const INVALID_LANGUAGE_SET_CODE = 500002;
-    const INVALID_LANGUAGE_SET_MSG = "Invalid language setting";
+    public const INVALID_LANGUAGE_SET_CODE = 500002;
+    public const INVALID_LANGUAGE_SET_MSG = 'Invalid language setting';
 
-    const INVALID_PARAMETER_CODE = 500100;
-    const INVALID_PARAMETER_MSG = "Invalid paramter";
+    public const INVALID_PARAMETER_CODE = 500100;
+    public const INVALID_PARAMETER_MSG = 'Invalid parameter';
 
-    const INVALID_MODULE_ID_CODE = 500200;
-    const INVALID_MODULE_ID_MSG = "Invalid module id";
+    public const INVALID_MODULE_ID_CODE = 500200;
+    public const INVALID_MODULE_ID_MSG = 'Invalid module id';
 
-    const INVALID_MODULE_SET_CODE = 500200;
-    const INVALID_MODULE_SET_MSG = "Invalid module setting: %mode%";
+    public const INVALID_MODULE_SET_CODE = 500200;
+    public const INVALID_MODULE_SET_MSG = 'Invalid module setting: %mode%';
 
-    const INVALID_FILE_TYPE_CODE = 500301;
-    const INVALID_FILE_TYPE_MSG = "Invalid file type";
+    public const INVALID_FILE_TYPE_CODE = 500301;
+    public const INVALID_FILE_TYPE_MSG = 'Invalid file type';
 
-    const PDO_GENERIC_ERROR_CODE = 500400;
-    const PDO_GENERIC_ERROR_MSG = "PDO error";
+    public const PDO_GENERIC_ERROR_CODE = 500400;
+    public const PDO_GENERIC_ERROR_MSG = 'PDO error';
 
-    const PDO_SQL_SETTING_ERROR_CODE = 500401;
-    const PDO_SQL_SETTING_ERROR_MSG = "PDO sql setting error";
+    public const PDO_SQL_SETTING_ERROR_CODE = 500401;
+    public const PDO_SQL_SETTING_ERROR_MSG = 'PDO sql setting error';
 
-    const INVALID_PLUGIN_ERROR_CODE = 500500;
-    const INVALID_PLUGIN_ERROR_MSG = "Invalid pluging";
+    public const INVALID_PLUGIN_ERROR_CODE = 500500;
+    public const INVALID_PLUGIN_ERROR_MSG = 'Invalid plugin';
 
-    const INVALID_PLUGIN_SET_CODE = 500501;
-    const INVALID_PLUGIN_SET_MSG = "Invalid pluging setting";
+    public const INVALID_PLUGIN_SET_CODE = 500501;
+    public const INVALID_PLUGIN_SET_MSG = 'Invalid plugin setting';
 
-    const INVALID_PLUGIN_INSTANCE_CODE = 500502;
-    const INVALID_PLUGIN_INSTANCE_MSG = "Invalid pluging instance";
+    public const INVALID_PLUGIN_INSTANCE_CODE = 500502;
+    public const INVALID_PLUGIN_INSTANCE_MSG = 'Invalid plugin instance';
 
-    const INVALID_RENDER_SET_CODE = 500501;
-    const INVALID_RENDER_SET_MSG = "Invalid render setting";
+    public const INVALID_RENDER_SET_CODE = 500501;
+    public const INVALID_RENDER_SET_MSG = 'Invalid render setting';
 
-    public function __construct(string $errorMessage = self::DEFAULT_ERROR_MSG, int $errorCode = self::DEFAULT_ERROR_CODE, $parameter = array())
+    public function __construct(string $errorMessage = self::DEFAULT_ERROR_MSG, int $errorCode =
+    self::DEFAULT_ERROR_CODE, $parameter = array())
     {
         parent::__construct($errorMessage, $errorCode, $parameter);
     }

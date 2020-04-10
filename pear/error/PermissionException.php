@@ -17,35 +17,38 @@
 
 namespace loeye\error;
 
+use loeye\base\Exception;
+
 /**
  * PermissionException
  *
  * @author   Zhang Yi <loeyae@gmail.com>
  */
-class PermissionException extends \loeye\base\Exception
+class PermissionException extends Exception
 {
 
     /**
      * default error code
      */
-    const DEFAULT_ERROR_CODE = 430000;
+    public const DEFAULT_ERROR_CODE = 430000;
 
     /**
      * default error message
      */
-    const DEFAULT_ERROR_MSG = "Permission Error";
+    public const DEFAULT_ERROR_MSG = 'Permission Error';
 
-    const ACCESS_DENIED = 401;
+    public const ACCESS_DENIED = 401;
 
-    const LOGIN_FAILED = 401001;
+    public const LOGIN_FAILED = 401001;
 
-    const ACCESS_UNAPPROVED = 401002;
+    public const ACCESS_UNAPPROVED = 401002;
 
-    const CRUMB_ERROR_CODE = 401003;
+    public const CRUMB_ERROR_CODE = 401003;
 
-    const REPEAT_ERROR_CODE = 401004;
+    public const REPEAT_ERROR_CODE = 401004;
 
-    public function __construct(string $errorMessage = self::DEFAULT_ERROR_MSG, int $errorCode = self::DEFAULT_ERROR_CODE, $parameter = array())
+    public function __construct(string $errorMessage = self::DEFAULT_ERROR_MSG, int $errorCode =
+    self::DEFAULT_ERROR_CODE, $parameter = array())
     {
         parent::__construct($errorMessage, $errorCode, $parameter);
     }

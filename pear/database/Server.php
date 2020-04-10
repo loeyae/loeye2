@@ -69,18 +69,18 @@ class Server
     /**
      * setEntity
      *
-     * @param object $entity
+     * @param string $entity
      */
-    final public function setEntity($entity)
+    final public function setEntity($entity): void
     {
         $this->entityClass = $entity;
     }
 
     /**
      *
-     * @return obejct
+     * @return string
      */
-    final public function getEntity()
+    final public function getEntity(): string
     {
         return $this->entityClass;
     }

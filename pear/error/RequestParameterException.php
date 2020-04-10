@@ -15,29 +15,31 @@
  * @link     https://github.com/loeyae/loeye2.git
  */
 namespace loeye\error;
+use loeye\base\Exception;
+
 /**
  * ParameterException
  *
  * @author   Zhang Yi <loeyae@gmail.com>
  */
-class RequestParameterException extends \loeye\base\Exception
+class RequestParameterException extends Exception
 {
 
     /**
      * default error code
      */
-    const DEFAULT_ERROR_CODE = 410000;
+    public const DEFAULT_ERROR_CODE = 410000;
 
     /**
      * default error message
      */
-    const DEFAULT_ERROR_MSG = "Request Parameter Error";
+    public const DEFAULT_ERROR_MSG = 'Request Parameter Error';
 
-    const REQUEST_BODY_EMPTY_CODE = 410100;
+    public const REQUEST_BODY_EMPTY_CODE = 410100;
 
-    const REQUEST_BODY_EMPTY_MSG = "Request Body Not Allowed Empty";
+    public const REQUEST_BODY_EMPTY_MSG = 'Request Body Not Allowed Empty';
 
-    const REQUEST_PARAMETER_ERROR_CODE = 410200;
+    public const REQUEST_PARAMETER_ERROR_CODE = 410200;
 
     public static $PARAMETER_ERROR_MSG_TEMPLATES = [
         'path_var_not_empty' => 'Path Variable %field% Not Emprty',
@@ -46,7 +48,8 @@ class RequestParameterException extends \loeye\base\Exception
         'parameter_required' => 'Parameter Variable %field% Must Be Required',
     ];
 
-    public function __construct(string $errorMessage = self::DEFAULT_ERROR_MSG, int $errorCode = self::DEFAULT_ERROR_CODE, $parameter = array())
+    public function __construct(string $errorMessage = self::DEFAULT_ERROR_MSG, int $errorCode =
+    self::DEFAULT_ERROR_CODE, $parameter = array())
     {
         parent::__construct($errorMessage, $errorCode, $parameter);
     }

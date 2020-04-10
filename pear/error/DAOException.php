@@ -15,24 +15,27 @@
  * @link     https://github.com/loeyae/loeye2.git
  */
 namespace loeye\error;
+use loeye\base\Exception;
+
 /**
  * DAOException
  *
  * @author   Zhang Yi <loeyae@gmail.com>
  */
-class DAOException extends \loeye\base\Exception
+class DAOException extends Exception
 {
     /**
      * default error code
      */
-    const DEFAULT_ERROR_CODE = 510000;
+    public const DEFAULT_ERROR_CODE = 510000;
 
     /**
      * default error message
      */
-    const DEFAULT_ERROR_MSG = "DataBase Error";
+    public const DEFAULT_ERROR_MSG = 'DataBase Error';
 
-    public function __construct(string $errorMessage = self::DEFAULT_ERROR_MSG, int $errorCode = self::DEFAULT_ERROR_CODE, $parameter = array())
+    public function __construct(string $errorMessage = self::DEFAULT_ERROR_MSG, int $errorCode =
+    self::DEFAULT_ERROR_CODE, $parameter = array())
     {
         parent::__construct($errorMessage, $errorCode, $parameter);
     }

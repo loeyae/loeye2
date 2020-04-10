@@ -17,37 +17,40 @@
 
 namespace loeye\error;
 
+use loeye\base\Exception;
+
 /**
- * ConfigExcption
+ * ConfigException
  *
  * @author   Zhang Yi <loeyae@gmail.com>
  */
-class LogicException extends \loeye\base\Exception
+class LogicException extends Exception
 {
 
     /**
      * default error code
      */
-    const DEFAULT_ERROR_CODE = 900000;
+    public const DEFAULT_ERROR_CODE = 900000;
 
     /**
      * default error message
      */
-    const DEFAULT_ERROR_MSG = "Logic Error";
+    public const DEFAULT_ERROR_MSG = 'Logic Error';
 
-    const CONTEXT_KEY_NOT_FOUND  = 900101;
-    const CONTEXT_KEY_NOT_FOUND_MSG  = "%key% of context not exists";
-    const CONTEXT_VALUE_IS_EMPTY = 900102;
-    const CONTEXT_VALUE_IS_EMPTY_MSG = "%key% of context is empty";
+    public const CONTEXT_KEY_NOT_FOUND  = 900101;
+    public const CONTEXT_KEY_NOT_FOUND_MSG  = '%key% of context not exists';
+    public const CONTEXT_VALUE_IS_EMPTY = 900102;
+    public const CONTEXT_VALUE_IS_EMPTY_MSG = '%key% of context is empty';
 
-    const DATA_KEY_NOT_FOUND  = 900201;
-    const DATA_KEY_NOT_FOUND_MSG  = "%key% of %data% not exists";
-    const DATA_VALUE_IS_EMPTY = 900202;
-    const DATA_VALUE_IS_EMPTY_MSG = "%key% of %data% is empty";
-    const DATA_AT_LEAST_EXIST_ONE_KEY = 900203;
-    const DATA_AT_LEAST_EXIST_ONE_KEY_ERROR = "%data% contains one of %keyList%";
+    public const DATA_KEY_NOT_FOUND  = 900201;
+    public const DATA_KEY_NOT_FOUND_MSG  = '%key% of %data% not exists';
+    public const DATA_VALUE_IS_EMPTY = 900202;
+    public const DATA_VALUE_IS_EMPTY_MSG = '%key% of %data% is empty';
+    public const DATA_AT_LEAST_EXIST_ONE_KEY = 900203;
+    public const DATA_AT_LEAST_EXIST_ONE_KEY_ERROR = '%data% contains one of %keyList%';
 
-    public function __construct(string $errorMessage = self::DEFAULT_ERROR_MSG, int $errorCode = self::DEFAULT_ERROR_CODE, $parameter = array())
+    public function __construct(string $errorMessage = self::DEFAULT_ERROR_MSG, int $errorCode =
+    self::DEFAULT_ERROR_CODE, $parameter = array())
     {
         parent::__construct($errorMessage, $errorCode, $parameter);
     }
