@@ -157,11 +157,11 @@ abstract class Client
      *
      * @param string $cmd command
      * @param Request $req request
-     * @param mixed                 &$ret ret
+     * @param mixed &$ret ret
      *
-     * @return void
+     * @return mixed
      */
-    protected function request($cmd, Request $req, &$ret): void
+    protected function request($cmd, Request $req, &$ret)
     {
         $header = array();
         if (!isset($this->_headers['Expect'])) {
