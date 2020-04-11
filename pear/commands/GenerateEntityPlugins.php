@@ -15,6 +15,7 @@ namespace loeye\commands;
 use Doctrine\Persistence\Mapping\ClassMetadata;
 use loeye\console\Command;
 use Symfony\Component\Console\{Input\InputInterface, Output\OutputInterface, Style\SymfonyStyle};
+use loeye\console\helper\EntityGeneratorTrait;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionMethod;
@@ -28,7 +29,7 @@ use ReflectionParameter;
 class GenerateEntityPlugins extends Command
 {
 
-    use \loeye\console\helper\EntityGeneratorTrait;
+    use EntityGeneratorTrait;
 
     protected $args = [
         ['property', 'required' => true, 'help' => 'The application property name.']
@@ -125,7 +126,7 @@ class <className> extends <abstractClassName>
     protected $serverName = <serverClass>::class;
 
     /**
-     * excute
+     * execute
      *
      * @param \loeye\base\Context $context context
      * @param array               $inputs  inputs
