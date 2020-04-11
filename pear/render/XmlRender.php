@@ -17,6 +17,9 @@
 
 namespace loeye\render;
 
+use loeye\std\Response;
+use SimpleXMLElement;
+
 /**
  * Description of XmlRender
  *
@@ -39,7 +42,7 @@ class XmlRender implements \loeye\std\Render
      * @return void
      */
     public function __construct(
-            $rootNodeName = 'xml', $hasCDATA = false, $defaultNodeName = 'itme'
+            $rootNodeName = 'xml', $hasCDATA = false, $defaultNodeName = 'item'
     )
     {
         $this->_rootNodeName    = $rootNodeName;
@@ -50,11 +53,11 @@ class XmlRender implements \loeye\std\Render
     /**
      * header
      *
-     * @param \loeye\std\Response $response response
+     * @param Response $response response
      *
      * @return void
      */
-    public function header(\loeye\std\Response $response)
+    public function header(Response $response): void
     {
         $response->addHeader('Content-Type', 'application/xml; charset=UTF-8');
         $response->setHeaders();
@@ -63,13 +66,13 @@ class XmlRender implements \loeye\std\Render
     /**
      * output
      *
-     * @param \loeye\std\Response $reponse response
+     * @param Response $response response
      *
      * @return void
      */
-    public function output(\loeye\std\Response $reponse)
+    public function output(Response $response): void
     {
-        $output = $reponse->getOutput();
+        $output = $response->getOutput();
 
         $xml = $this->array2xml($output);
 
@@ -83,16 +86,16 @@ class XmlRender implements \loeye\std\Render
      *
      * @return string
      */
-    public function array2xml($array)
+    public function array2xml($array): string
     {
         $xmlRoot      = <<<XML
         <$this->_rootNodeName>
         </$this->_rootNodeName>
 XML;
-        $simplexmlObj = simplexml_load_string($xmlRoot);
-        $this->_addXMLChild($simplexmlObj, $array);
+        $simpleXmlObj = simplexml_load_string($xmlRoot);
+        $this->_addXMLChild($simpleXmlObj, $array);
 
-        return $simplexmlObj->asXML();
+        return $simpleXmlObj->asXML();
     }
 
     /**
@@ -102,23 +105,23 @@ XML;
      *
      * @return array
      */
-    public function xml2array($xmlString)
+    public function xml2array($xmlString): array
     {
-        $simplexmlObj = simplexml_load_string($xmlString, 'SimpleXMLElement', LIBXML_NOCDATA);
-        return $this->_getXMLChild($simplexmlObj);
+        $simpleXmlObj = simplexml_load_string($xmlString, 'SimpleXMLElement', LIBXML_NOCDATA);
+        return $this->_getXMLChild($simpleXmlObj);
     }
 
     /**
      * _getXMLChild
      *
-     * @param \SimpleXMLElement $simplexmlObj SimpleXMLElement
+     * @param SimpleXMLElement $simpleXmlObj SimpleXMLElement
      *
      * @return array
      */
-    private function _getXMLChild(\SimpleXMLElement $simplexmlObj)
+    private function _getXMLChild(SimpleXMLElement $simpleXmlObj): array
     {
         $data = array();
-        foreach ($simplexmlObj->children() as $child) {
+        foreach ($simpleXmlObj->children() as $child) {
             if (count($child) > 0) {
                 $value = $this->_getXMLChild($child);
             } else {
@@ -136,31 +139,33 @@ XML;
     /**
      * _addXMLChild
      *
-     * @param \SimpleXMLElement $simplexmlObj    SimpleXMLElement
+     * @param SimpleXMLElement $simpleXmlObj    SimpleXMLElement
      * @param array             $children        children
-     * @param \SimpleXMLElement $parentObj       parent SimpleXMLElement
+     * @param SimpleXMLElement $parentObj       parent SimpleXMLElement
      * @param string            $defaultNodeName default Node Name
      *
      * @return void
      */
     private function _addXMLChild(
-            \SimpleXMLElement $simplexmlObj, $children, $parentObj = null, $defaultNodeName = null
-    )
+        SimpleXMLElement $simpleXmlObj, $children, $parentObj = null, $defaultNodeName = null
+    ): void
     {
         if (empty($defaultNodeName)) {
             $defaultNodeName = $this->_defaultNodeName;
         }
         foreach ($children as $key => $child) {
             $nodeName = is_numeric($key) ? $defaultNodeName : $key;
-            if (is_numeric($key) && $key == 0 && $parentObj instanceof \SimpleXMLElement) {
-                $childObj = $simplexmlObj;
-            } else if (is_numeric($key) && $parentObj instanceof \SimpleXMLElement) {
-                $childObj = $parentObj->addChild($nodeName);
+            if (is_numeric($key) && $parentObj instanceof SimpleXMLElement) {
+                if ($key == 0) {
+                    $childObj = $simpleXmlObj;
+                } else {
+                    $childObj = $parentObj->addChild($nodeName);
+                }
             } else {
-                $childObj = $simplexmlObj->addChild($nodeName);
+                $childObj = $simpleXmlObj->addChild($nodeName);
             }
             if (is_array($child)) {
-                $this->_addXMLChild($childObj, $child, $simplexmlObj, $nodeName);
+                $this->_addXMLChild($childObj, $child, $simpleXmlObj, $nodeName);
             } else {
                 $childNode = dom_import_simplexml($childObj);
                 $childDom  = $childNode->ownerDocument;

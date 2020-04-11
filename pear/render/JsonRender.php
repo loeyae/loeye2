@@ -17,23 +17,26 @@
 
 namespace loeye\render;
 
+use loeye\std\Render;
+use loeye\std\Response;
+
 /**
  * Description of JsonRender
  *
  * @author   Zhang Yi <loeyae@gmail.com>
  */
-class JsonRender implements \loeye\std\Render
+class JsonRender implements Render
 {
     //put your code here
 
     /**
      * header
      *
-     * @param \loeye\std\Response $response response
+     * @param Response $response response
      *
      * @return void
      */
-    public function header(\loeye\std\Response $response)
+    public function header(Response $response): void
     {
         $response->addHeader('Content-Type', 'application/json; charset=UTF-8');
         $response->setHeaders();
@@ -42,13 +45,13 @@ class JsonRender implements \loeye\std\Render
     /**
      * output
      *
-     * @param \loeye\std\Response $reponse response
+     * @param Response $response response
      *
      * @return void
      */
-    public function output(\loeye\std\Response $reponse)
+    public function output(Response $response): void
     {
-        $output = $reponse->getOutput();
+        $output = $response->getOutput();
 
         $json = json_encode($output, true);
 

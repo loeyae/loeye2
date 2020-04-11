@@ -17,22 +17,25 @@
 
 namespace loeye\render;
 
+use loeye\std\Render;
+use loeye\std\Response;
+
 /**
  * Description of SegmentRender
  *
  * @author   Zhang Yi <loeyae@gmail.com>
  */
-class SegmentRender implements \loeye\std\Render
+class SegmentRender implements Render
 {
 
     /**
      * header
      *
-     * @param \loeye\std\Response $response respnse
+     * @param Response $response response
      *
      * @return void
      */
-    public function header(\loeye\std\Response $response)
+    public function header(Response $response): void
     {
         $headers = $response->getHeaders();
         if (!array_key_exists('Content-Type', $headers) && !array_key_exists('Content-type', $headers) && !array_key_exists('content-type', $headers)) {
@@ -44,26 +47,26 @@ class SegmentRender implements \loeye\std\Render
     /**
      * output
      *
-     * @param \loeye\std\Response $response response
+     * @param Response $response response
      *
      * @return void
      */
-    public function output(\loeye\std\Response $response)
+    public function output(Response $response): void
     {
         $output = $response->getOutput();
-        foreach ($output as $sagment) {
-            $this->fprint($sagment);
+        foreach ($output as $segment) {
+            $this->fprint($segment);
         }
     }
 
     /**
      * fprint
      *
-     * @param string $item item
+     * @param mixed $item item
      *
-     * @reutn void;
+     * @reutn void
      */
-    protected function fprint($item)
+    protected function fprint($item): void
     {
         if (is_array($item)) {
             foreach ($item as $value) {

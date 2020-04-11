@@ -17,22 +17,26 @@
 
 namespace loeye\render;
 
+use loeye\std\Render;
+use loeye\std\Response;
+use loeye\web\Resource;
+
 /**
  * Description of HtmlRender
  *
  * @author   Zhang Yi <loeyae@gmail.com>
  */
-class HtmlRender implements \loeye\std\Render
+class HtmlRender implements Render
 {
 
     /**
      * header
      *
-     * @param \LOEYE\Response $response response
+     * @param Response $response response
      *
      * @return void
      */
-    public function header(Response $response)
+    public function header(Response $response): void
     {
         $response->addHeader('Content-Type', 'text/html; charset=UTF-8');
         $response->setHeaders();
@@ -41,19 +45,20 @@ class HtmlRender implements \loeye\std\Render
     /**
      * output
      *
-     * @param \loeye\std\Response $response response
+     * @param Response $response response
      *
      * @return void
      */
-    public function output(\loeye\std\Response $response)
+    public function output(Response $response): void
     {
-        echo '<html>';
+        echo '<!DOCTYPE html>';
+        echo '<html lang="zh">';
         echo '<head>';
         echo $this->_renderHead($response);
         echo $this->_renderResource($response, Resource::RESOURCE_TYPE_CSS);
         echo '</head>';
         echo '<body>';
-        echo $this->_renderBody($response);
+        $this->_renderBody($response);
         echo $this->_renderResource($response, Resource::RESOURCE_TYPE_JS);
         echo '</body>';
         echo '</html>';
@@ -62,11 +67,11 @@ class HtmlRender implements \loeye\std\Render
     /**
      * _renderHead
      *
-     * @param \loeye\std\Response $response response
+     * @param Response $response response
      *
      * @return string
      */
-    private function _renderHead(\loeye\std\Response $response)
+    private function _renderHead(Response $response): string
     {
         $head = $response->getHtmlHead();
         return implode(PHP_EOL, $head);
@@ -75,11 +80,11 @@ class HtmlRender implements \loeye\std\Render
     /**
      * _renderBody
      *
-     * @param \loeye\std\Response $response response
+     * @param Response $response response
      *
-     * @return string
+     * @return void
      */
-    private function _renderBody(\loeye\std\Response $response)
+    private function _renderBody(Response $response): void
     {
         $output = $response->getOutput();
         foreach ($output as $item) {
@@ -90,29 +95,29 @@ class HtmlRender implements \loeye\std\Render
     /**
      * renderResource
      *
-     * @param \loeye\std\Response $response response
+     * @param Response $response response
      * @param string               $type     type
      *
-     * @return string
+     * @return string|null
      */
-    private function _renderResource(\loeye\std\Response $response, $type)
+    private function _renderResource(Response $response, $type): ?string
     {
         $resource = $response->getResource($type);
-        if ($resource !== null) {
+        if ($resource instanceof Resource) {
             return $resource->toHtml();
-        } else {
-            return null;
         }
+
+        return null;
     }
 
     /**
      * _fprint
      *
-     * @param string $item item
+     * @param mixed $item item
      *
      * @reutn void;
      */
-    private function _fprint($item)
+    private function _fprint($item): void
     {
         if (is_array($item)) {
             foreach ($item as $value) {

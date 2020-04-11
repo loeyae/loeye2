@@ -17,6 +17,8 @@
 
 namespace loeye\web;
 
+use loeye\error\BusinessException;
+
 /**
  * Response
  *
@@ -25,8 +27,8 @@ namespace loeye\web;
 class Response extends \loeye\std\Response
 {
 
-    const DEFAULT_RENDER_ID = 'default';
-    const DEFAULT_MOBILE_RENDER_ID = 'mobile';
+    public const DEFAULT_RENDER_ID = 'default';
+    public const DEFAULT_MOBILE_RENDER_ID = 'mobile';
 
     private $_renderId = self::DEFAULT_RENDER_ID;
     private $_resource = array();
@@ -48,7 +50,7 @@ class Response extends \loeye\std\Response
      *
      * @return boolean
      */
-    public function offsetExists($offset)
+    public function offsetExists($offset): bool
     {
         $methodList = array(
             'getHeaders',
@@ -59,7 +61,7 @@ class Response extends \loeye\std\Response
             'getResourceTypes',
             'getRedirectUrl',
         );
-        if (in_array($offset, $methodList) || in_array($offset, $propertyList)) {
+        if (in_array($offset, $methodList, true)) {
             return true;
         }
         return false;
@@ -94,7 +96,7 @@ class Response extends \loeye\std\Response
      * @param mixed $offset offset
      * @param mixed $value  value
      *
-     * @return void
+     * @return mixed|void
      */
     public function offsetSet($offset, $value)
     {
@@ -104,6 +106,7 @@ class Response extends \loeye\std\Response
             case 'addResource':
             case 'setRedirectUrl':
                 $this->$offset($value);
+                break;
             default :
                 break;
         }
@@ -114,12 +117,12 @@ class Response extends \loeye\std\Response
      *
      * @param mixed $offset offset
      *
-     * @return void
+     * @return mixed|void
      */
     public function offsetUnset($offset)
     {
-        return;
     }
+
     /**
      * addHtmlHead
      *
@@ -127,7 +130,7 @@ class Response extends \loeye\std\Response
      *
      * @return void
      */
-    public function addHtmlHead($data)
+    public function addHtmlHead($data): void
     {
         $this->_htmlHead[] = $data;
     }
@@ -137,7 +140,7 @@ class Response extends \loeye\std\Response
      *
      * @return array()
      */
-    public function getHtmlHead()
+    public function getHtmlHead(): array
     {
         return $this->_htmlHead;
     }
@@ -145,9 +148,9 @@ class Response extends \loeye\std\Response
     /**
      * getOutput
      *
-     * @return array()
+     * @return array
      */
-    public function getOutput()
+    public function getOutput(): array
     {
         return $this->output;
     }
@@ -157,7 +160,7 @@ class Response extends \loeye\std\Response
      *
      * @return void
      */
-    public function flush()
+    public function flush(): void
     {
         $this->output = array();
     }
@@ -169,7 +172,7 @@ class Response extends \loeye\std\Response
      *
      * @return void;
      */
-    public function setRenderId($renderId)
+    public function setRenderId($renderId): void
     {
         $this->_renderId = $renderId;
     }
@@ -179,7 +182,7 @@ class Response extends \loeye\std\Response
      *
      * @return string
      */
-    public function getRenderId()
+    public function getRenderId(): string
     {
         return $this->_renderId;
     }
@@ -187,11 +190,11 @@ class Response extends \loeye\std\Response
     /**
      * addResource
      *
-     * @param \LOEYE\Resource $resource resource
+     * @param Resource $resource
      *
      * @return void
      */
-    public function addResource(Resource $resource)
+    public function addResource(Resource $resource): void
     {
         $type                   = $resource->getType();
         $this->_resource[$type] = $resource;
@@ -202,12 +205,12 @@ class Response extends \loeye\std\Response
      *
      * @param string $type type
      *
-     * @return Object
+     * @return Resource|Resource[]|null
      */
     public function getResource($type = null)
     {
         if (isset($type)) {
-            return isset($this->_resource[$type]) ? $this->_resource[$type] : null;
+            return $this->_resource[$type] ?? null;
         }
         return $this->_resource;
     }
@@ -217,7 +220,7 @@ class Response extends \loeye\std\Response
      *
      * @return array
      */
-    public function getResourceTypes()
+    public function getResourceTypes(): array
     {
         return array_keys($this->_resource);
     }
@@ -229,7 +232,7 @@ class Response extends \loeye\std\Response
      *
      * @return void
      */
-    public function setRedirectUrl($url)
+    public function setRedirectUrl($url): void
     {
         $this->_redirectUrl = $url;
     }
@@ -239,7 +242,7 @@ class Response extends \loeye\std\Response
      *
      * @return string
      */
-    public function getRedirectUrl()
+    public function getRedirectUrl(): string
     {
         return $this->_redirectUrl;
     }
@@ -251,8 +254,9 @@ class Response extends \loeye\std\Response
      *
      * @return void
      * @SuppressWarnings(PHPMD.ExitExpression)
+     * @throws BusinessException
      */
-    public function redirect($redirectUrl = null)
+    public function redirect($redirectUrl = null): void
     {
         if (empty($redirectUrl)) {
             $redirectUrl = $this->_redirectUrl;
@@ -261,9 +265,9 @@ class Response extends \loeye\std\Response
             header("Location:$redirectUrl");
             exit;
         }
-        throw new \loeye\error\BusinessException(
-            \loeye\error\BusinessException::INVALID_PARAMETER_MSG,
-            \loeye\error\BusinessException::INVALID_PARAMETER_CODE
+        throw new BusinessException(
+            BusinessException::INVALID_PARAMETER_MSG,
+            BusinessException::INVALID_PARAMETER_CODE
         );
     }
 
