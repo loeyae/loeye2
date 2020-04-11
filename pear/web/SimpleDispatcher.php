@@ -17,7 +17,18 @@
 
 namespace loeye\web;
 
+use loeye\base\Exception;
+use loeye\base\UrlManager;
+use loeye\base\Utils;
+use loeye\error\ResourceException;
 use loeye\lib\ModuleParse;
+use loeye\std\Controller;
+use Psr\Cache\InvalidArgumentException;
+use ReflectionClass;
+use ReflectionException;
+use ReflectionMethod;
+use Symfony\Component\Cache\Exception\CacheException;
+use function loeye\base\ExceptionHandler;
 
 /**
  * SimpleDispatcher
@@ -44,9 +55,10 @@ class SimpleDispatcher extends \loeye\std\Dispatcher
     /**
      * dispatcher
      *
+     * @param string|null $moduleId module id
      * @return void
      */
-    public function dispatch($moduleId = null)
+    public function dispatch($moduleId = null): void
     {
         try {
             $this->parseUrl();
@@ -56,20 +68,20 @@ class SimpleDispatcher extends \loeye\std\Dispatcher
             $this->initLogger();
             $this->setTimezone();
             $this->initComponent();
-            $object = $this->excuteModule();
+            $object = $this->executeModule();
             $this->redirectUrl();
 
             $view = $this->getView($object);
             $this->executeView($view);
             $this->executeOutput();
-        } catch (\loeye\base\Exception $exc) {
-            \loeye\base\ExceptionHandler($exc, $this->context);
+        } catch (Exception $exc) {
+            ExceptionHandler($exc, $this->context);
         } catch (\Exception $exc) {
-            \loeye\base\ExceptionHandler($exc, $this->context);
+            ExceptionHandler($exc, $this->context);
         }
-        if ($this->processMode == LOEYE_PROCESS_MODE__TEST) {
+        if ($this->processMode === LOEYE_PROCESS_MODE__TEST) {
             $this->setTraceDataIntoContext(array());
-            \loeye\base\Utils::logContextTrace($this->context);
+            Utils::logContextTrace($this->context);
         }
     }
 
@@ -80,23 +92,21 @@ class SimpleDispatcher extends \loeye\std\Dispatcher
      *
      * @return void
      */
-    protected function initIOObject($moduleId)
+    protected function initIOObject($moduleId): void
     {
-        $request = new \loeye\web\Request($moduleId);
+        $request = new Request($moduleId);
 
         $this->context->setRequest($request);
 
-        $response = new \loeye\web\Response();
-        if (defined('MOBILE_RENDER_ENABLE') && MOBILE_RENDER_ENABLE) {
-            if ($request->device) {
-                $response->setRenderId(\loeye\web\Response::DEFAULT_MOBILE_RENDER_ID);
-            }
+        $response = new Response();
+        if (defined('MOBILE_RENDER_ENABLE') && MOBILE_RENDER_ENABLE && $request['device']) {
+            $response->setRenderId(Response::DEFAULT_MOBILE_RENDER_ID);
         }
         $response->setFormat($request->getFormatType());
         $this->context->setResponse($response);
     }
 
-    protected function getView(\loeye\std\Controller $object)
+    protected function getView(Controller $object): array
     {
         $view = [];
         if (!empty($object->view)) {
@@ -113,31 +123,33 @@ class SimpleDispatcher extends \loeye\std\Dispatcher
     }
 
     /**
-     * excuteModule
+     * executeModule
      *
-     * @throws \loeye\base\Exception
+     * @throws Exception
+     * @throws ReflectionException
      */
-    protected function excuteModule()
+    protected function executeModule()
     {
-        $controllerNamespace = $this->context->getAppConfig()->getSetting('controler_namespace', '');
+        $controllerNamespace = $this->context->getAppConfig()->getSetting('controller_namespace', '');
         if (!$controllerNamespace) {
-            $controllerNamespace = PROJECT_NAMESPACE . '\\controllers\\' . mb_convert_case($this->context->getAppConfig()->getPropertyName(), MB_CASE_LOWER);
+            $controllerNamespace = PROJECT_NAMESPACE . '\\controllers\\' . mb_convert_case
+                ($this->context->getAppConfig()->getPropertyName(), MB_CASE_LOWER);
         }
         $controller = $controllerNamespace . '\\' . ucfirst($this->controller) . ucfirst(self::KEY_CONTROLLER);
 
         $action = ucfirst($this->action) . ucfirst(self::KEY_ACTION);
 
         if (!class_exists($controller)) {
-            throw new \loeye\error\ResourceException(\loeye\error\ResourceException::PAGE_NOT_FOUND_MSG, \loeye\error\ResourceException::PAGE_NOT_FOUND_CODE);
+            throw new ResourceException(ResourceException::PAGE_NOT_FOUND_MSG, ResourceException::PAGE_NOT_FOUND_CODE);
         }
-        $ref    = new \ReflectionClass($controller);
+        $ref    = new ReflectionClass($controller);
         $object = $ref->newInstance($this->context);
         if (!method_exists($object, $action)) {
-            throw new \loeye\error\ResourceException(\loeye\error\ResourceException::PAGE_NOT_FOUND_MSG, \loeye\error\ResourceException::PAGE_NOT_FOUND_CODE);
+            throw new ResourceException(ResourceException::PAGE_NOT_FOUND_MSG, ResourceException::PAGE_NOT_FOUND_CODE);
         }
         $prepare = $object->prepare();
         if ($prepare) {
-            $refMethod = new \ReflectionMethod($object, $action);
+            $refMethod = new ReflectionMethod($object, $action);
             $refMethod->invoke($object);
         }
         return $object;
@@ -158,7 +170,7 @@ class SimpleDispatcher extends \loeye\std\Dispatcher
      *
      * @return void
      */
-    public function init(array $setting)
+    public function init(array $setting): void
     {
         isset($setting[self::KEY_MODULE]) && $this->module     = $setting[self::KEY_MODULE];
         isset($setting[self::KEY_CONTROLLER]) && $this->controller = $setting[self::KEY_CONTROLLER];
@@ -169,48 +181,48 @@ class SimpleDispatcher extends \loeye\std\Dispatcher
     /**
      * parseUrl
      *
-     * @throws \loeye\base\Exception
+     * @throws Exception
      */
-    protected function parseUrl()
+    protected function parseUrl(): void
     {
         $requestUrl = filter_input(INPUT_SERVER, 'REQUEST_URI');
         $path       = null;
         if ($this->rewrite) {
-            $router = new \loeye\base\UrlManager($this->rewrite);
+            $router = new UrlManager($this->rewrite);
             $this->context->setUrlManager($router);
             $path   = $router->match($requestUrl);
             if ($path === false) {
-                throw new \loeye\error\ResourceException(\loeye\error\ResourceException::PAGE_NOT_FOUND_MSG, \loeye\error\ResourceException::PAGE_NOT_FOUND_CODE);
+                throw new ResourceException(ResourceException::PAGE_NOT_FOUND_MSG, ResourceException::PAGE_NOT_FOUND_CODE);
             }
         }
-        if ($path == null && filter_has_var(INPUT_GET, self::KEY_REQUEST_URI)) {
+        if ($path === null && filter_has_var(INPUT_GET, self::KEY_REQUEST_URI)) {
             $path = filter_input(INPUT_GET, self::KEY_REQUEST_URI);
         }
         if (!empty($path)) {
             $parts = explode('/', trim($path, '/'));
             if (isset($parts[2])) {
                 $this->module     = $parts[0];
-                $this->controller = \loeye\base\Utils::camelize($parts[1]);
-                $this->action     = \loeye\base\Utils::camelize($parts[2]);
+                $this->controller = Utils::camelize($parts[1]);
+                $this->action     = Utils::camelize($parts[2]);
             } else if (isset($parts[1])) {
-                $this->controller = \loeye\base\Utils::camelize($parts[0]);
-                $this->action     = \loeye\base\Utils::camelize($parts[1]);
+                $this->controller = Utils::camelize($parts[0]);
+                $this->action     = Utils::camelize($parts[1]);
             } else {
-                $this->controller = \loeye\base\Utils::camelize($parts[0]);
+                $this->controller = Utils::camelize($parts[0]);
             }
         } else {
             if (filter_has_var(INPUT_GET, self::KEY_REQUEST_MODULE)) {
                 $this->module = filter_input(INPUT_GET, self::KEY_REQUEST_MODULE);
             }
             if (filter_has_var(INPUT_GET, self::KEY_REQUEST_CONTROLLER)) {
-                $this->controller = \loeye\base\Utils::camelize(filter_input(INPUT_GET, self::KEY_REQUEST_CONTROLLER));
+                $this->controller = Utils::camelize(filter_input(INPUT_GET, self::KEY_REQUEST_CONTROLLER));
             }
             if (filter_has_var(INPUT_GET, self::KEY_REQUEST_ACTION)) {
-                $this->action = \loeye\base\Utils::camelize(filter_input(INPUT_GET, self::KEY_REQUEST_ACTION));
+                $this->action = Utils::camelize(filter_input(INPUT_GET, self::KEY_REQUEST_ACTION));
             }
         }
         if (empty($this->module) || empty($this->controller)) {
-            throw new \loeye\error\ResourceException(\loeye\error\ResourceException::PAGE_NOT_FOUND_MSG, \loeye\error\ResourceException::PAGE_NOT_FOUND_CODE);
+            throw new ResourceException(ResourceException::PAGE_NOT_FOUND_MSG, ResourceException::PAGE_NOT_FOUND_CODE);
         }
         if (empty($this->action)) {
             $this->action = 'index';
@@ -220,18 +232,20 @@ class SimpleDispatcher extends \loeye\std\Dispatcher
     /**
      * cacheContent
      *
-     * @param array $view     view setting
+     * @param array $view view setting
      * @param string $content content
      *
      * @return void
+     * @throws Exception
+     * @throws CacheException
      */
-    protected function cacheContent($view, $content)
+    protected function cacheContent($view, $content): void
     {
         if (isset($view['cache'])) {
             if (isset($view['expire'])) {
                 $expire = $view['expire'];
             } else if (is_string($view['cache']) or is_numeric($view['cache'])) {
-                $expire = intval($view['cache']);
+                $expire = (int)$view['cache'];
             } else {
                 $expire = 0;
             }
@@ -239,7 +253,7 @@ class SimpleDispatcher extends \loeye\std\Dispatcher
             if (is_array($view['cache'])) {
                 $cacheParams = ModuleParse::parseInput($view['cache'], $this->context);
             }
-            \loeye\base\Utils::setPageCache($this->context->getAppConfig(), $this->context->getRequest()->getModuleId(), $content, $expire, $cacheParams);
+            Utils::setPageCache($this->context->getAppConfig(), $this->context->getRequest()->getModuleId(), $content, $expire, $cacheParams);
         }
     }
 
@@ -249,8 +263,11 @@ class SimpleDispatcher extends \loeye\std\Dispatcher
      * @param array $view view setting
      *
      * @return string|null
+     * @throws CacheException
+     * @throws Exception
+     * @throws InvalidArgumentException
      */
-    protected function getContent($view)
+    protected function getContent($view): ?string
     {
         $content = null;
         if (isset($view['cache'])) {
@@ -258,7 +275,7 @@ class SimpleDispatcher extends \loeye\std\Dispatcher
             if (is_array($view['cache'])) {
                 $cacheParams = ModuleParse::parseInput($view['cache'], $this->context);
             }
-            $content = \loeye\base\Utils::getPageCache($this->context->getAppConfig(), $this->context->getRequest()->getModuleId(), $cacheParams);
+            $content = Utils::getPageCache($this->context->getAppConfig(), $this->context->getRequest()->getModuleId(), $cacheParams);
         }
         return $content;
     }
@@ -270,7 +287,7 @@ class SimpleDispatcher extends \loeye\std\Dispatcher
      *
      * @return string
      */
-    protected function getCacheId($view = array())
+    protected function getCacheId($view = array()): string
     {
         $cacheId = $this->module . '_' . $this->controller . '_' . $this->action;
         if (isset($view['id'])) {

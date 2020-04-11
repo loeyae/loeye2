@@ -190,7 +190,7 @@ class Response extends \loeye\std\Response
     /**
      * addResource
      *
-     * @param Resource $resource
+     * @param Resource $resource instance of resource
      *
      * @return void
      */

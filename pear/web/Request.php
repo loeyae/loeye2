@@ -17,6 +17,11 @@
 
 namespace loeye\web;
 
+use const loeye\base\RENDER_TYPE_HTML;
+use const loeye\base\RENDER_TYPE_JSON;
+use const loeye\base\RENDER_TYPE_SEGMENT;
+use const loeye\base\RENDER_TYPE_XML;
+
 /**
  * Description of Request
  *
@@ -26,10 +31,10 @@ class Request extends \loeye\std\Request
 {
 
     protected $_allowedFormatType = array(
-        \loeye\base\RENDER_TYPE_SEGMENT,
-        \loeye\base\RENDER_TYPE_HTML,
-        \loeye\base\RENDER_TYPE_XML,
-        \loeye\base\RENDER_TYPE_JSON,
+        RENDER_TYPE_SEGMENT,
+        RENDER_TYPE_HTML,
+        RENDER_TYPE_XML,
+        RENDER_TYPE_JSON,
     );
 
 }

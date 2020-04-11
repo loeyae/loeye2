@@ -36,6 +36,7 @@ abstract class Controller
      */
     protected $context;
     public $view;
+    public $layout;
 
     public function __construct(Context $context)
     {

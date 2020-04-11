@@ -17,7 +17,6 @@
 
 namespace loeye\web;
 
-use loeye\base\AutoLoadRegister;
 use loeye\base\Exception;
 use loeye\base\Factory;
 use loeye\base\ModuleDefinition;
@@ -31,6 +30,8 @@ use loeye\lib\ModuleParse;
 use loeye\std\ParallelPlugin;
 use Psr\Cache\InvalidArgumentException;
 use ReflectionException;
+use Symfony\Component\Cache\Exception\CacheException;
+use Throwable;
 use function loeye\base\ExceptionHandler;
 
 define('LOEYE_PLUGIN_HAS_ERROR', 'lyHasError');
@@ -66,7 +67,8 @@ class Dispatcher extends \loeye\std\Dispatcher
             }
 
             if (empty($moduleId)) {
-                throw new ResourceException(ResourceException::PAGE_NOT_FOUND_MSG, ResourceException::PAGE_NOT_FOUND_CODE);
+                throw new ResourceException(ResourceException::PAGE_NOT_FOUND_MSG,
+                    ResourceException::PAGE_NOT_FOUND_CODE);
             }
             $this->initAppConfig();
             $this->initConfigConstants();
@@ -118,6 +120,7 @@ class Dispatcher extends \loeye\std\Dispatcher
      * @throws Exception
      * @throws ReflectionException
      * @throws InvalidArgumentException
+     * @throws Throwable
      */
     protected function executeModule(): void
     {
@@ -235,6 +238,8 @@ class Dispatcher extends \loeye\std\Dispatcher
      * @param string $content content
      *
      * @return void
+     * @throws Exception
+     * @throws CacheException
      */
     protected function CacheContent($view, $content): void
     {
@@ -261,6 +266,9 @@ class Dispatcher extends \loeye\std\Dispatcher
      * @param array $view view setting
      *
      * @return string|null
+     * @throws CacheException
+     * @throws Exception
+     * @throws InvalidArgumentException
      */
     protected function getContent($view): ?string
     {
@@ -303,6 +311,7 @@ class Dispatcher extends \loeye\std\Dispatcher
      * @return array
      * @throws Exception
      * @throws ReflectionException
+     * @throws Throwable
      */
     private function _executePlugin($pluginSetting, $isParallel = false, $continueOnError = false): array
     {
@@ -401,6 +410,7 @@ class Dispatcher extends \loeye\std\Dispatcher
      * @return boolean
      * @throws Exception
      * @throws ReflectionException
+     * @throws Throwable
      */
     private function _executeParallelPlugin($pluginList, $continueOnError = false): bool
     {
