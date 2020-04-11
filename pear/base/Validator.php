@@ -20,17 +20,18 @@ namespace loeye\base;
 use FilesystemIterator;
 use loeye\config\validate\DeltaConfigDefinition;
 use loeye\config\validate\RulesetConfigDefinition;
+use loeye\error\BusinessException;
 use loeye\std\ConfigTrait;
 use ReflectionClass;
 use ReflectionException;
+use Symfony\Component\Translation as I18n;
+use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Constraints\All;
 use Symfony\Component\Validator\Constraints\Callback;
-use Symfony\Component\Validator\Validation;
 use Symfony\Component\Validator\ConstraintViolationList;
-use Symfony\Component\Validator\Constraints as Assert;
-use Symfony\Component\Translation as I18n;
-use loeye\error\BusinessException;
+use Symfony\Component\Validator\ConstraintViolationListInterface;
 use Symfony\Component\Validator\Context\ExecutionContext;
+use Symfony\Component\Validator\Validation;
 
 /**
  * Description of Validator
@@ -727,11 +728,12 @@ class Validator
     /**
      * buildErrmsg
      *
-     * @param ConstraintViolationList $violationList
+     * @param ConstraintViolationListInterface $violationList
      * @param \Symfony\Component\Translation\Translator $translator
      * @return array
      */
-    public static function buildErrmsg(ConstraintViolationList $violationList, \Symfony\Component\Translation\Translator $translator): array
+    public static function buildErrmsg(ConstraintViolationListInterface $violationList, \Symfony\Component\Translation\Translator
+    $translator): array
     {
         $error = [];
         for ($i = 0; $i < $violationList->count(); $i++) {

@@ -17,6 +17,9 @@
 
 namespace loeye\plugin;
 
+use loeye\base\Utils;
+use loeye\lib\Cookie;
+
 /**
  * CookiePlugin
  *
@@ -37,19 +40,19 @@ class CookiePlugin extends \loeye\std\Plugin
      * @return void
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
-    public function process(\loeye\base\Context $context, array $inputs)
+    public function process(\loeye\base\Context $context, array $inputs): void
     {
-        $setKey  = \loeye\base\Utils::getData($inputs, 'set', $this->dataKey);
-        $setData = \loeye\base\Utils::getData($context, $setKey);
+        $setKey  = Utils::getData($inputs, 'set', $this->dataKey);
+        $setData = Utils::getData($context, $setKey);
         if (!empty($setData)) {
             foreach ($setData as $key => $value) {
                 if (is_numeric($key)) {
                     continue;
                 }
-                \loeye\lib\Cookie::setCookie($key, $value);
+                Cookie::setCookie($key, $value);
             }
         }
-        $key  = \loeye\base\Utils::getData($inputs, 'get', null);
+        $key  = Utils::getData($inputs, 'get', null);
         $data = array();
         if (empty($key)) {
             $cookie = $context->getRequest()->getCookie();
@@ -63,7 +66,7 @@ class CookiePlugin extends \loeye\std\Plugin
                 $data[$item] = $context->getRequest()->getCookie($item);
             }
         }
-        \loeye\base\Utils::setContextData($data, $context, $inputs, $this->outKey);
+        Utils::setContextData($data, $context, $inputs, $this->outKey);
     }
 
 }

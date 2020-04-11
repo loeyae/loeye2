@@ -16,7 +16,11 @@
  */
 
 namespace loeye\plugin;
+
+use loeye\base\Context;
+use loeye\base\Utils;
 use loeye\error\PermissionException;
+use loeye\lib\Cookie;
 
 /**
  * CheckCrumbPlugin
@@ -32,34 +36,31 @@ class CheckCrumbPlugin extends \loeye\std\Plugin
     /**
      * process
      *
-     * @param \loeye\base\Context $context context
-     * @param array               $inputs  inputs
+     * @param Context $context context
+     * @param array $inputs inputs
      *
      * @return void
      */
-    public function process(\loeye\base\Context $context, array $inputs)
+    public function process(Context $context, array $inputs): void
     {
-        $crumbKey = \loeye\base\Utils::checkNotEmpty($inputs, $this->_settingKey);
-        if (isset($inputs['check_crumb']) && $inputs['check_crumb'] == 'true') {
-            $crumb = null;
-            if (isset($_REQUEST[$this->_crumbKey])) {
-                $crumb = $_REQUEST[$this->_crumbKey];
-            }
-            if (\loeye\lib\Cookie::validateCrumb($crumbKey, $crumb) == false) {
+        $crumbKey = Utils::checkNotEmpty($inputs, $this->_settingKey);
+        if (isset($inputs['check_crumb']) && $inputs['check_crumb'] === 'true') {
+            $crumb = $_REQUEST[$this->_crumbKey] ?? null;
+            if (Cookie::validateCrumb($crumbKey, $crumb) === false) {
                 if (isset($inputs['output']) && $inputs['output']) {
                     $outputPlugin = new OutputPlugin();
-                    $inputsData   = ['format' => $inputs['output'],
-                        'code'   => PermissionException::CRUMB_ERROR_CODE,
-                        'msg'    => 'crumb check failed'];
+                    $inputsData = ['format' => $inputs['output'],
+                        'code' => PermissionException::CRUMB_ERROR_CODE,
+                        'msg' => 'crumb check failed'];
                     $outputPlugin->process($context, $inputsData);
                 } else {
-                    \loeye\base\Utils::throwException(
-                            'crumb check failed', \PermissionException::CRUMB_ERROR_CODE);
+                    Utils::throwException(
+                        'crumb check failed', PermissionException::CRUMB_ERROR_CODE);
                 }
             }
         } else {
-            $crumb = \loeye\lib\Cookie::createCrumb($crumbKey);
-            \loeye\base\Utils::setContextData($crumb, $context, $inputs, __CLASS__ . '_crumb');
+            $crumb = Cookie::createCrumb($crumbKey);
+            Utils::setContextData($crumb, $context, $inputs, __CLASS__ . '_crumb');
         }
     }
 

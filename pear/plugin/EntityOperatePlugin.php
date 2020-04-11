@@ -17,6 +17,10 @@
 
 namespace loeye\plugin;
 
+use loeye\base\Context;
+use loeye\base\Utils;
+use loeye\database\Server;
+use loeye\error\ResourceException;
 use loeye\std\plugin;
 
 /**
@@ -30,46 +34,56 @@ class EntityOperatePlugin extends Plugin
     /**
      * process
      *
-     * @param \loeye\base\Context $context context
-     * @param array               $inputs  inputs
+     * @param Context $context context
+     * @param array $inputs inputs
      *
      * @return void
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
-    public function process(\loeye\base\Context $context, array $inputs)
+    public function process(Context $context, array $inputs): void
     {
         $appConfig = $context->getAppConfig();
-        $type      = \loeye\base\Utils::checkNotEmpty($inputs, 'db');
-        $entity    = \loeye\base\Utils::checkNotEmpty($inputs, 'entity');
+        $type = Utils::checkNotEmpty($inputs, 'db');
+        $entity = Utils::checkNotEmpty($inputs, 'entity');
         if (!class_exists($entity)) {
-            \loeye\base\Utils::throwException('entity not exists');
+            Utils::throwException('entity not exists');
         }
-        $dbType = $appConfig->getSetting('application.database.'.$type) ?? $type;
-        $server = new \loeye\database\Server($appConfig, $dbType);
+        $dbType = $appConfig->getSetting('application.database.' . $type) ?? $type;
+        $server = new Server($appConfig, $dbType);
         $server->setEntity($entity);
         $this->operate($context, $inputs, $server);
     }
 
-    protected function operate(\loeye\base\Context $context, array $inputs, \loeye\database\Server $server)
+    /**
+     * operate
+     *
+     * @param Context $context
+     * @param array $inputs
+     * @param Server $server
+     *
+     * @return void
+     */
+    protected function operate(Context $context, array $inputs, Server $server): void
     {
-        $operate = \loeye\base\Utils::checkNotEmpty($inputs, 'operate');
-        foreach ((array) $operate as $key => $value) {
-            $parameter = isset($value['in']) ? $value['in'] : array();
-            $loop      = \loeye\base\Utils::getData($value, 'loop');
-            $outKey    = \loeye\base\Utils::checkNotEmpty($value, 'out');
-            $errorKey  = \loeye\base\Utils::getData($value, 'error', 'db_operate_error_' . $key);
+        $operate = Utils::checkNotEmpty($inputs, 'operate');
+        foreach ((array)$operate as $key => $value) {
+            $parameter = $value['in'] ?? array();
+            $loop = Utils::getData($value, 'loop');
+            $outKey = Utils::checkNotEmpty($value, 'out');
+            $errorKey = Utils::getData($value, 'error', 'db_operate_error_' . $key);
             try {
+                $result = [];
                 if ($loop == true) {
-                    foreach ((array) $parameter as $dkey => $param) {
-                        $result[$dkey] = call_user_func_array(array($server, $key), (array) $param);
+                    foreach ((array)$parameter as $dkey => $param) {
+                        $result[$dkey] = call_user_func_array(array($server, $key), (array)$param);
                     }
                 } else {
-                    $result[0] = call_user_func_array(array($server, $key), (array) $parameter);
+                    $result[0] = call_user_func_array(array($server, $key), (array)$parameter);
                 }
                 $result = $this->_filterResult($result);
-                $data   = array();
+                $data = array();
                 $errors = array();
-                \loeye\base\Utils::filterResultArray($result, $data, $errors);
+                Utils::filterResultArray($result, $data, $errors);
                 if (!empty($errors)) {
                     $context->addErrors($errorKey, $errors);
                 }
@@ -82,17 +96,15 @@ class EntityOperatePlugin extends Plugin
 
     /**
      * _filterResult
-     *
-     * @param array $result result
-     *
-     * @return LoeyeException
+     * @param array $result
+     * @return array
      */
-    private function _filterResult(array $result)
+    private function _filterResult(array $result): array
     {
         foreach ($result as $key => $value) {
             if (empty($value)) {
-                $result[$key] = new \loeye\base\ResourceException(
-                \loeye\error\ResourceException::RECORD_NOT_FOUND_MSG, \loeye\error\ResourceException::RECORD_NOT_FOUND_CODE);
+                $result[$key] = new ResourceException(
+                    ResourceException::RECORD_NOT_FOUND_MSG, ResourceException::RECORD_NOT_FOUND_CODE);
             }
         }
         return $result;

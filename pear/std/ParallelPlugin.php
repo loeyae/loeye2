@@ -34,10 +34,10 @@ abstract class ParallelPlugin extends Plugin
      * @param Context $context  Context
      * @param array               $inputs  array
      *
-     * @return string
+     * @return mixed
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
-    public function prepare(Context $context, array $inputs): ?string
+    public function prepare(Context $context, array $inputs)
     {
         return PROJECT_SUCCESS;
     }

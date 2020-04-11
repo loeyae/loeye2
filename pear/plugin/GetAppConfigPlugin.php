@@ -17,50 +17,59 @@
 
 namespace loeye\plugin;
 
+use loeye\base\AppConfig;
+use loeye\base\Context;
+use loeye\base\Utils;
+use loeye\std\ParallelPlugin;
+
 /**
  * GetAppConfigPlugin
  *
  * @author   Zhang Yi <loeyae@gmail.com>
  */
-class GetAppConfigPlugin extends \loeye\std\ParallelPlugin
+class GetAppConfigPlugin extends ParallelPlugin
 {
 
     private $_configKeys = 'config_keys';
     private $_outKeys = 'out_keys';
+
+    /**
+     * @var AppConfig
+     */
     private $_config;
 
     /**
      * prepare
      *
-     * @param \loeye\base\Context $context context
-     * @param array               $inputs  inputs
+     * @param Context $context context
+     * @param array $inputs inputs
      *
      * @return void
      */
-    public function prepare(\loeye\base\Context $context, array $inputs)
+    public function prepare(Context $context, array $inputs): void
     {
-        \loeye\base\Utils::checkNotEmpty($inputs, $this->_configKeys);
+        Utils::checkNotEmpty($inputs, $this->_configKeys);
         $this->_config = $context->getAppConfig();
     }
 
     /**
      * process
      *
-     * @param \loeye\base\Context $context context
-     * @param array               $inputs  inputs
+     * @param Context $context context
+     * @param array $inputs inputs
      *
      * @return void
      */
-    public function process(\loeye\base\Context $context, array $inputs)
+    public function process(Context $context, array $inputs): void
     {
         $outKeys = array();
         if (!empty($inputs[$this->_outKeys])) {
             $outKeys = $inputs[$this->_configKeys];
         }
-        $configKeys = (array) $inputs[$this->_configKeys];
+        $configKeys = (array)$inputs[$this->_configKeys];
         foreach ($configKeys as $key) {
             $setting = $this->_config->getSetting($key);
-            $outKey  = empty($outKeys[$key]) ? __CLASS__ . '_' . $key . '_setting' : $outKeys[$key];
+            $outKey = empty($outKeys[$key]) ? __CLASS__ . '_' . $key . '_setting' : $outKeys[$key];
             $context->set($outKey, $setting);
         }
     }

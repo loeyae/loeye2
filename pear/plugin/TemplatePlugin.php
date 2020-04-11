@@ -17,12 +17,22 @@
 
 namespace loeye\plugin;
 
+use loeye\base\Context;
+use loeye\base\Exception;
+use loeye\error\BusinessException;
+use loeye\lib\ModuleParse;
+use loeye\std\Plugin;
+use loeye\web\Template;
+use Smarty;
+use SmartyException;
+use const loeye\base\PROJECT_SUCCESS;
+
 /**
  * TemplatePlugin
  *
  * @author   Zhang Yi <loeyae@gmail.com>
  */
-class TemplatePlugin extends \loeye\std\Plugin
+class TemplatePlugin extends Plugin
 {
 
     protected $allowedPluginsType = array(
@@ -41,19 +51,21 @@ class TemplatePlugin extends \loeye\std\Plugin
     /**
      * process
      *
-     * @param \loeye\base\Context $context context
-     * @param array               $inputs  inputs
+     * @param Context $context context
+     * @param array $inputs inputs
      *
-     * @return void
+     * @return mixed|void
+     * @throws SmartyException
+     * @throws Exception
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
-    public function process(\loeye\base\Context $context, array $inputs)
+    public function process(Context $context, array $inputs)
     {
         $template = $context->getTemplate();
         if (!($template instanceof Template)) {
             $template = new Template($context);
         }
-        $this->reqisterPlugin($template, $inputs);
+        $this->registerPlugin($template, $inputs);
         $renderId = $context->getResponse()->getRenderId();
         $views    = $context->getModule()->getViews();
         if (empty($views)) {
@@ -62,29 +74,28 @@ class TemplatePlugin extends \loeye\std\Plugin
             $view = $context->getModule()->getView($renderId);
         }
         $caching = $this->setCache($template, $inputs, $view);
-        if ($caching == Smarty::CACHING_OFF) {
+        if ($caching === Smarty::CACHING_OFF) {
             $context->setTemplate($template);
-            return \loeye\base\PROJECT_SUCCESS;
+            return PROJECT_SUCCESS;
         }
         $this->setCacheId($template, $context, $inputs);
         $context->setTemplate($template);
-        if (isset($inputs['break']) && $inputs['break']) {
-            if ($template->isCached($view['tpl'])) {
-                return false;
-            }
+        if (isset($inputs['break']) && $inputs['break'] && $template->isCached($view['tpl'])) {
+            return false;
         }
     }
 
     /**
-     * reqisterPlugin
+     * registerPlugin
      *
      * @param Template $template template
-     * @param array                $inputs   inputs
+     * @param array $inputs inputs
      *
      * @return void
-     * @throws \loeye\base\Exception
+     * @throws Exception
+     * @throws SmartyException
      */
-    protected function reqisterPlugin(Template $template, array $inputs)
+    protected function registerPlugin(Template $template, array $inputs): void
     {
         foreach ($this->allowedPluginsType as $type) {
             if (isset($inputs[$type])) {
@@ -100,24 +111,24 @@ class TemplatePlugin extends \loeye\std\Plugin
                         case 'modifier':
                         case 'block':
                         case 'compiler':
-                            $cacheable = false;
+                            $cacheAble = false;
                             $attr      = array();
                             if (is_array($pluginSetting)) {
                                 $count = count($pluginSetting);
-                                if ($count = 1) {
+                                if ($count === 1) {
                                     $callback = current($pluginSetting);
-                                } else if ($count = 2) {
-                                    list($callback, $cacheable) = $pluginSetting;
+                                } else if ($count === 2) {
+                                    [$callback, $cacheAble] = $pluginSetting;
                                 } else if ($count >= 3) {
-                                    list($callback, $cacheable, $attr) = $pluginSetting;
+                                    [$callback, $cacheAble, $attr] = $pluginSetting;
                                 } else {
-                                    throw new \loeye\error\BusinessException(\loeye\error\BusinessException::INVALID_PLUGIN_SET_MSG,
-                                            \loeye\error\BusinessException::INVALID_PLUGIN_SET_CODE);
+                                    throw new BusinessException(BusinessException::INVALID_PLUGIN_SET_MSG,
+                                            BusinessException::INVALID_PLUGIN_SET_CODE);
                                 }
                             } else {
                                 $callback = $pluginSetting;
                             }
-                            $template->smarty()->registerPlugin($type, $key, $callback, $cacheable, $attr);
+                            $template->smarty()->registerPlugin($type, $key, $callback, $cacheAble, $attr);
                             break;
                         case 'resource':
                             if (is_numeric($key)) {
@@ -133,19 +144,21 @@ class TemplatePlugin extends \loeye\std\Plugin
                             break;
                         case 'objects':
                             $allowed = array();
+                            $args = true;
+                            $block = [];
                             if (is_array($pluginSetting)) {
                                 $count = count($pluginSetting);
-                                if ($count = 1) {
+                                if ($count === 1) {
                                     $object = current($pluginSetting);
-                                } else if ($count = 2) {
-                                    list($object, $allowed) = $pluginSetting;
-                                } else if ($count = 3) {
-                                    list($object, $allowed, $args) = $pluginSetting;
+                                } else if ($count === 2) {
+                                    [$object, $allowed] = $pluginSetting;
+                                } else if ($count === 3) {
+                                    [$object, $allowed, $args] = $pluginSetting;
                                 } else if ($count >= 4) {
-                                    list($object, $allowed, $args, $block) = $pluginSetting;
+                                    [$object, $allowed, $args, $block] = $pluginSetting;
                                 } else {
-                                    throw new \loeye\error\BusinessException(\loeye\error\BusinessException::INVALID_PLUGIN_SET_MSG,
-                                            \loeye\error\BusinessException::INVALID_PLUGIN_SET_CODE);
+                                    throw new BusinessException(BusinessException::INVALID_PLUGIN_SET_MSG,
+                                            BusinessException::INVALID_PLUGIN_SET_CODE);
                                 }
                             } else {
                                 $object = $pluginSetting;
@@ -172,8 +185,8 @@ class TemplatePlugin extends \loeye\std\Plugin
      * @return void
      */
     protected function setCacheId(
-            Template $template, \loeye\base\Context $context, array $inputs
-    )
+            Template $template, Context $context, array $inputs
+    ): void
     {
         $cacheId = $context->getRequest()->getModuleId();
         if (isset($inputs['cache_key'])) {
@@ -181,13 +194,12 @@ class TemplatePlugin extends \loeye\std\Plugin
             $template->setCacheId($cacheId);
         } else if (isset($inputs['match_id'])) {
             $cacheIdSetting = $inputs['match_id'];
-            $ModuleParse    = new ModuleParse();
             foreach ((array) $cacheIdSetting as $id => $match) {
                 if (is_numeric($id)) {
                     $id    = $match;
                     $match = true;
                 }
-                if ($ModuleParse->conditionResult($match, $context)) {
+                if (ModuleParse::conditionResult($match, $context)) {
                     $cacheId .= '.' . $id;
                     break;
                 }
@@ -205,20 +217,20 @@ class TemplatePlugin extends \loeye\std\Plugin
      *
      * @return int
      */
-    protected function setCache(Template $template, array $inputs, array $view)
+    protected function setCache(Template $template, array $inputs, array $view): int
     {
-        $caching  = \Smarty::CACHING_OFF;
+        $caching  = Smarty::CACHING_OFF;
         $lifeTime = 0;
         if (defined('LOEYE_TEMPLATE_CACHE') && LOEYE_TEMPLATE_CACHE) {
-            $caching = \Smarty::CACHING_LIFETIME_CURRENT;
+            $caching = Smarty::CACHING_LIFETIME_CURRENT;
             if (is_numeric(LOEYE_TEMPLATE_CACHE)) {
                 $lifeTime = LOEYE_TEMPLATE_CACHE;
             }
         }
 
-        list($cache, $cacheLifeTime) = $this->parseCache($inputs, $view, $caching, $lifeTime);
+        [$cache, $cacheLifeTime] = $this->parseCache($inputs, $view, $caching, $lifeTime);
         $template->setCache($cache);
-        if ($cacheLifeTime == 0) {
+        if ($cacheLifeTime === 0) {
             $template->setCacheLifeTime($cacheLifeTime);
         }
         return $cache;
@@ -232,21 +244,21 @@ class TemplatePlugin extends \loeye\std\Plugin
      * @param int   $caching       caching
      * @param int   $cacheLifeTime cache life time
      *
-     * @return type
+     * @return array
      */
-    protected function parseCache(array $inputs, $view, $caching, $cacheLifeTime)
+    protected function parseCache(array $inputs, $view, $caching, $cacheLifeTime): array
     {
         $setting = (isset($view['cache']) ? $view : $inputs);
         if (isset($setting['cache'])) {
             if ($setting['cache']) {
-                $caching = \Smarty::CACHING_LIFETIME_CURRENT;
+                $caching = Smarty::CACHING_LIFETIME_CURRENT;
                 if (is_numeric($setting['cache'])) {
-                    $cacheLifeTime = $setting['cache'];
+                    $cacheLifeTime = (int)$setting['cache'];
                 } else {
                     $cacheLifeTime = 0;
                 }
             } else {
-                $caching       = \Smarty::CACHING_OFF;
+                $caching       = Smarty::CACHING_OFF;
                 $cacheLifeTime = 0;
             }
         }

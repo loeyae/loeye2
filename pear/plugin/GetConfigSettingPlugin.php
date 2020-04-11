@@ -17,56 +17,64 @@
 
 namespace loeye\plugin;
 
+use loeye\base\Configuration;
+use loeye\base\Context;
+use loeye\base\Utils;
+use loeye\std\ParallelPlugin;
+
 /**
  * GetConfigSettingPlugin
  *
  * @author   Zhang Yi <loeyae@gmail.com>
  */
-class GetConfigSettingPlugin extends \loeye\std\ParallelPlugin
+class GetConfigSettingPlugin extends ParallelPlugin
 {
 
     private $_bundle = 'bundle';
     private $_context = 'context';
     private $_configKeys = 'config_keys';
     private $_outKeys = 'out_keys';
+    /**
+     * @var Configuration
+     */
     private $_config;
 
     /**
      * prepare
      *
-     * @param \loeye\base\ $context context
-     * @param array                 $inputs  inputs
+     * @param Context $context context
+     * @param array $inputs inputs
      *
      * @return void
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
-    public function prepare(\loeye\base\Context $context, array $inputs)
+    public function prepare(Context $context, array $inputs): void
     {
-        $bundle        = \loeye\base\Utils::checkNotEmpty($inputs, $this->_bundle);
-        $ctx           = \loeye\base\Utils::getData($inputs, $this->_context, null);
-        \loeye\base\Utils::checkNotEmpty($inputs, $this->_configKeys);
-        $this->_config = new \loeye\base\Configuration(
-                $context->getAppConfig()->getPropertyName(), $bundle, $ctx);
+        $bundle = Utils::checkNotEmpty($inputs, $this->_bundle);
+        $ctx = Utils::getData($inputs, $this->_context, null);
+        Utils::checkNotEmpty($inputs, $this->_configKeys);
+        $this->_config = new Configuration(
+            $context->getAppConfig()->getPropertyName(), $bundle, $ctx);
     }
 
     /**
      * process
      *
-     * @param \loeye\base\Context $context context
-     * @param array               $inputs  inputs
+     * @param Context $context context
+     * @param array $inputs inputs
      *
      * @return void
      */
-    public function process(\loeye\base\Context $context, array $inputs)
+    public function process(Context $context, array $inputs): void
     {
         $outKeys = array();
         if (!empty($inputs[$this->_outKeys])) {
             $outKeys = $inputs[$this->_outKeys];
         }
-        $configKeys = (array) $inputs[$this->_configKeys];
+        $configKeys = (array)$inputs[$this->_configKeys];
         foreach ($configKeys as $key) {
             $setting = $this->_config->get($key);
-            $outKey  = empty($outKeys[$key]) ? __CLASS__ . '_' . $key . '_setting' : $outKeys[$key];
+            $outKey = empty($outKeys[$key]) ? __CLASS__ . '_' . $key . '_setting' : $outKeys[$key];
             $context->set($outKey, $setting);
         }
     }

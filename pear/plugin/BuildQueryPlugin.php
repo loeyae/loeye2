@@ -12,11 +12,8 @@
 
 namespace loeye\plugin;
 
-use \loeye\{
-    base\Context,
-    base\Utils,
-    std\Plugin
-};
+use loeye\{base\Context, base\Factory, base\Utils, std\Plugin};
+use const loeye\base\PROJECT_SUCCESS;
 
 /**
  * BuildQueryPlugin
@@ -38,16 +35,16 @@ class BuildQueryPlugin extends Plugin {
     protected $denyQueryKey  = 'deny';
     protected $allowedFields = 'fields';
 
-    const PAGE_NAME           = 'p';
-    const HITS_NAME           = 'h';
-    const ORDER_NAME          = 'o';
-    const SORT_NAME           = 's';
-    const INPUT_TYPE          = 'type';
-    const DEFAULT_HITS        = 10;
-    const DEFAULT_PAGE        = 1;
-    const ORDER_ASC           = 'ASC';
-    const ORDER_DESC          = 'DESC';
-    const PARAMETER_ERROR_MSG = 'Page and Hits must be number';
+    public const PAGE_NAME           = 'p';
+    public const HITS_NAME           = 'h';
+    public const ORDER_NAME          = 'o';
+    public const SORT_NAME           = 's';
+    public const INPUT_TYPE          = 'type';
+    public const DEFAULT_HITS        = 10;
+    public const DEFAULT_PAGE        = 1;
+    public const ORDER_ASC           = 'ASC';
+    public const ORDER_DESC          = 'DESC';
+    public const PARAMETER_ERROR_MSG = 'Page and Hits must be number';
 
     /**
      * process
@@ -55,7 +52,7 @@ class BuildQueryPlugin extends Plugin {
      * @param Context $context context
      * @param array               $inputs  inputs
      *
-     * @return void
+     * @return string|void
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     public function process(Context $context, array $inputs)
@@ -71,7 +68,7 @@ class BuildQueryPlugin extends Plugin {
         $deny     = (bool) Utils::getData($inputs, $this->denyQueryKey, false);
         $fields   = Utils::getData($inputs, $this->allowedFields);
         $data     = null;
-        if (null == $method) {
+        if (null === $method) {
             $data = Utils::getContextData($context, $inputs, $this->inDataKey);
         } else {
             $data = filter_input_array($method);
@@ -80,7 +77,7 @@ class BuildQueryPlugin extends Plugin {
         $hits  = self::DEFAULT_HITS;
         $sort  = null;
         $order = null;
-        if (null != $data) {
+        if (null !== $data) {
             $page  = (int) $this->pop($data, $pageKey, self::DEFAULT_PAGE);
             $hits  = (int) $this->pop($data, $hitsKey, self::DEFAULT_HITS);
             $order = $this->pop($data, $orderKey);
@@ -88,17 +85,16 @@ class BuildQueryPlugin extends Plugin {
         }
         if ($deny) {
             $query = null;
+        } else if($fields) {
+            $fields = array_fill_keys($fields, null);
+            $query = array_intersect_key($data, $fields);
         } else {
-            if($fields) {
-                $fields = array_fill_keys($fields, null);
-                $query = array_intersect_key($data, $fields); 
-            } else {
-                $query = $data;
-            }
+            $query = $data;
         }
         if ($page <= 0 || $hits <= 0) {
-            $context->addErrors($this->outErrorsKey, \loeye\base\Factory::translator($context->getAppConfig())->getString(self::PARAMETER_ERROR_MSG));
-            return \loeye\base\PROJECT_SUCCESS;
+            $context->addErrors($this->outErrorsKey, Factory::translator($context->getAppConfig())->getString
+            (self::PARAMETER_ERROR_MSG));
+            return PROJECT_SUCCESS;
         }
         $context->set($prefix . '_query', $query);
         $context->set($prefix . '_start', ($page - 1) * $hits);

@@ -17,7 +17,9 @@
 
 namespace loeye\web;
 
+use loeye\base\Context;
 use loeye\error\ResourceException;
+use Smarty;
 use SmartyException;
 
 /**
@@ -31,17 +33,17 @@ class Template
     /**
      * template base dir name
      */
-    const B_D = 'smarty';
+    public const B_D = 'smarty';
 
     /**
      * template cache dir name
      */
-    const C_D = 'cache';
+    public const C_D = 'cache';
 
     /**
      * smarty instance
      *
-     * @var \Smarty
+     * @var Smarty
      */
     protected $smarty;
 
@@ -50,19 +52,20 @@ class Template
      *
      * @var string
      */
-    public $cacheId = null;
+    public $cacheId;
 
     /**
      * __construct
      *
-     * @param \loeye\base\Context  $context Context instance
+     * @param Context $context Context instance
      * @param string $propertyName property name
      *
      * @return void
+     * @throws SmartyException
      */
-    public function __construct(\loeye\base\Context $context, $propertyName = null)
+    public function __construct(Context $context, $propertyName = null)
     {
-        $this->smarty = new \Smarty();
+        $this->smarty = new Smarty();
         $this->smarty->registerObject('context', $context);
         if (empty($propertyName)) {
             $propertyName = $context->getAppConfig()->getPropertyName();
@@ -77,16 +80,16 @@ class Template
      *
      * @return void
      */
-    public function init($propertyName = null)
+    public function init($propertyName = null): void
     {
         $this->smarty->left_delimiter  = '<{';
         $this->smarty->right_delimiter = '}>';
         $this->smarty->setTemplateDir(PROJECT_VIEWS_DIR);
-        $confiDir                      = PROJECT_CONFIG_DIR . '/' . self::B_D;
+        $configDir                      = PROJECT_CONFIG_DIR . '/' . self::B_D;
         if (!empty($propertyName)) {
-            $confiDir .= '/' . $propertyName;
+            $configDir .= '/' . $propertyName;
         }
-        $this->smarty->setConfigDir($confiDir);
+        $this->smarty->setConfigDir($configDir);
         $this->smarty->addPluginsDir(PROJECT_DIR . '/lib/' . self::B_D);
         $compileDir = RUNTIME_DIR . '/' . self::B_D . '/compile';
         if (!empty($propertyName)) {
@@ -104,11 +107,12 @@ class Template
     /**
      * assign
      *
-     * @param array               $dataKey data key list
+     * @param array $dataKey data key list
+     * @param array $errorKey
      *
      * @return void
      */
-    public function assign(array $dataKey = array(), $errorKey = array())
+    public function assign(array $dataKey = array(), $errorKey = array()): void
     {
         $context = $this->smarty->getRegisteredObject('context');
         if (!empty($dataKey)) {
@@ -154,10 +158,10 @@ class Template
      *
      * @return void
      */
-    public function setCacheId($cacheId)
+    public function setCacheId($cacheId): void
     {
         if (!empty($cacheId)) {
-            $this->cacheId = strtr($cacheId, '.', '_');
+            $this->cacheId = str_replace('.', '_', $cacheId);
             $this->smarty->setCacheId($this->cacheId);
         }
     }
@@ -168,8 +172,9 @@ class Template
      * @param string $tpl tpl file
      *
      * @return bool
+     * @throws SmartyException
      */
-    public function isCached($tpl)
+    public function isCached($tpl): bool
     {
         $file = $this->formatFilePath($tpl);
         return $this->smarty->isCached($file);
@@ -181,8 +186,10 @@ class Template
      * @param string $tpl tpl file
      *
      * @return void
+     * @throws ResourceException
+     * @throws SmartyException
      */
-    public function display($tpl)
+    public function display($tpl): void
     {
         $file = $this->formatFilePath($tpl);
         if (!$this->smarty->templateExists($file)) {
@@ -200,7 +207,7 @@ class Template
      * @throws ResourceException
      * @throws SmartyException
      */
-    public function fetch($tpl)
+    public function fetch($tpl): string
     {
         $file = $this->formatFilePath($tpl);
         if (!$this->smarty->templateExists($file)) {
@@ -216,7 +223,7 @@ class Template
      *
      * @return void
      */
-    public function setCache($type = \Smarty::CACHING_OFF)
+    public function setCache($type = Smarty::CACHING_OFF): void
     {
         $this->smarty->setCaching($type);
     }
@@ -226,7 +233,7 @@ class Template
      *
      * @param int $lifeTime life time
      */
-    public function setCacheLifeTime($lifeTime)
+    public function setCacheLifeTime($lifeTime): void
     {
         if (is_numeric($lifeTime) && $lifeTime > 0) {
             $this->smarty->setCacheLifetime($lifeTime);
@@ -236,9 +243,9 @@ class Template
     /**
      * smarty
      *
-     * @return \Smarty
+     * @return Smarty
      */
-    public function smarty()
+    public function smarty(): Smarty
     {
         return $this->smarty;
     }
@@ -248,9 +255,9 @@ class Template
      *
      * @param bool $check is check
      */
-    public function checkCompile($check = false)
+    public function checkCompile($check = false): void
     {
-        $this->smarty->compile_check = ($check === false ? false : true);
+        $this->smarty->compile_check = ($check !== false);
     }
 
     /**
@@ -260,13 +267,13 @@ class Template
      *
      * @return string
      */
-    protected function formatFilePath($file)
+    protected function formatFilePath($file): string
     {
         if (is_file($file)) {
             return 'file:' . $file;
         }
-        $dno = mb_strrpos($file, ".");
-        return str_replace(".", "/", mb_substr($file, 0, $dno)) . mb_substr($file, $dno);
+        $dno = mb_strrpos($file, '.');
+        return str_replace('.', '/', mb_substr($file, 0, $dno)) . mb_substr($file, $dno);
     }
 
 }

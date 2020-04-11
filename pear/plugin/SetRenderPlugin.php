@@ -17,13 +17,31 @@
 
 namespace loeye\plugin;
 
+use loeye\base\Context;
+use loeye\base\Factory;
+use loeye\base\Translator;
+use loeye\base\Utils;
+use loeye\lib\ModuleParse;
+use loeye\std\Plugin;
+use ReflectionException;
+use const loeye\base\RENDER_TYPE_HTML;
+use const loeye\base\RENDER_TYPE_JSON;
+use const loeye\base\RENDER_TYPE_SEGMENT;
+use const loeye\base\RENDER_TYPE_XML;
+
 /**
  * SetRenderPlugin
  *
  * @author   Zhang Yi <loeyae@gmail.com>
  */
-class SetRenderPlugin extends \loeye\std\Plugin
+class SetRenderPlugin extends Plugin
 {
+    /**
+     * @var array
+     */
+    private $allowedType;
+
+    public const TRANSLATOR_KEY = 'loeye_translator';
 
     /**
      * __construct
@@ -44,17 +62,18 @@ class SetRenderPlugin extends \loeye\std\Plugin
     /**
      * process
      *
-     * @param \loeye\base\Context $context context
-     * @param array               $inputs  inputs
+     * @param Context $context context
+     * @param array $inputs inputs
      *
-     * @return void
+     * @return mixed|void
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @throws ReflectionException
      */
-    public function process(\loeye\base\Context $context, array $inputs)
+    public function process(Context $context, array $inputs)
     {
-        $render = \loeye\base\Utils::checkNotEmpty($inputs, 'render');
-        $break  = \loeye\base\Utils::getData($inputs, 'break');
-        if (isset($inputs['format']) && in_array($inputs['format'], $this->allowedType)) {
+        $render = Utils::checkNotEmpty($inputs, 'render');
+        $break  = Utils::getData($inputs, 'break');
+        if (isset($inputs['format']) && in_array($inputs['format'], $this->allowedType, true)) {
             if (isset($inputs['code'])) {
                 $context->getResponse()->addOutput($inputs['code'], 'status');
             }
@@ -64,10 +83,9 @@ class SetRenderPlugin extends \loeye\std\Plugin
             $context->getResponse()->setFormat($inputs['format']);
         }
         if (is_array($render)) {
-            $moduleParse = new ModuleParse();
             foreach ($render as $renderId => $condition) {
-                $result = $moduleParse->conditionResult($condition, $context);
-                if ($result == true) {
+                $result = ModuleParse::conditionResult($condition, $context);
+                if ($result === true) {
                     $context->getResponse()->setRenderId($renderId);
                     break;
                 }
@@ -83,8 +101,8 @@ class SetRenderPlugin extends \loeye\std\Plugin
         if (isset($inputs['error_tip'])) {
             $context->addErrors('error_tips', $inputs['error_tip']);
         } else if (isset($inputs['error_key'])) {
-            $llt = $context->get('loeye_translator');
-            if ($llt instanceof \loeye\base\Translator) {
+            $llt = $context->get(self::TRANSLATOR_KEY);
+            if ($llt instanceof Translator) {
                 $errors = array();
                 foreach ((array) $inputs['error_key'] as $eKey => $lKey) {
                     $errors[$eKey] = $llt->getString($lKey);
@@ -94,7 +112,7 @@ class SetRenderPlugin extends \loeye\std\Plugin
                 $context->addErrors('error_tips', $inputs['error_key']);
             }
         }
-        if ($break == true) {
+        if ($break === true) {
             return false;
         }
         if (isset($inputs['force']) && $inputs['force']) {

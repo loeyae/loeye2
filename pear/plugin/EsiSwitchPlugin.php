@@ -17,24 +17,27 @@
 
 namespace loeye\plugin;
 
+use loeye\base\Context;
+use loeye\std\Plugin;
+
 /**
  * EsiSwitchPlugin
  *
  * @author   Zhang Yi <loeyae@gmail.com>
  */
-class EsiSwitchPlugin extends \loeye\std\Plugin
+class EsiSwitchPlugin extends Plugin
 {
 
     /**
      * process
      *
-     * @param \loeye\base\Context $context context
-     * @param array               $inputs  inputs
+     * @param Context $context context
+     * @param array $inputs inputs
      *
      * @return void
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
-    public function process(\loeye\base\Context $context, array $inputs)
+    public function process(Context $context, array $inputs): void
     {
         $context->getResponse()->addHeader('X-ESI', 'ON');
     }

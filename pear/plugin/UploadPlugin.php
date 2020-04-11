@@ -17,72 +17,78 @@
 
 namespace loeye\plugin;
 
+use loeye\base\Context;
+use loeye\base\Exception;
+use loeye\base\Utils;
+use loeye\std\Plugin;
+
 /**
  * UploadPlugin
  *
  * @author   Zhang Yi <loeyae@gmail.com>
  */
-class UploadPlugin extends \loeye\std\Plugin
+class UploadPlugin extends Plugin
 {
 
     /**
      * process
      *
-     * @param \loeye\base\Context $context context
-     * @param array               $inputs  inputs
+     * @param Context $context context
+     * @param array $inputs inputs
      *
      * @return void
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @throws Exception
      */
-    public function process(\loeye\base\Context $context, array $inputs)
+    public function process(Context $context, array $inputs): void
     {
-        $fields       = \loeye\base\Utils::checkNotEmpty($inputs, 'field');
-        $data         = array();
+        $fields = Utils::checkNotEmpty($inputs, 'field');
+        $data = array();
         $errorMessage = 'no file upload';
-        foreach ((array) $fields as $field => $out) {
+        foreach ((array)$fields as $field => $out) {
             if (!isset($_FILES[$field])) {
-                $data[$field] = new \loeye\base\Exception(
-                        $errorMessage, \loeye\base\Exception::DEFAULT_ERROR_CODE);
-                \loeye\base\Utils::addErrors($data[$field], $context, $inputs, $out . '_error');
+                $data[$field] = new Exception(
+                    $errorMessage, Exception::DEFAULT_ERROR_CODE);
+                Utils::addErrors($data[$field], $context, $inputs, $out . '_error');
                 continue;
             }
             if (is_array($_FILES[$field]['name'])) {
                 foreach ($_FILES[$field]['name'] as $key => $name) {
                     if ($_FILES[$field]['error'][$key] !== 0) {
-                        $data[$field][$key] = new \loeye\base\Exception(
-                                $errorMessage, \loeye\base\Exception::DEFAULT_ERROR_CODE);
+                        $data[$field][$key] = new Exception(
+                            $errorMessage, Exception::DEFAULT_ERROR_CODE);
                         continue;
                     }
                     try {
-                        $file               = array('name' => $name);
-                        $fileName           = $this->_getFileName($file, $inputs);
+                        $file = array('name' => $name);
+                        $fileName = $this->_getFileName($file, $inputs);
                         $data[$field][$key] = $this->_moveUploadFile($_FILES[$field]['tmp_name'][$key], $fileName);
                     } catch (Exception $ex) {
                         $data[$field][$key] = $ex;
                     }
                 }
-                $uploadData  = array();
+                $uploadData = array();
                 $uploadError = array();
-                \loeye\base\Utils::filterResultArray($data[$field], $uploadData, $uploadError);
+                Utils::filterResultArray($data[$field], $uploadData, $uploadError);
                 if (!empty($uploadError)) {
                     $context->addErrors($out . '_error', $uploadError);
                 }
-                $context->set($out, $this->_matchUrl((array) $uploadData, $inputs));
+                $context->set($out, $this->_matchUrl($uploadData, $inputs));
             } else {
-                $uploadData  = array();
+                $uploadData = array();
                 $uploadError = null;
                 if ($_FILES[$field]['error'] === 0) {
                     try {
-                        $fileName     = $this->_getFileName($_FILES[$field], $inputs);
+                        $fileName = $this->_getFileName($_FILES[$field], $inputs);
                         $data[$field] = $this->_moveUploadFile($_FILES[$field]['tmp_name'], $fileName);
                     } catch (Exception $ex) {
                         $data[$field] = $ex;
                     }
                 } else {
-                    $data[$field] = new \loeye\base\Exception(
-                            $errorMessage, \loeye\base\Exception::DEFAULT_ERROR_CODE);
+                    $data[$field] = new Exception(
+                        $errorMessage, Exception::DEFAULT_ERROR_CODE);
                 }
-                \loeye\base\Utils::filterResult($data[$field], $uploadData, $uploadError);
+                Utils::filterResult($data[$field], $uploadData, $uploadError);
                 if (!empty($uploadError)) {
                     $context->addErrors($out . '_error', $uploadError);
                 }
@@ -94,12 +100,13 @@ class UploadPlugin extends \loeye\std\Plugin
     /**
      * _matchUrl
      *
-     * @param mixed $data   data
+     * @param mixed $data data
      * @param mixed $inputs input
      *
      * @return array
+     * @throws Exception
      */
-    private function _matchUrl($data, array $inputs)
+    private function _matchUrl($data, array $inputs): array
     {
         $url = array();
         if (is_array($data)) {
@@ -107,14 +114,17 @@ class UploadPlugin extends \loeye\std\Plugin
                 $url[$key] = $this->_matchUrl($file, $inputs);
             }
         } else {
-            $upload  = \loeye\base\Utils::getData($inputs, 'base_url', 'upload');
-            $path    = $this->_getUploadPath(array());
+            if (!defined('PROJECT_UPLOAD_BASE_DIR')) {
+                throw new Exception('no constant: PROJECT_UPLOAD_BASE_DIR');
+            }
+            $upload = Utils::getData($inputs, 'base_url', 'upload');
+            $path = $this->_getUploadPath(array());
             $replace = (defined('BASE_SERVER_URL') ? BASE_SERVER_URL : '') . '/' . $upload;
-            $r       = str_replace($path, $replace, $data);
-            $url     = array(
+            $r = str_replace($path, $replace, $data);
+            $url = array(
                 'name' => pathinfo($data, PATHINFO_BASENAME),
                 'file' => $data,
-                'url'  => $r,
+                'url' => $r,
                 'path' => str_replace(PROJECT_UPLOAD_BASE_DIR, '/' . $upload, $data),
             );
         }
@@ -124,52 +134,54 @@ class UploadPlugin extends \loeye\std\Plugin
     /**
      * _moveUploadFile
      *
-     * @param string $tmpFile  temp file
+     * @param string $tmpFile temp file
      * @param string $fileName file name
      *
-     * @return boolean
+     * @return string
+     * @throws Exception
      */
-    private function _moveUploadFile($tmpFile, $fileName)
+    private function _moveUploadFile($tmpFile, $fileName): string
     {
         if (is_uploaded_file($tmpFile) && move_uploaded_file($tmpFile, $fileName)) {
             return $fileName;
         }
         $errorMessage = 'file upload failed';
-        return new \loeye\base\Exception($errorMessage, \loeye\base\Exception::DEFAULT_ERROR_CODE);
+        throw new Exception($errorMessage, Exception::DEFAULT_ERROR_CODE);
     }
 
     /**
      * _getFileName
      *
-     * @param array $file   file info
+     * @param array $file file info
      * @param array $inputs inputs
      *
      * @return string
+     * @throws Exception
      */
-    private function _getFileName(array $file, array $inputs)
+    private function _getFileName(array $file, array $inputs): string
     {
-        $keep = \loeye\base\Utils::getData($inputs, 'keey', null);
-        \loeye\base\Utils::checkNotEmpty($file, 'name');
+        $keep = Utils::getData($inputs, 'keep', null);
+        Utils::checkNotEmpty($file, 'name');
         $path = $this->_getUploadPath($inputs);
-        $ext  = $this->_getExt($file['name']);
-        $min  = 1000;
-        $max  = 9999;
+        $ext = $this->_getExt($file['name']);
+        $min = 1000;
+        $max = 9999;
         if ($keep === 'true') {
             $fileName = $path . '/' . $file['name'] . '.' . $ext;
-            $count    = mt_rand($min, $max);
+            $count = mt_rand($min, $max);
             while (is_file($fileName)) {
                 $fileName = $path . '/' . $file['name'] . '_' . $count . '.' . $ext;
-                $count    = mt_rand($min, $max);
+                $count = mt_rand($min, $max);
             }
         } else {
-            list($usec, $sec) = explode(" ", microtime());
-            $count    = mt_rand($min, $max);
+            [$usec, $sec] = explode(" ", microtime());
+            $count = mt_rand($min, $max);
             $fileName = $path . '/' . md5($file['name'])
-                    . '_' . $sec . str_replace('0.', '_', $usec) . '_' . $count . '.' . $ext;
+                . '_' . $sec . str_replace('0.', '_', $usec) . '_' . $count . '.' . $ext;
             while (is_file($fileName)) {
-                $count    = mt_rand($min, $max);
+                $count = mt_rand($min, $max);
                 $fileName = $path . '/' . md5($file['name'])
-                        . '_' . $sec . str_replace('0.', '_', $usec) . '_' . $count . '.' . $ext;
+                    . '_' . $sec . str_replace('0.', '_', $usec) . '_' . $count . '.' . $ext;
             }
         }
         return $fileName;
@@ -182,10 +194,9 @@ class UploadPlugin extends \loeye\std\Plugin
      *
      * @return string
      */
-    private function _getExt($name)
+    private function _getExt($name): string
     {
-        $ext = mb_substr(mb_strrchr($name, '.'), 1);
-        return $ext;
+        return mb_substr(mb_strrchr($name, '.'), 1);
     }
 
     /**
@@ -194,29 +205,29 @@ class UploadPlugin extends \loeye\std\Plugin
      * @param array $inputs inputs
      *
      * @return string
-     * @throws \loeye\base\Exception
+     * @throws Exception
      */
-    private function _getUploadPath(array $inputs)
+    private function _getUploadPath(array $inputs): string
     {
-        $uploadPath = \loeye\base\Utils::getData($inputs, 'base_dir', null);
+        $uploadPath = Utils::getData($inputs, 'base_dir', null);
         if ($uploadPath === null) {
             if (defined('PROJECT_UPLOAD_BASE_DIR')) {
                 $uploadPath = PROJECT_UPLOAD_BASE_DIR;
             } else {
                 $errorMessage = 'upload base dir not set';
-                throw new \loeye\base\Exception(
-                        $errorMessage, \loeye\base\Exception::INVALID_PLUGIN_SET_CODE);
+                throw new Exception(
+                    $errorMessage, Exception::INVALID_PLUGIN_SET_CODE);
             }
         }
-        $dir = \loeye\base\Utils::getData($inputs, 'path', null);
+        $dir = Utils::getData($inputs, 'path', null);
         if (!empty($dir)) {
             $uploadPath .= '/' . $dir;
         }
         if (!is_dir($uploadPath)) {
             $errorMessage = 'upload dir not found';
-            throw new \loeye\base\Exception($errorMessage, \loeye\base\Exception::DEFAULT_ERROR_CODE);
+            throw new Exception($errorMessage, Exception::DEFAULT_ERROR_CODE);
         }
-        $dateSplit = \loeye\base\Utils::getData($inputs, 'split', false);
+        $dateSplit = Utils::getData($inputs, 'split', false);
         switch ($dateSplit) {
             case 'year':
                 $path = date('Y');
@@ -233,12 +244,10 @@ class UploadPlugin extends \loeye\std\Plugin
         }
         if (!empty($path)) {
             $uploadPath .= '/' . $path;
-            if (!is_dir($uploadPath)) {
-                if (mkdir($uploadPath, 0777) == false) {
-                    $errorMessage = 'mkdir failed';
-                    throw new \loeye\base\Exception(
-                            $errorMessage, \loeye\base\Exception::DEFAULT_ERROR_CODE);
-                }
+            if (!file_exists($uploadPath) && (mkdir($uploadPath, 0777) || is_dir($uploadPath))) {
+                $errorMessage = 'mkdir failed';
+                throw new Exception(
+                    $errorMessage, Exception::DEFAULT_ERROR_CODE);
             }
         }
         return $uploadPath;

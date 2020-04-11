@@ -17,25 +17,28 @@
 
 namespace loeye\plugin;
 
+use loeye\base\Context;
+use loeye\std\Plugin;
+
 /**
  * Description of HeaderCachePlugin
  *
  * @author   Zhang Yi <loeyae@gmail.com>
  */
-class HeaderCachePlugin extends \loeye\std\Plugin
+class HeaderCachePlugin extends Plugin
 {
 
-    const DEFAULT_CACHE_EXPIRY = 60;
+    public const DEFAULT_CACHE_EXPIRY = 60;
 
     /**
      * process
      *
-     * @param \loeye\base\Context $context context
-     * @param array               $inputs  inputs
+     * @param Context $context context
+     * @param array $inputs inputs
      *
      * @return void
      */
-    public function process(\loeye\base\Context $context, array $inputs)
+    public function process(Context $context, array $inputs): void
     {
         $response = $context->getResponse();
         if (array_key_exists('nocache', $inputs) && $inputs['nocache'] == true) {
@@ -48,7 +51,7 @@ class HeaderCachePlugin extends \loeye\std\Plugin
             $response->addHeader('Cache-Control', $cacheSetting3);
             $response->addHeader('Expires', 0);
         } else {
-            $expire = isset($inputs['expire']) ? $inputs['expire'] : self::DEFAULT_CACHE_EXPIRY;
+            $expire = $inputs['expire'] ?? self::DEFAULT_CACHE_EXPIRY;
             $response->addHeader('Cache-Control', 'max-age=' . $expire . ', public');
         }
     }

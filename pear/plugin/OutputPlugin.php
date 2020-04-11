@@ -17,18 +17,20 @@
 
 namespace loeye\plugin;
 
-use loeye\base\{
-    Utils,
-    Context,
-    Factory
-};
+use loeye\database\Entity;
+use loeye\error\BusinessException;
+use loeye\lib\ModuleParse;
+use loeye\std\Plugin;
+use ReflectionException;
+use loeye\base\{Exception, Utils, Context, Factory};
+use const loeye\base\RENDER_TYPE_SEGMENT;
 
 /**
  * OutputPlugin
  *
  * @author   Zhang Yi <loeyae@gmail.com>
  */
-class OutputPlugin extends \loeye\std\Plugin
+class OutputPlugin extends Plugin
 {
 
     /**
@@ -44,47 +46,49 @@ class OutputPlugin extends \loeye\std\Plugin
     /**
      * process
      *
-     * @param \loeye\base\Context $context context
-     * @param array               $inputs  inputs
+     * @param Context $context context
+     * @param array $inputs inputs
      *
-     * @return void
+     * @return mixed
+     * @throws ReflectionException
+     * @throws Exception
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
-    public function process(\loeye\base\Context $context, array $inputs)
+    public function process(Context $context, array $inputs)
     {
-        $format     = \loeye\base\Utils::getData($inputs, 'format', 'json');
+        $format     = Utils::getData($inputs, 'format', 'json');
         $data       = array();
-        $outDataKey = \loeye\base\Utils::getData($inputs, $this->dataKey, null);
+        $outDataKey = Utils::getData($inputs, $this->dataKey, null);
         if ($outDataKey === null) {
-            $outDataKey = \loeye\base\Utils::getData($inputs, 'data', null);
+            $outDataKey = Utils::getData($inputs, 'data', null);
         }
         if (!empty($outDataKey)) {
-            $data = \loeye\base\Utils::getData($context, $outDataKey);
+            $data = Utils::getData($context, $outDataKey);
         } 
         if (empty($data) && isset($inputs['error'])) {
             $this->reponseCode = LOEYE_REST_STATUS_BAD_REQUEST;
-            $this->responseMsg = "error";
-            $data = \loeye\base\Utils::getErrors($context, $inputs, $inputs['error']);
+            $this->responseMsg = 'error';
+            $data = Utils::getErrors($context, $inputs, $inputs['error']);
         }
-        if ($data instanceof \loeye\database\Entity) {
+        if ($data instanceof Entity) {
             $data = Utils::entity2array(Factory::db()->em(), $data);
         }
         $redirect  = null;
-        $routerKey = \loeye\base\Utils::getData($inputs, 'router_key');
+        $routerKey = Utils::getData($inputs, 'router_key');
         if (!empty($routerKey)) {
-            $parameter = \loeye\base\Utils::getData($inputs, 'parameter', array());
+            $parameter = Utils::getData($inputs, 'parameter', array());
             $router    = $context->getRouter();
             $url       = $router->generate($routerKey, $parameter);
             $redirect  = $url;
         } else {
-            $url = \loeye\base\Utils::getData($inputs, 'url');
+            $url = Utils::getData($inputs, 'url');
             if (!empty($url)) {
                 $redirect = $url;
             }
         }
-        if ($format == \loeye\base\RENDER_TYPE_SEGMENT) {
-            $status = \loeye\base\Utils::getData($inputs, 'code');
-            $header = \loeye\base\Utils::getData($inputs, 'header', null);
+        if ($format === RENDER_TYPE_SEGMENT) {
+            $status = Utils::getData($inputs, 'code');
+            $header = Utils::getData($inputs, 'header', null);
             if (!empty($header) && !empty($status)) {
                 header($header, true, $status);
             } else if (!empty($header)) {
@@ -93,7 +97,7 @@ class OutputPlugin extends \loeye\std\Plugin
             if (!empty($redirect)) {
                 header('Location: ' . $redirect, true, LOEYE_REST_STATUS_REDIRECT);
             }
-            $message = \loeye\base\Utils::getData($inputs, 'msg');
+            $message = Utils::getData($inputs, 'msg');
             if ($message !== null && $data !== null && is_string($message) && is_string($data)) {
                 $message .= $data;
                 $message = $this->printf($message, $context, $inputs);
@@ -108,19 +112,18 @@ class OutputPlugin extends \loeye\std\Plugin
                 }
             }
         } else {
-            $header = \loeye\base\Utils::getData($inputs, 'header', null);
+            $header = Utils::getData($inputs, 'header', null);
             if (!empty($header)) {
                 header($header);
             }
             $context->getResponse()->setFormat($format);
-            $status  = \loeye\base\Utils::getData($inputs, 'code', $this->reponseCode);
+            $status  = Utils::getData($inputs, 'code', $this->reponseCode);
             $context->getResponse()->addOutput($status, 'status');
-            $message = \loeye\base\Utils::getData($inputs, 'msg', $this->responseMsg);
+            $message = Utils::getData($inputs, 'msg', $this->responseMsg);
             if ($message !== null) {
                 if (is_array($message)) {
-                    $moduleParse = new ModuleParse();
                     foreach ($message as $key => $msg) {
-                        $result = $moduleParse->conditionResult($key, $context);
+                        $result = ModuleParse::conditionResult($key, $context);
                         if ($result === true) {
                             $msg = $this->printf($msg, $context, $inputs);
                             $context->getResponse()->addOutput($msg, 'message');
@@ -153,21 +156,22 @@ class OutputPlugin extends \loeye\std\Plugin
      * printf
      *
      * @param string              $message message
-     * @param \loeye\base\Context $context context
+     * @param Context $context context
      * @param array               $inputs  inputs
      *
      * @return string
      */
-    protected function printf($message, \loeye\base\Context $context, array $inputs)
+    protected function printf($message, Context $context, array $inputs): string
     {
         $replace = [];
         if (isset($inputs['replace'])) {
             $replace = $inputs['replace'];
         } elseif (isset($inputs['rep_key'])) {
-            $replace = \loeye\base\Utils::getData($context, $inputs['rep_key'], null);
+            $replace = Utils::getData($context, $inputs['rep_key'], null);
         }
         if (!is_array($replace)) {
-            Utils::throwError(\loeye\error\BusinessException::INVALID_PARAMETER_MSG, \loeye\error\BusinessException::INVALID_PARAMETER_CODE, \loeye\error\BusinessException::class);
+            Utils::throwException(BusinessException::INVALID_PARAMETER_MSG,
+                BusinessException::INVALID_PARAMETER_CODE, [], BusinessException::class);
         }
         $translator = $context->get('loeye_translator');
         if (!$translator) {

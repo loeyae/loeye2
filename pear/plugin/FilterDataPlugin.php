@@ -17,12 +17,19 @@
 
 namespace loeye\plugin;
 
+use loeye\base\Context;
+use loeye\base\Exception;
+use loeye\base\Utils;
+use loeye\error\ResourceException;
+use loeye\std\Plugin;
+use const loeye\base\PROJECT_SUCCESS;
+
 /**
  * FilterDataPlugin
  *
  * @author   Zhang Yi <loeyae@gmail.com>
  */
-class FilterDataPlugin extends \loeye\std\Plugin
+class FilterDataPlugin extends Plugin
 {
 
     protected $defaultDataKey = 'filter_data';
@@ -33,68 +40,73 @@ class FilterDataPlugin extends \loeye\std\Plugin
     /**
      * process
      *
-     * @param \loeye\base\Context $context context
-     * @param array               $inputs  inputs
+     * @param Context $context context
+     * @param array $inputs inputs
      *
-     * @return void
+     * @return mixed
      */
-    public function process(\loeye\base\Context $context, array $inputs)
+    public function process(Context $context, array $inputs)
     {
         $result = $this->_setChangeKey($inputs,
-                $this->_setSplitKey($context, $inputs, $this->_excuteResult($context, $inputs)));
+            $this->_setSplitKey($context, $inputs, $this->_executeResult($context, $inputs)));
         $this->_setFilterKey($context, $inputs, $result);
         $this->_setPagination($context, $inputs);
-        if ($this->_excuteError($context, $inputs) === false || $this->_checkRequestKey($context, $inputs) === false) {
-            return \loeye\base\PROJECT_SUCCESS;
+        if ($this->_executeError($context, $inputs) === false || $this->_checkRequestKey($context, $inputs) === false) {
+            return PROJECT_SUCCESS;
         }
-        $required = \loeye\base\Utils::getData($inputs, $this->requiredKey, array());
-        $options  = \loeye\base\Utils::getData($inputs, $this->optionsKey, array());
+        $required = Utils::getData($inputs, $this->requiredKey, array());
+        $options = Utils::getData($inputs, $this->optionsKey, array());
         if (!empty($required) || !empty($options)) {
-            $result = \loeye\base\Utils::keyFilter($result, $required, $options);
+            $result = Utils::keyFilter($result, $required, $options);
         }
         if (isset($inputs['attach'])) {
-            foreach ((array) $inputs['attach'] as $key => $value) {
+            foreach ((array)$inputs['attach'] as $key => $value) {
                 $result[$key] = $value;
             }
         }
-        \loeye\base\Utils::setContextData($result, $context, $inputs, $this->defaultDataKey);
+        Utils::setContextData($result, $context, $inputs, $this->defaultDataKey);
     }
 
     /**
-     * _excuteError
+     * _executeError
      *
-     * @param \loeye\base\Context $context context
-     * @param array               $inputs  inoputs
+     * @param Context $context context
+     * @param array $inputs inputs
      *
      * @return boolean
      */
-    private function _excuteError(\loeye\base\Context $context, array $inputs)
+    private function _executeError(Context $context, array $inputs): bool
     {
         if (!isset($inputs['err'])) {
             return true;
         }
-        $errors = \loeye\base\Utils::getErrors($context, $inputs);
+        $errors = Utils::getErrors($context, $inputs);
         if (!empty($errors)) {
             if (isset($inputs['throw_error']) && $inputs['throw_error'] == true) {
                 if (isset($inputs['ignore_404']) && $inputs['ignore_404'] == true) {
                     foreach ($errors as $error) {
+                        if (!$error instanceof \Exception) {
+                            $error = new Exception($error);
+                        }
                         $code = $error->getCode();
-                        if ($code == LOEYE_REST_STATUS_NOT_FOUND || $code == \loeye\error\ResourceException::RECORD_NOT_FOUND_CODE) {
+                        if ($code == LOEYE_REST_STATUS_NOT_FOUND || $code == ResourceException::RECORD_NOT_FOUND_CODE) {
                             $context->set('record_not_found', true);
                         } else {
-                            \loeye\base\Utils::throwError($error);
+                            Utils::throwError($error);
                         }
                     }
                 } else {
-                    \loeye\base\Utils::throwError(current($errors));
+                    Utils::throwError(current($errors));
                 }
-            } else if (isset($inputs['check_error']) && $inputs['check_error'] == true) {
-                if (isset($inputs['ignore_404']) && $inputs['ignore_404'] == true) {
-                    foreach ($errors as $error) {
-                        $code = $error->getCode();
-                        if ($code == LOEYE_REST_STATUS_NOT_FOUND || $code == \loeye\error\ResourceException::RECORD_NOT_FOUND_CODE) {
-                            $context->removeErrors($inputs['err']);
-                        }
+            } else if (isset($inputs['check_error'], $inputs['ignore_404']) && $inputs['check_error'] == true &&
+                $inputs['ignore_404'] == true) {
+                foreach ($errors as $error) {
+                    if (!$error instanceof \Exception) {
+                        $error = new Exception($error);
+                    }
+                    $code = $error->getCode();
+                    if ($code == LOEYE_REST_STATUS_NOT_FOUND || $code == ResourceException::RECORD_NOT_FOUND_CODE) {
+                        $context->removeErrors($inputs['err']);
                     }
                 }
             }
@@ -106,12 +118,12 @@ class FilterDataPlugin extends \loeye\std\Plugin
     /**
      * _checkRequestKey
      *
-     * @param \loeye\base\Context $context context
-     * @param array               $inputs  inputs
+     * @param Context $context context
+     * @param array $inputs inputs
      *
      * @return boolean
      */
-    private function _checkRequestKey(\loeye\base\Context $context, array $inputs)
+    private function _checkRequestKey(Context $context, array $inputs): bool
     {
         $method = null;
         if (isset($inputs['check_method'])) {
@@ -155,28 +167,24 @@ class FilterDataPlugin extends \loeye\std\Plugin
     /**
      * _excuteResult
      *
-     * @param \loeye\base\Context $context context
-     * @param array        $inputs  inputs
+     * @param Context $context context
+     * @param array $inputs inputs
      *
      * @return mixed
      */
-    private function _excuteResult(\loeye\base\Context $context, array $inputs)
+    private function _executeResult(Context $context, array $inputs)
     {
-        $data = \loeye\base\Utils::getContextData($context, $inputs) or $data = [];
+        $data = Utils::getContextData($context, $inputs) or $data = [];
         if (isset($inputs['only_one'])) {
             if ($inputs['only_one'] === 'true') {
                 $result = current($data);
             } else {
-                $result = \loeye\base\Utils::getData($data, $inputs['only_one']);
+                $result = Utils::getData($data, $inputs['only_one']);
             }
         } else {
             $result = $data;
         }
-        if (isset($inputs['is_list'])) {
-            $this->_isList = $inputs['is_list'];
-        } else {
-            $this->_isList = $this->_testResultIsList($result);
-        }
+        $this->_isList = $inputs['is_list'] ?? $this->_testResultIsList($result);
         return $result;
     }
 
@@ -187,7 +195,7 @@ class FilterDataPlugin extends \loeye\std\Plugin
      *
      * @return boolean
      */
-    private function _testResultIsList($result)
+    private function _testResultIsList($result): bool
     {
         if (!is_array($result)) {
             return false;
@@ -204,14 +212,14 @@ class FilterDataPlugin extends \loeye\std\Plugin
      * _setChangeKey
      *
      * @param array $inputs inputs
-     * @param array $data   data
+     * @param array $data data
      *
-     * @return void
+     * @return array
      */
-    private function _setChangeKey(array $inputs, $data)
+    private function _setChangeKey(array $inputs, $data): array
     {
         if (isset($inputs['change_key']) && is_array($inputs['change_key'])) {
-            $changeKey     = $inputs['change_key'];
+            $changeKey = $inputs['change_key'];
             $intersectKeys = array_intersect_key($changeKey, $data);
             if ($this->_isList && empty($intersectKeys)) {
                 foreach ($data as $key => $item) {
@@ -238,19 +246,19 @@ class FilterDataPlugin extends \loeye\std\Plugin
     /**
      * _setSplitKey
      *
-     * @param \loeye\base\Context $context context
-     * @param array               $inputs  inputs
-     * @param type                $data    data
+     * @param Context $context context
+     * @param array $inputs inputs
+     * @param array $data data
      *
      * @return array
      */
-    private function _setSplitKey(\loeye\base\Context $context, array $inputs, $data)
+    private function _setSplitKey(Context $context, array $inputs, $data): array
     {
         if (isset($inputs['split_key']) && is_array($inputs['split_key'])) {
-            $arraLevel = \loeye\base\Utils::getArrayLevel($inputs['split_key']);
-            if ($arraLevel == 1) {
-                $filpKeys      = array_flip($inputs['split_key']);
-                $intersectKeys = array_intersect_key($filpKeys, $data);
+            $arrLevel = Utils::getArrayLevel($inputs['split_key']);
+            if ($arrLevel === 1) {
+                $flipKeys = array_flip($inputs['split_key']);
+                $intersectKeys = array_intersect_key($flipKeys, $data);
                 if ($this->_isList && empty($intersectKeys)) {
                     foreach ($data as $index => $item) {
                         foreach ($inputs['split_key'] as $key) {
@@ -273,7 +281,7 @@ class FilterDataPlugin extends \loeye\std\Plugin
                     foreach ($data as $index => $item) {
                         foreach ($inputs['split_key'] as $key => $setting) {
                             if (!empty($item[$key]) && !is_array($item[$key])) {
-                                $pattern    = \loeye\base\Utils::getData($setting, 'pattern', ',');
+                                $pattern = Utils::getData($setting, 'pattern', ',');
                                 $item[$key] = split($pattern, $item[$key]);
                                 if (!empty($setting['key'])) {
                                     $context->set($setting['key'], $item[$key]);
@@ -285,7 +293,7 @@ class FilterDataPlugin extends \loeye\std\Plugin
                 } else {
                     foreach ($inputs['split_key'] as $key => $setting) {
                         if (!empty($data[$key]) && !is_array($data[$key])) {
-                            $pattern    = \loeye\base\Utils::getData($setting, 'pattern', ',');
+                            $pattern = Utils::getData($setting, 'pattern', ',');
                             $data[$key] = explode($pattern, $data[$key]);
                             if (!empty($setting['key'])) {
                                 $context->set($setting['key'], $data[$key]);
@@ -301,13 +309,13 @@ class FilterDataPlugin extends \loeye\std\Plugin
     /**
      * _setFilterKey
      *
-     * @param \loeye\base\Context $context context
-     * @param array               $inputs  inputs
-     * @param array               $data    data
+     * @param Context $context context
+     * @param array $inputs inputs
+     * @param array $data data
      *
      * @return void
      */
-    private function _setFilterKey(\loeye\base\Context $context, array $inputs, $data)
+    private function _setFilterKey(Context $context, array $inputs, $data): void
     {
         empty($data) && $data = array();
         if (isset($inputs['filter_key']) && is_array($inputs['filter_key'])) {
@@ -315,23 +323,21 @@ class FilterDataPlugin extends \loeye\std\Plugin
                 foreach ($inputs['filter_key'] as $key => $value) {
                     $result = array();
                     if (is_array($value)) {
-                        $ck       = key($value);
-                        $condtion = (array) (current($value));
+                        $ck = key($value);
+                        $condition = (array)(current($value));
                         foreach ($data as $index => $item) {
                             if (!is_array($item)) {
                                 continue;
                             }
-                            if (array_intersect_assoc($condtion, $item) == $condtion) {
-                                $result[$index] = \loeye\base\Utils::getData($item, $ck);
+                            if (array_intersect_assoc($condition, $item) === $condition) {
+                                $result[$index] = Utils::getData($item, $ck);
                             }
                         }
+                    } else if (isset($data[$value])) {
+                        $result = $data[$value];
                     } else {
-                        if (isset($data[$value])) {
-                            $result = $data[$value];
-                        } else {
-                            foreach ($data as $index => $item) {
-                                $result[$index] = \loeye\base\Utils::getData($item, $value);
-                            }
+                        foreach ($data as $index => $item) {
+                            $result[$index] = Utils::getData($item, $value);
                         }
                     }
                     if (!empty($result)) {
@@ -342,7 +348,7 @@ class FilterDataPlugin extends \loeye\std\Plugin
                 }
             } else {
                 foreach ($inputs['filter_key'] as $key => $value) {
-                    $context->set($key, \loeye\base\Utils::getData($data, $value, null));
+                    $context->set($key, Utils::getData($data, $value, null));
                 }
             }
         }
@@ -351,19 +357,19 @@ class FilterDataPlugin extends \loeye\std\Plugin
     /**
      * _setPagination
      *
-     * @param \loeye\base\Context $context context
-     * @param array               $inputs  inputs
+     * @param Context $context context
+     * @param array $inputs inputs
      *
      * @return void
      */
-    private function _setPagination(\loeye\base\Context $context, array $inputs)
+    private function _setPagination(Context $context, array $inputs): void
     {
         if (isset($inputs['pagination']) && is_array($inputs['pagination'])) {
-            $startKey  = \loeye\base\Utils::checkNotEmpty($inputs['pagination'], 'start');
-            $offsetKey = \loeye\base\Utils::checkNotEmpty($inputs['pagination'], 'offset');
-            $pageKey   = \loeye\base\Utils::checkNotEmpty($inputs['pagination'], 'page');
-            $page      = \loeye\base\Utils::getData($context, $pageKey) or $page      = 1;
-            $hits      = \loeye\base\Utils::checkNotEmpty($inputs['pagination'], 'hits');
+            $startKey = Utils::checkNotEmpty($inputs['pagination'], 'start');
+            $offsetKey = Utils::checkNotEmpty($inputs['pagination'], 'offset');
+            $pageKey = Utils::checkNotEmpty($inputs['pagination'], 'page');
+            $page = Utils::getData($context, $pageKey) or $page = 1;
+            $hits = Utils::checkNotEmpty($inputs['pagination'], 'hits');
             $context->set($startKey, ($page - 1) * $hits);
             $context->set($offsetKey, $hits);
         }

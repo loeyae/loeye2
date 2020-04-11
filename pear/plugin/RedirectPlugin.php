@@ -17,35 +17,42 @@
 
 namespace loeye\plugin;
 
+use loeye\base\Context;
+use loeye\base\Exception;
+use loeye\base\Utils;
+use loeye\lib\Cookie;
+use loeye\std\Plugin;
+
 /**
  * Description of HeaderCachePlugin
  *
  * @author   Zhang Yi <loeyae@gmail.com>
  */
-class RedirectPlugin extends \loeye\std\Plugin
+class RedirectPlugin extends Plugin
 {
 
-    const DEFAULT_CACHE_EXPIRY = 60;
+    public const DEFAULT_CACHE_EXPIRY = 60;
 
     /**
      * process
      *
-     * @param \loeye\base\Context $context context
-     * @param array               $inputs  inputs
+     * @param Context $context context
+     * @param array $inputs inputs
      *
-     * @return void
+     * @return mixed
+     * @throws Exception
      */
-    public function process(\loeye\base\Context $context, array $inputs)
+    public function process(Context $context, array $inputs)
     {
-        $routerKey = \loeye\base\Utils::getData($inputs, 'router_key');
+        $routerKey = Utils::getData($inputs, 'router_key');
         if (!empty($routerKey)) {
-            $parameter = \loeye\base\Utils::getData($inputs, 'parameter', array());
+            $parameter = Utils::getData($inputs, 'parameter', array());
             $router    = $context->getRouter();
             $url       = $router->generate($routerKey, $parameter);
         } else {
-            $url = \loeye\base\Utils::checkNotEmpty($inputs, 'url');
+            $url = Utils::checkNotEmpty($inputs, 'url');
         }
-        if (\loeye\base\Utils::getData($inputs, 'done') == true) {
+        if (Utils::getData($inputs, 'done')) {
             if (filter_has_var(INPUT_GET, '_done')) {
                 $url = rawurldecode(filter_input(INPUT_GET, '_done', FILTER_SANITIZE_URL));
             } else if (filter_has_var(INPUT_COOKIE, '_done')) {
@@ -84,7 +91,7 @@ class RedirectPlugin extends \loeye\std\Plugin
     {
         if (!empty($inputs['cookie'])) {
             $cookie = (array) $inputs['cookie'];
-            array_walk($cookie, function(&$item, $key) {
+            array_walk($cookie, static function(&$item, $key) {
                 if (!is_numeric($key)) {
                     $item = $key . '=' . $item;
                 }

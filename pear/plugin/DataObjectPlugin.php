@@ -17,6 +17,10 @@
 
 namespace loeye\plugin;
 
+use loeye\base\Context;
+use loeye\base\Utils;
+use loeye\error\ResourceException;
+
 /**
  * DataObjectPlugin
  *
@@ -28,23 +32,24 @@ class DataObjectPlugin extends \loeye\std\Plugin
     /**
      * process
      *
-     * @param \loeye\base\Context $context context
-     * @param array               $inputs  inputs
+     * @param Context $context context
+     * @param array $inputs inputs
      *
      * @return void
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @throws ResourceException
      */
-    public function process(\loeye\base\Context $context, array $inputs)
+    public function process(Context $context, array $inputs): void
     {
-        $dataPath   = \loeye\base\Utils::checkNotEmpty($inputs, 'path');
-        $dataObject = \loeye\base\Utils::checkNotEmpty($inputs, 'out');
+        $dataPath   = Utils::checkNotEmpty($inputs, 'path');
+        $dataObject = Utils::checkNotEmpty($inputs, 'out');
         $file       = realpath(PROJECT_DATA_DIR . '/' . $dataPath);
         if (is_file($file)) {
             $data = file_get_contents($file);
             $context->set($dataObject, json_decode($data, true));
         } else {
-            throw new \loeye\error\ResourceException(
-            \loeye\error\ResourceException::FILE_NOT_FOUND_MSG, \loeye\error\ResourceException::FILE_NOT_FOUND_CODE, ['file' => $file]);
+            throw new ResourceException(
+            ResourceException::FILE_NOT_FOUND_MSG, ResourceException::FILE_NOT_FOUND_CODE, ['file' => $file]);
         }
     }
 

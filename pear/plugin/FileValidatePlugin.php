@@ -17,34 +17,44 @@
 
 namespace loeye\plugin;
 
+use loeye\base\Context;
+use loeye\base\Exception;
+use loeye\base\Utils;
+use loeye\base\Validator;
+use loeye\error\BusinessException;
+use loeye\std\Plugin;
+
 /**
  * FileValidatePlugin
  *
  * @author   Zhang Yi <loeyae@gmail.com>
  */
-class FileValidatePlugin extends \loeye\std\Plugin
+class FileValidatePlugin extends Plugin
 {
 
     /**
      * process
      *
-     * @param \loeye\base\Context $context context
-     * @param array               $inputs  inputs
+     * @param Context $context context
+     * @param array $inputs inputs
      *
      * @return void
+     * @throws \ReflectionException
+     * @throws Exception
+     * @throws BusinessException
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
-    public function process(\loeye\base\Context $context, array $inputs)
+    public function process(Context $context, array $inputs): void
     {
-        $rule       = \loeye\base\Utils::checkNotEmpty($inputs, 'validate_rule');
-        $custBundle = \loeye\base\Utils::getData($inputs, 'bundle', null);
-        $validation = new Validation($context->getAppConfig(), $custBundle);
-        $report     = $validation->validate($this->_formatFileData(), $rule, $prefix);
+        $rule       = Utils::checkNotEmpty($inputs, 'validate_rule');
+        $customBundle = Utils::getData($inputs, 'bundle', null);
+        $validation = new Validator($context->getAppConfig(), $customBundle);
+        $report     = $validation->validate($this->_formatFileData(), $rule);
         if ($report['has_error'] == true) {
-            \loeye\base\Utils::addErrors(
+            Utils::addErrors(
                     $report['error_message'], $context, $inputs, __CLASS__ . '_validate_error');
         }
-        \loeye\base\Utils::setContextData(
+        Utils::setContextData(
                 $report['valid_data'], $context, $inputs, __CLASS__ . '_filter_data');
     }
 
@@ -53,7 +63,7 @@ class FileValidatePlugin extends \loeye\std\Plugin
      *
      * @return array
      */
-    private function _formatFileData()
+    private function _formatFileData(): array
     {
         $data = array();
         foreach ($_FILES as $key => $fields) {
@@ -73,7 +83,7 @@ class FileValidatePlugin extends \loeye\std\Plugin
      *
      * @return array
      */
-    private function _parseData($fields)
+    private function _parseData($fields): array
     {
         $data = array();
         foreach ($fields['name'] as $key => $item) {

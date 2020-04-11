@@ -17,48 +17,54 @@
 
 namespace loeye\plugin;
 
+use loeye\base\Context;
+use loeye\base\Utils;
+use loeye\lib\Cookie;
+use loeye\std\Plugin;
+
 /**
  * PrivacyCookiePlugin
  *
  * @author   Zhang Yi <loeyae@gmail.com>
  */
-class PrivacyCookiePlugin extends \loeye\std\Plugin
+class PrivacyCookiePlugin extends Plugin
 {
-
+    protected $dataKey = 'set_loeye_cookie_data';
+    protected $outKey = 'get_loeye_cookie_result';
     /**
      * process
      *
-     * @param \loeye\base\Context $context context
-     * @param array        $inputs  inputs
+     * @param Context $context context
+     * @param array $inputs inputs
      *
      * @return void
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
-    public function process(\loeye\base\Context $context, array $inputs)
+    public function process(Context $context, array $inputs): void
     {
-        $setKey  = \loeye\base\Utils::getData($inputs, 'set', $this->dataKey);
-        $setData = \loeye\base\Utils::getData($context, $setKey);
+        $setKey = Utils::getData($inputs, 'set', $this->dataKey);
+        $setData = Utils::getData($context, $setKey);
         if (!empty($setData)) {
             foreach ($setData as $key => $value) {
                 if (is_numeric($key)) {
                     continue;
                 }
-                \loeye\lib\Cookie::setCookie($key, $value);
+                Cookie::setLoeyeCookie($key, $value);
             }
         }
-        $key  = \loeye\base\Utils::getData($inputs, 'get', null);
+        $key = Utils::getData($inputs, 'get', null);
         $data = array();
         if (empty($key)) {
-            $cookie = \loeye\lib\Cookie::getCookie() or $cookie = array();
+            $cookie = Cookie::getLoeyeCookie() or $cookie = array();
             foreach ($cookie as $key => $value) {
                 $data[$key] = $value;
             }
         } else {
-            foreach ((array) $key as $item) {
-                $data[$item] = \loeye\lib\Cookie::getCookie($item);
+            foreach ((array)$key as $item) {
+                $data[$item] = Cookie::getLoeyeCookie($item);
             }
         }
-        \loeye\base\Utils::setContextData($data, $context, $inputs, $this->outKey);
+        Utils::setContextData($data, $context, $inputs, $this->outKey);
     }
 
 }

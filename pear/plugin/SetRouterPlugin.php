@@ -17,30 +17,37 @@
 
 namespace loeye\plugin;
 
+use loeye\base\Context;
+use loeye\base\Router;
+use loeye\error\BusinessException;
+use loeye\std\Plugin;
+use const loeye\base\PROJECT_SUCCESS;
+
 /**
  * SetRouterPlugin
  *
  * @author   Zhang Yi <loeyae@gmail.com>
  */
-class SetRouterPlugin extends \loeye\std\Plugin
+class SetRouterPlugin extends Plugin
 {
 
     /**
      * process
      *
-     * @param \loeye\base\Context $context context
-     * @param array               $inputs  input
+     * @param Context $context context
+     * @param array $inputs input
      *
-     * @return void
+     * @return string|void
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @throws BusinessException
      */
-    public function process(\loeye\base\Context $context, array $inputs)
+    public function process(Context $context, array $inputs)
     {
         $router = $context->getRouter();
-        if ($router instanceof \loeye\base\Router) {
-            return \loeye\base\PROJECT_SUCCESS;
+        if ($router instanceof Router) {
+            return PROJECT_SUCCESS;
         }
-        $router = new \loeye\base\Router($context->getAppConfig()->getPropertyName());
+        $router = new Router($context->getAppConfig()->getPropertyName());
         $context->setRouter($router);
     }
 

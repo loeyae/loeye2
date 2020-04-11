@@ -17,12 +17,16 @@
 
 namespace loeye\plugin;
 
+use loeye\base\Context;
+use loeye\base\Utils;
+use loeye\std\Plugin;
+
 /**
  * Description of RequestDataPreparePlugin
  *
  * @author   Zhang Yi <loeyae@gmail.com>
  */
-class RequestDataPreparePlugin extends \loeye\std\Plugin
+class RequestDataPreparePlugin extends Plugin
 {
     private $_keyList = 'key_list';
 
@@ -35,18 +39,18 @@ class RequestDataPreparePlugin extends \loeye\std\Plugin
     /**
      * process
      *
-     * @param \loeye\base\Context $context context
-     * @param array               $inputs  inputs
+     * @param Context $context context
+     * @param array $inputs inputs
      *
      * @return void
      */
-    public function process(\loeye\base\Context $context, array $inputs)
+    public function process(Context $context, array $inputs): void
     {
-        $keyList = \loeye\base\Utils::checkNotEmpty($inputs, $this->_keyList);
+        $keyList = Utils::checkNotEmpty($inputs, $this->_keyList);
         $keyList = (array)$keyList;
 
         $postOnly = false;
-        if (isset($inputs[$this->_postOnly]) && $inputs[$this->_postOnly] == 'true') {
+        if (isset($inputs[$this->_postOnly]) && $inputs[$this->_postOnly] === 'true') {
             $postOnly = true;
         }
         if (empty($inputs[$this->_dataKey])) {
@@ -54,12 +58,10 @@ class RequestDataPreparePlugin extends \loeye\std\Plugin
                 $outKey = empty($value) ? $key : $value;
                 if (filter_has_var(INPUT_POST, $key)) {
                     $context->set($outKey, filter_input(INPUT_POST, $key));
+                } else if ($postOnly === true) {
+                    $context->set($outKey, null);
                 } else {
-                    if ($postOnly == true) {
-                        $context->set($outKey, null);
-                    } else {
-                        $context->set($outKey, filter_input(INPUT_GET, $key));
-                    }
+                    $context->set($outKey, filter_input(INPUT_GET, $key));
                 }
             }
         } else {
@@ -68,12 +70,10 @@ class RequestDataPreparePlugin extends \loeye\std\Plugin
                 $outKey = empty($value) ? $key : $value;
                 if (filter_has_var(INPUT_POST, $key)) {
                     $requestData[$outKey] = filter_input(INPUT_POST, $key);
+                } else if ($postOnly === true) {
+                    $requestData[$outKey] = null;
                 } else {
-                    if ($postOnly == true) {
-                        $requestData[$outKey] = null;
-                    } else {
-                        $requestData[$outKey] = filter_input(INPUT_GET, $key);
-                    }
+                    $requestData[$outKey] = filter_input(INPUT_GET, $key);
                 }
             }
             $data = $context->get($inputs[$this->_dataKey], array());

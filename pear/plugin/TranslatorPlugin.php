@@ -17,6 +17,11 @@
 
 namespace loeye\plugin;
 
+use loeye\base\Context;
+use loeye\base\Factory;
+use loeye\base\Utils;
+use loeye\std\Plugin;
+
 /**
  * LocalTranslatorPlugin
  *
@@ -26,22 +31,22 @@ namespace loeye\plugin;
  * @license  http://www.apache.org/licenses/LICENSE-2.0 Apache License
  * @link     URL description
  */
-class TranslatorPlugin extends \loeye\std\Plugin
+class TranslatorPlugin extends Plugin
 {
 
     /**
      * process
      *
-     * @param \loeye\base\Context $context context
-     * @param array               $inputs  inputs
+     * @param Context $context context
+     * @param array $inputs inputs
      *
      * @return void
      */
-    public function process(\loeye\base\Context $context, array $inputs)
+    public function process(Context $context, array $inputs): void
     {
-        $translator = \loeye\base\Factory::translator($context->getAppConfig());
+        $translator = Factory::translator($context->getAppConfig());
         $inputs['expire'] = 0;
-        \loeye\base\Utils::setContextData($translator, $context, $inputs, 'loeye_translator');
+        Utils::setContextData($translator, $context, $inputs, 'loeye_translator');
     }
 
 }

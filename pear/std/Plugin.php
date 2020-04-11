@@ -17,6 +17,8 @@
 
 namespace loeye\std;
 
+use loeye\base\Context;
+
 /**
  * Plugin
  *
@@ -28,10 +30,10 @@ abstract class Plugin
     /**
      * process
      *
-     * @param \loeye\base\Context $context  Context
+     * @param Context $context  Context
      * @param array               $inputs  array
      *
      * @return mixed
      */
-    abstract public function process(\loeye\base\Context $context, array $inputs);
+    abstract public function process(Context $context, array $inputs);
 }

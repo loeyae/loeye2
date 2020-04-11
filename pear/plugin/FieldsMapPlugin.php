@@ -17,15 +17,21 @@
 
 namespace loeye\plugin;
 
+use loeye\base\Context;
+use loeye\base\Utils;
+use loeye\error\BusinessException;
+use loeye\std\Plugin;
+use const loeye\base\PROJECT_SUCCESS;
+
 /**
  * FieldsMapPlugin
  *
  * @author   Zhang Yi <loeyae@gmail.com>
  */
-abstract class FieldsMapPlugin extends \loeye\std\Plugin
+abstract class FieldsMapPlugin extends Plugin
 {
 
-    protected $dataKey = "default_data";
+    protected $dataKey = 'default_data';
     protected $outKey = 'mapped_data';
     protected $fieldsMap = array();
     protected $operate = array();
@@ -34,25 +40,25 @@ abstract class FieldsMapPlugin extends \loeye\std\Plugin
     /**
      * process
      *
-     * @param \loeye\base\Context $context context
-     * @param array        $inputs  inputs
+     * @param Context $context context
+     * @param array $inputs inputs
      *
-     * @return void
+     * @return mixed
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
-    public function process(\loeye\base\Context $context, array $inputs)
+    public function process(Context $context, array $inputs)
     {
-        $flip = \loeye\base\Utils::getData($inputs, 'flip', false);
+        $flip = Utils::getData($inputs, 'flip', false);
         $this->initMap($flip);
         if (empty($this->fieldsMap)) {
             $errorMsg = '字段对应关系设置无效';
-            \loeye\base\Utils::throwException(
-                    $errorMsg, \loeye\error\BusinessException::INVALID_PLUGIN_SET_CODE);
+            Utils::throwException(
+                $errorMsg, BusinessException::INVALID_PLUGIN_SET_CODE);
         }
-        $data = \loeye\base\Utils::getContextData($context, $inputs, $this->dataKey);
+        $data = Utils::getContextData($context, $inputs, $this->dataKey);
         if (empty($data)) {
-            \loeye\base\Utils::setContextData($data, $context, $inputs, $this->outKey);
-            return \loeye\base\PROJECT_SUCCESS;
+            Utils::setContextData($data, $context, $inputs, $this->outKey);
+            return PROJECT_SUCCESS;
         }
         if ($flip) {
             $fields = array_flip($this->fieldsMap);
@@ -60,18 +66,18 @@ abstract class FieldsMapPlugin extends \loeye\std\Plugin
             $fields = $this->fieldsMap;
         }
         $mappedData = array();
-        $isList     = \loeye\base\Utils::getData($inputs, 'list', false);
+        $isList = Utils::getData($inputs, 'list', false);
         if ($isList) {
             foreach ($data as $index => $child) {
                 $mappedChild = $this->map($child, $fields);
-                if (!empty($mappedChild)) {
+                if ($mappedChild !== null) {
                     $mappedData[$index] = $mappedChild;
                 }
             }
         } else {
             $mappedData = $this->map($data, $fields);
         }
-        \loeye\base\Utils::setContextData($mappedData, $context, $inputs, $this->outKey);
+        Utils::setContextData($mappedData, $context, $inputs, $this->outKey);
     }
 
     /**
@@ -79,9 +85,9 @@ abstract class FieldsMapPlugin extends \loeye\std\Plugin
      * @param array $data
      * @param array $fields
      *
-     * @return type
+     * @return array
      */
-    protected function map(array $data, array $fields)
+    protected function map(array $data, array $fields): array
     {
         $mappedData = [];
         if (!empty($fields)) {
@@ -104,10 +110,10 @@ abstract class FieldsMapPlugin extends \loeye\std\Plugin
     /**
      * operate
      *
-     * @param mixed  $data    data
-     * @param string $key     key
-     * @param array  $operate operate setting
-     * @param mixed  $default default value
+     * @param mixed $data data
+     * @param string $key key
+     * @param array $operate operate setting
+     * @param mixed $default default value
      *
      * @return mixed
      */
@@ -116,14 +122,14 @@ abstract class FieldsMapPlugin extends \loeye\std\Plugin
         if (!isset($operate[$key])) {
             return $default;
         }
-        $setting = \loeye\base\Utils::checkNotEmpty($operate, $key);
+        $setting = Utils::checkNotEmpty($operate, $key);
         if (is_string($setting)) {
             $callback = ['callback' => $setting];
         } else if (is_array($setting)) {
             if (isset($setting['method']) && !isset($setting['class'])) {
                 if (method_exists($this, $setting['method'])) {
                     $callback = [
-                        'class'  => get_class($this),
+                        'class' => get_class($this),
                         'method' => $setting['method'],
                     ];
                     if (isset($setting['param'])) {
@@ -143,7 +149,7 @@ abstract class FieldsMapPlugin extends \loeye\std\Plugin
         } else {
             array_unshift($callback['param'], $key);
         }
-        return \loeye\base\Utils::callUserFuncArray($data, $callback);
+        return Utils::callUserFuncArray($data, $callback);
     }
 
     /**
@@ -159,5 +165,5 @@ abstract class FieldsMapPlugin extends \loeye\std\Plugin
      *
      * @return void
      */
-    abstract protected function initMap($flip = false);
+    abstract protected function initMap($flip = false): void;
 }

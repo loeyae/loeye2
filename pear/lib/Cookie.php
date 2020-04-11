@@ -59,12 +59,15 @@ class Cookie
     /**
      * getCookie
      *
-     * @param string $name name
+     * @param string|null $name name
      *
      * @return string|null
      */
-    public static function getCookie($name): ?string
+    public static function getCookie($name=null): ?string
     {
+        if ($name === null) {
+            return  filter_input_array(INPUT_COOKIE);
+        }
         if (filter_has_var(INPUT_COOKIE, $name)) {
             return filter_input(INPUT_COOKIE, $name);
         }
