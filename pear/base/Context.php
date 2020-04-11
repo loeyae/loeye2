@@ -541,9 +541,9 @@ class Context implements ArrayAccess
     /**
      * getAppConfig
      *
-     * @return AppConfig|null
+     * @return AppConfig
      */
-    public function getAppConfig(): ?AppConfig
+    public function getAppConfig(): AppConfig
     {
         return $this->_appConfig;
     }
@@ -563,9 +563,9 @@ class Context implements ArrayAccess
     /**
      * getRequest
      *
-     * @return Request|null
+     * @return Request
      */
-    public function getRequest(): ?Request
+    public function getRequest(): Request
     {
         return $this->_request;
     }
@@ -585,10 +585,13 @@ class Context implements ArrayAccess
     /**
      * getResponse
      *
-     * @return Response|null $response response
+     * @return Response $response response
      */
-    public function getResponse(): ?Response
+    public function getResponse(): Response
     {
+        if (null === $this->_response) {
+            $this->_response = Factory::response();
+        }
         return $this->_response;
     }
 

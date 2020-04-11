@@ -203,7 +203,7 @@ require_once APP_BASE_DIR . DIRECTORY_SEPARATOR .'vendor'. DIRECTORY_SEPARATOR .
 define('LOEYE_MODE', LOEYE_MODE_DEV);
 
 $dispatcher = new loeye\web\Dispatcher();
-$dispatcher->dispatche();
+$dispatcher->dispatch();
 EOF;
     protected $generalError = <<<'EOF'
 <!DOCTYPE html>

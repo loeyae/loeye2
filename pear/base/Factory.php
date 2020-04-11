@@ -80,7 +80,7 @@ class Factory
         if (!is_file($file)) {
             $dno = strrpos($file, '.');
             $file = PROJECT_VIEWS_DIR . '/'
-                . str_replace(".", "/", substr($file, 0, $dno)) . substr($file, $dno);
+                . str_replace('.', '/', substr($file, 0, $dno)) . substr($file, $dno);
         }
         include $file;
     }
@@ -163,7 +163,6 @@ class Factory
      * @param string $errorPage error page
      *
      * @return string
-     * @throws Exception
      */
     public static function includeErrorPage(
         Context $context, \Exception $e, $errorPage = null

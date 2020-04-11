@@ -20,9 +20,11 @@ namespace loeye\service;
 use Exception;
 use loeye\base\AppConfig;
 use loeye\base\Factory;
+use loeye\base\Logger;
 use loeye\base\UrlManager;
 use loeye\base\Utils;
 use loeye\error\ResourceException;
+use loeye\render\SegmentRender;
 use ReflectionClass;
 use ReflectionException;
 
@@ -57,7 +59,6 @@ class Dispatcher extends \loeye\std\Dispatcher
      *
      * @param null $moduleId
      * @return void
-     * @throws ReflectionException
      */
     public function dispatch($moduleId = null): void
     {
@@ -93,10 +94,17 @@ class Dispatcher extends \loeye\std\Dispatcher
             $response->setStatusMessage('Internal Error');
             $response->addOutput(
                 ['code' => $exc->getCode(), 'message' => $exc->getMessage()], 'status');
-            $renderObj = Factory::getRender($response->getFormat());
+            try {
+                $renderObj = Factory::getRender($response->getFormat());
 
-            $renderObj->header($response);
-            $renderObj->output($response);
+                $renderObj->header($response);
+                $renderObj->output($response);
+            } catch (ReflectionException $e) {
+                Logger::exception($e);
+                $renderObj = new SegmentRender();
+                $renderObj->header($response);
+                $renderObj->output($response);
+            }
         } finally {
             if ($this->processMode > LOEYE_PROCESS_MODE__NORMAL) {
                 $this->setTraceDataIntoContext(array());
