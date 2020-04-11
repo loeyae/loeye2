@@ -17,6 +17,10 @@
 
 namespace loeye\std;
 
+use loeye\base\Context;
+use loeye\base\Exception;
+use const loeye\base\RENDER_TYPE_JSON;
+
 /**
  * Controller
  *
@@ -28,12 +32,12 @@ abstract class Controller
     /**
      * Context instance
      *
-     * @var \loeye\base\Context
+     * @var Context
      */
     protected $context;
     public $view;
 
-    public function __construct(\loeye\base\Context $context)
+    public function __construct(Context $context)
     {
         $this->context = $context;
     }
@@ -41,7 +45,7 @@ abstract class Controller
     /**
      * prepare
      *
-     * @return void
+     * @return mixed
      */
     public function prepare()
     {
@@ -60,7 +64,7 @@ abstract class Controller
      *
      * @return void
      */
-    protected function render($src)
+    protected function render($src): void
     {
         $this->view = ['src' => $src];
     }
@@ -68,25 +72,25 @@ abstract class Controller
     /**
      * template
      *
-     * @param string $tpl   template file
-     * @param array  $data  data
-     * @param mixed  $cache cache setting
-     * @param string $id    cache id
+     * @param string $tpl template file
+     * @param array $data data
+     * @param mixed $cache cache setting
+     * @param string $id cache id
      *
      * @return void
      */
-    protected function template($tpl, $data = array(), $cache = 7200, $id = null)
+    protected function template($tpl, $data = array(), $cache = 7200, $id = null): void
     {
         $this->view = ['tpl' => $tpl, 'data' => $data, 'cache' => $cache, 'id' => $id];
     }
 
     /**
-     * oupput
+     * output
      *
-     * @param mixed  $data   data
+     * @param mixed $data data
      * @param string $format output format
      */
-    protected function oupput($data, $format = RENDER_TYPE_JSON)
+    protected function output($data, $format = RENDER_TYPE_JSON): void
     {
         $this->context->getResponse()->setFormat($format);
         $this->context->getResponse()->addOutput($data);
@@ -99,7 +103,7 @@ abstract class Controller
      *
      * @return void
      */
-    public function redirectUrl($redirectUrl)
+    public function redirectUrl($redirectUrl): void
     {
         $this->context->getResponse()->redirect($redirectUrl);
     }
@@ -113,14 +117,14 @@ abstract class Controller
      * </p>
      *
      * @return void
+     * @throws Exception
      */
-    public function redirect(array $params)
+    public function redirect(array $params): void
     {
-        if (isset($params[0])) {
-
-        }
-        $url = $this->context->getUrlManager()->generate($params);
-        return $this->redirectUrl($url);
+        $routeKey = $params[0];
+        unset($params[0]);
+        $url = $this->context->getUrlManager()->generate($routeKey, $params);
+        $this->redirectUrl($url);
     }
 
 }

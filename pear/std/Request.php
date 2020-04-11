@@ -17,12 +17,16 @@
 
 namespace loeye\std;
 
+use ArrayAccess;
+use GuzzleHttp\Psr7\Uri;
+use const loeye\base\RENDER_TYPE_SEGMENT;
+
 /**
  * Request
  *
  * @author   Zhang Yi <loeyae@gmail.com>
  */
-class Request implements \ArrayAccess
+class Request implements ArrayAccess
 {
 
     private $_lang = 'zh_CN';
@@ -30,10 +34,13 @@ class Request implements \ArrayAccess
 
     /**
      *
-     * @var \GuzzleHttp\Psr7\Uri
+     * @var Uri
      */
     private $_uri;
     private $_moduleId;
+    /**
+     * @var array
+     */
     private $_browser;
     private $_device;
     private $_method;
@@ -42,6 +49,8 @@ class Request implements \ArrayAccess
     public $isHttps;
     public $isFlashRequest;
     public $requestMethod;
+    private $_requestTime;
+    private $_requestTimeFloat;
 
     /**
      * __construct
@@ -51,7 +60,7 @@ class Request implements \ArrayAccess
     public function __construct()
     {
         $moduleId = null;
-        $argc     = func_num_args();
+        $argc = func_num_args();
         if ($argc > 0) {
             $moduleId = func_get_arg(0);
         }
@@ -69,9 +78,9 @@ class Request implements \ArrayAccess
      *
      * @return boolean
      */
-    public function offsetExists($offset)
+    public function offsetExists($offset): bool
     {
-        $methodList   = array(
+        $methodList = array(
             'parameter',
             'get',
             'post',
@@ -93,10 +102,7 @@ class Request implements \ArrayAccess
             'isFlashRequest',
             'requestMethod',
         );
-        if (in_array($offset, $methodList) || in_array($offset, $propertyList)) {
-            return true;
-        }
-        return false;
+        return in_array($offset, $methodList, true) || in_array($offset, $propertyList, true);
     }
 
     /**
@@ -104,7 +110,7 @@ class Request implements \ArrayAccess
      *
      * @param mixed $offset offset
      *
-     * @return mixed
+     * @return mixed|void
      */
     public function offsetGet($offset)
     {
@@ -142,15 +148,14 @@ class Request implements \ArrayAccess
      * offsetSet
      *
      * @param mixed $offset offset
-     * @param mixed $value  value
+     * @param mixed $value value
      *
      * @return void
      */
-    public function offsetSet($offset, $value)
+    public function offsetSet($offset, $value): void
     {
-        switch ($offset) {
-            case 'moduleId':
-                $this->setModuleId($value);
+        if ($offset === 'moduleId') {
+            $this->setModuleId($value);
         }
     }
 
@@ -159,11 +164,10 @@ class Request implements \ArrayAccess
      *
      * @param mixed $offset offset
      *
-     * @return void
+     * @return mixed|void
      */
     public function offsetUnset($offset)
     {
-        return;
     }
 
     /**
@@ -171,28 +175,28 @@ class Request implements \ArrayAccess
      *
      * @return void
      */
-    private function _setUri()
+    private function _setUri(): void
     {
         $url = $this->getServer('SCRIPT_URI');
         if (!empty($url)) {
-            $this->_uri = new \GuzzleHttp\Psr7\Uri($url);
+            $this->_uri = new Uri($url);
         } else {
-            $uri    = new \GuzzleHttp\Psr7\Uri();
+            $uri = new Uri();
             $scheme = $this->getServer('REQUEST_SCHEME');
             if (!empty($scheme)) {
                 $uri = $uri->withScheme($scheme);
             } else {
                 $isHttps = $this->getServer('HTTPS');
-                if (!empty($isHttps) && $isHttps != 'off') {
+                if (!empty($isHttps) && $isHttps !== 'off') {
                     $uri = $uri->withScheme('https');
                 } else {
                     $uri = $uri->withScheme('http');
                 }
             }
-            $httpHost    = $this->getServer('HTTP_HOST');
+            $httpHost = $this->getServer('HTTP_HOST');
             $httpHostArr = explode(':', $httpHost);
             if (count($httpHostArr) > 1) {
-                list($host, $port) = $httpHostArr;
+                [$host, $port] = $httpHostArr;
             } else {
                 $host = $httpHost;
                 $port = null;
@@ -208,11 +212,11 @@ class Request implements \ArrayAccess
                 $uri = $uri->withPort($port);
             }
             $requestUrl = $this->getServer('REQUEST_URI');
-            list($path, ) = explode('?', $requestUrl);
+            [$path,] = explode('?', $requestUrl);
             if (empty($path)) {
                 $path = $this->getServer('SCRIPT_NAME');
             }
-            if ($path != '/') {
+            if ($path !== '/') {
                 $uri = $uri->withPath($path);
             }
             $this->_uri = $uri;
@@ -250,7 +254,7 @@ class Request implements \ArrayAccess
      *
      * @return void
      */
-    private function _findLanguage()
+    private function _findLanguage(): void
     {
         if (isset($this['parameter']['lang'])) {
             $this->_lang = $this['parameter']['lang'];
@@ -264,7 +268,7 @@ class Request implements \ArrayAccess
      *
      * @return void
      */
-    private function _findCountry()
+    private function _findCountry(): void
     {
         if (isset($this['get']['cc'])) {
             $this->_country = $this['get']['cc'];
@@ -278,16 +282,14 @@ class Request implements \ArrayAccess
      *
      * @return void
      */
-    private function _findBrowser()
+    private function _findBrowser(): void
     {
         if (ini_get('browscap')) {
-            $browser        = get_browser(null, true);
+            $browser = get_browser(null, true);
             $this->_browser = $browser;
-        } else {
-            if (filter_has_var(INPUT_SERVER, 'HTTP_USER_AGENT')) {
-                $browser        = filter_input(INPUT_SERVER, 'HTTP_USER_AGENT');
-                $this->_browser = $this->_matchBrowser($browser);
-            }
+        } else if (filter_has_var(INPUT_SERVER, 'HTTP_USER_AGENT')) {
+            $browser = filter_input(INPUT_SERVER, 'HTTP_USER_AGENT');
+            $this->_browser = $this->_matchBrowser($browser);
         }
         !empty($this->_browser) or $this->_browser = array();
     }
@@ -299,44 +301,44 @@ class Request implements \ArrayAccess
      *
      * @return array
      */
-    private function _matchBrowser($userAgent)
+    private function _matchBrowser($userAgent): array
     {
-        $platform           = '';
-        $browser            = '';
-        $version            = '';
+        $platform = '';
+        $browser = '';
+        $version = '';
         $platformMatchArray = array(
-            'Windows NT 6.3'     => 'Windows 8',
-            'Windows NT 6.2'     => 'Windows 8.1',
-            'Windows NT 6.1'     => 'Windows 7',
-            'Windows NT 6.0'     => 'Windows Vista',
-            'Windows NT 5.0'     => 'Windows 2000',
-            'Windows NT 5'       => 'Windows XP',
-            'Windows NT'         => 'Windows NT',
-            'Windows 98'         => 'Windows 98',
-            'Windows 95'         => 'Windows 95',
-            'wds 7'              => 'Windows Phone 7',
-            'wds 8'              => 'Windows Phone 8',
+            'Windows NT 6.3' => 'Windows 8',
+            'Windows NT 6.2' => 'Windows 8.1',
+            'Windows NT 6.1' => 'Windows 7',
+            'Windows NT 6.0' => 'Windows Vista',
+            'Windows NT 5.0' => 'Windows 2000',
+            'Windows NT 5' => 'Windows XP',
+            'Windows NT' => 'Windows NT',
+            'Windows 98' => 'Windows 98',
+            'Windows 95' => 'Windows 95',
+            'wds 7' => 'Windows Phone 7',
+            'wds 8' => 'Windows Phone 8',
             'Windows Phone OS 7' => 'Windows Phone 7',
-            'Windows Phone 8'    => 'Windows Phone 8',
-            'Windows Phone'      => 'Windows Phone',
-            'Win 9'              => 'Windows ME',
-            'Win'                => 'Windows',
-            'Ipad'               => 'Ipad',
-            'iPhone'             => 'Iphone',
-            'Mac OS'             => 'Mac OS',
-            'Android'            => 'Android',
-            'Linux'              => 'Linex',
-            'Unix'               => 'Unix',
+            'Windows Phone 8' => 'Windows Phone 8',
+            'Windows Phone' => 'Windows Phone',
+            'Win 9' => 'Windows ME',
+            'Win' => 'Windows',
+            'Ipad' => 'Ipad',
+            'iPhone' => 'Iphone',
+            'Mac OS' => 'Mac OS',
+            'Android' => 'Android',
+            'Linux' => 'Linux',
+            'Unix' => 'Unix',
         );
-        $browserMatchArray  = array(
-            'MSIE'      => 'IE',
-            'Firefox'   => 'Firefox',
-            'Chrome'    => 'Chrome',
-            'Safari'    => 'Safari',
-            'Opera'     => 'Opera',
-            'Maxthon'   => 'Maxthon',
+        $browserMatchArray = array(
+            'MSIE' => 'IE',
+            'Firefox' => 'Firefox',
+            'Chrome' => 'Chrome',
+            'Safari' => 'Safari',
+            'Opera' => 'Opera',
+            'Maxthon' => 'Maxthon',
             'UCBrowser' => 'UC',
-            'Android'   => 'Android',
+            'Android' => 'Android',
         );
         foreach ($platformMatchArray as $key => $value) {
             if (mb_strpos($userAgent, $key)) {
@@ -350,25 +352,25 @@ class Request implements \ArrayAccess
             }
         }
         if (empty($version)) {
-            if (preg_match("/rv:(\d+\.?\d*)/", $userAgent, $match) != 0) {
+            if (preg_match("/rv:(\d+\.?\d*)/", $userAgent, $match)) {
                 $version = $match[1];
-            } else if (preg_match("/$browser\/(\d+\.?\d*)/", $userAgent, $match) != 0) {
+            } else if (preg_match("/$browser\/(\d+\.?\d*)/", $userAgent, $match)) {
                 $version = $match[1];
-            } else if (preg_match("/$browser (\d+\.?\d*)/", $userAgent, $match) != 0) {
+            } else if (preg_match("/$browser (\d+\.?\d*)/", $userAgent, $match)) {
                 $version = $match[1];
             }
         }
 
         if (empty($browser)) {
-            if ($platform == 'Windows 8' || $platform == 'Windows 8.1' || $platform == 'Windows 7') {
+            if ($platform === 'Windows 8' || $platform === 'Windows 8.1' || $platform === 'Windows 7') {
                 $browser = 'IE';
             }
         }
 
         return array(
             'platform' => $platform,
-            'browser'  => $browser,
-            'version'  => $version,
+            'browser' => $browser,
+            'version' => $version,
         );
     }
 
@@ -377,9 +379,9 @@ class Request implements \ArrayAccess
      *
      * @return void
      */
-    private function _findDevice()
+    private function _findDevice(): void
     {
-        $clientkeywords = array(
+        $clientKeywords = array(
             'nokia',
             'sony',
             'ericsson',
@@ -413,28 +415,30 @@ class Request implements \ArrayAccess
             'wap',
             'mobile',
         );
-        $isDevice       = false;
+        $isDevice = false;
         if (isset($_SERVER['HTTP_X_WAP_PROFILE'])) {
             $isDevice = true;
-        } else if (isset($_SERVER['HTTP_VIA']) && mb_stristr($_SERVER['HTTP_VIA'], "wap")) {
+        } else if (isset($_SERVER['HTTP_VIA']) && mb_stristr($_SERVER['HTTP_VIA'], 'wap')) {
             $isDevice = true;
-        } else if (isset($this->_browser['platform']) && ($this->_browser['platform'] == 'Android' || $this->_browser['platform'] == 'Iphone' || $this->_browser['platform'] == 'Ipad' || $this->_browser['platform'] == 'Windows Phone7' || $this->_browser['platform'] == 'Windows Phone 8')
+        } else if (isset($this->_browser['platform']) && ($this->_browser['platform'] === 'Android' ||
+                $this->_browser['platform'] === 'Iphone' || $this->_browser['platform'] === 'Ipad' ||
+                $this->_browser['platform'] === 'Windows Phone7' || $this->_browser['platform'] === 'Windows Phone 8')
         ) {
             $isDevice = true;
         }
         $match = array();
         if (isset($_SERVER['HTTP_USER_AGENT']) && preg_match(
-                        "/(" . implode('|', $clientkeywords) . ")/i",
-                        mb_strtolower($_SERVER['HTTP_USER_AGENT']),
-                        $match
-                )) {
+                '/(' . implode('|', $clientKeywords) . ')/i',
+                mb_strtolower($_SERVER['HTTP_USER_AGENT']),
+                $match
+            )) {
             $isDevice = true;
         }
         if ($isDevice) {
-            $platform      = (isset($this->_browser['platform'])) ? $this->_browser['platform'] : 'unknown';
+            $platform = $this->_browser['platform'] ?? 'unknown';
             $this->_device = array(
                 'platform' => $platform,
-                'device'   => ((isset($match[1])) ? $match[1] : 'unknown'),
+                'device' => ($match[1] ?? 'unknown'),
             );
         }
     }
@@ -444,9 +448,9 @@ class Request implements \ArrayAccess
      *
      * @return void
      */
-    private function _getRequestType()
+    private function _getRequestType(): void
     {
-        $this->requestMethod ?: $this->requestMethod = mb_strtoupper(isset($_SERVER['REQUEST_METHOD']) ? $_SERVER['REQUEST_METHOD'] : 'GET');
+        $this->requestMethod ?: $this->requestMethod = mb_strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET');
     }
 
     /**
@@ -454,9 +458,9 @@ class Request implements \ArrayAccess
      *
      * @return void
      */
-    private function _getIsAjaxRequest()
+    private function _getIsAjaxRequest(): void
     {
-        $this->isAjaxRequest ?: $this->isAjaxRequest = (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] == 'XMLHttpRequest');
+        $this->isAjaxRequest ?: $this->isAjaxRequest = (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest');
     }
 
     /**
@@ -464,9 +468,10 @@ class Request implements \ArrayAccess
      *
      * @return void
      */
-    private function _getIsSecureConnection()
+    private function _getIsSecureConnection(): void
     {
-        $this->isHttps = isset($_SERVER['HTTPS']) && ($_SERVER['HTTPS'] == 'on' || $_SERVER['HTTPS'] == 1) || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https');
+        $this->isHttps = (isset($_SERVER['HTTPS']) && ($_SERVER['HTTPS'] === 'on' || $_SERVER['HTTPS'] === 1)) ||
+            (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https');
     }
 
     /**
@@ -474,7 +479,7 @@ class Request implements \ArrayAccess
      *
      * @return void
      */
-    private function _getIsFlashRequest()
+    private function _getIsFlashRequest(): void
     {
         $this->isFlashRequest = isset($_SERVER['HTTP_USER_AGENT']) && (mb_stripos($_SERVER['HTTP_USER_AGENT'], 'Shockwave') !== false || mb_stripos($_SERVER['HTTP_USER_AGENT'], 'Flash') !== false);
     }
@@ -486,7 +491,7 @@ class Request implements \ArrayAccess
      *
      * @return void
      */
-    public function setModuleId($moduleId)
+    public function setModuleId($moduleId): void
     {
         $this->_moduleId = $moduleId;
     }
@@ -494,9 +499,9 @@ class Request implements \ArrayAccess
     /**
      * getMethod
      *
-     * @return type
+     * @return string
      */
-    public function getMethod()
+    public function getMethod(): string
     {
         $this->_method ?: $this->_method = $this['server']['REQUEST_METHOD'];
         return $this->_method;
@@ -505,31 +510,31 @@ class Request implements \ArrayAccess
     /**
      * getRequestTime
      *
-     * @return type
+     * @return mixed
      */
     public function getRequestTime()
     {
-        $this->_method ?: $this->_method = $this['server']['REQUEST_TIME'];
-        return $this->_method;
+        $this->_requestTime ?: $this->_requestTime = $this['server']['REQUEST_TIME'];
+        return $this->_requestTime;
     }
 
     /**
      * getRequestTimeFloat
      *
-     * @return type
+     * @return mixed
      */
     public function getRequestTimeFloat()
     {
-        $this->_method ?: $this->_method = $this['server']['REQUEST_TIME_FLOAT'];
-        return $this->_method;
+        $this->_requestTimeFloat ?: $this->_requestTimeFloat = $this['server']['REQUEST_TIME_FLOAT'];
+        return $this->_requestTimeFloat;
     }
 
     /**
      * getParameter
      *
-     * @param string $key    key
-     * @param string $filter filter key
-     * @param string $flag   flag key
+     * @param string $key key
+     * @param int $filter filter key
+     * @param string $flag flag key
      *
      * @return mixed
      */
@@ -547,9 +552,9 @@ class Request implements \ArrayAccess
     /**
      * getParameterGet
      *
-     * @param string $key    key
-     * @param string $filter filter key
-     * @param string $flag   flag key
+     * @param string $key key
+     * @param int $filter filter key
+     * @param string $flag flag key
      *
      * @return mixed
      */
@@ -558,9 +563,9 @@ class Request implements \ArrayAccess
         if (isset($key)) {
             if (filter_has_var(INPUT_GET, $key)) {
                 return filter_input(INPUT_GET, $key, $filter, $flag);
-            } else {
-                return null;
             }
+
+            return null;
         }
         return filter_input_array(INPUT_GET);
     }
@@ -568,9 +573,9 @@ class Request implements \ArrayAccess
     /**
      * getParameterPost
      *
-     * @param string $key    key
-     * @param string $filter filter key
-     * @param string $flag   flag key
+     * @param string $key key
+     * @param int $filter filter key
+     * @param string $flag flag key
      *
      * @return mixed
      */
@@ -579,9 +584,9 @@ class Request implements \ArrayAccess
         if (isset($key)) {
             if (filter_has_var(INPUT_POST, $key)) {
                 return filter_input(INPUT_POST, $key, $filter, $flag);
-            } else {
-                return null;
             }
+
+            return null;
         }
         return filter_input_array(INPUT_POST);
     }
@@ -589,9 +594,9 @@ class Request implements \ArrayAccess
     /**
      * getCookie
      *
-     * @param string $key    key
-     * @param string $filter filter key
-     * @param string $flag   flag key
+     * @param string $key key
+     * @param int $filter filter key
+     * @param string $flag flag key
      *
      * @return mixed
      */
@@ -600,9 +605,9 @@ class Request implements \ArrayAccess
         if (isset($key)) {
             if (filter_has_var(INPUT_COOKIE, $key)) {
                 return filter_input(INPUT_COOKIE, $key, $filter, $flag);
-            } else {
-                return null;
             }
+
+            return null;
         }
         return filter_input_array(INPUT_COOKIE);
     }
@@ -610,9 +615,9 @@ class Request implements \ArrayAccess
     /**
      * getEnv
      *
-     * @param string $key    key
-     * @param string $filter filter key
-     * @param string $flag   flag key
+     * @param string $key key
+     * @param int $filter filter key
+     * @param string $flag flag key
      *
      * @return mixed
      */
@@ -621,9 +626,9 @@ class Request implements \ArrayAccess
         if (isset($key)) {
             if (filter_has_var(INPUT_ENV, $key)) {
                 return filter_input(INPUT_ENV, $key, $filter, $flag);
-            } else {
-                return null;
             }
+
+            return null;
         }
         return filter_input_array(INPUT_ENV);
     }
@@ -631,9 +636,9 @@ class Request implements \ArrayAccess
     /**
      * getSession
      *
-     * @param string $key    key
-     * @param string $filter filter key
-     * @param string $flag   flag key
+     * @param string $key key
+     * @param int $filter filter key
+     * @param string $flag flag key
      *
      * @return mixed
      */
@@ -651,9 +656,9 @@ class Request implements \ArrayAccess
     /**
      * getServer
      *
-     * @param string $key    key
-     * @param string $filter filter key
-     * @param string $flag   flag key
+     * @param string $key key
+     * @param int $filter filter key
+     * @param string $flag flag key
      *
      * @return mixed
      */
@@ -662,9 +667,9 @@ class Request implements \ArrayAccess
         if (isset($key)) {
             if (filter_has_var(INPUT_SERVER, $key)) {
                 return filter_input(INPUT_SERVER, $key, $filter, $flag);
-            } else {
-                return null;
             }
+
+            return null;
         }
         return filter_input_array(INPUT_SERVER);
     }
@@ -674,7 +679,7 @@ class Request implements \ArrayAccess
      *
      * @return array
      */
-    public function getBrowser()
+    public function getBrowser(): array
     {
         if (empty($this->_browser)) {
             $this->_findBrowser();
@@ -687,7 +692,7 @@ class Request implements \ArrayAccess
      *
      * @return string
      */
-    public function getProperty()
+    public function getProperty(): string
     {
         if ($this->_moduleId) {
             $parseModule = explode('.', $this->_moduleId);
@@ -697,11 +702,11 @@ class Request implements \ArrayAccess
     }
 
     /**
-     * getProperty
+     * getCountry
      *
      * @return string
      */
-    public function getContry()
+    public function getCountry(): string
     {
         $this->_findCountry();
         return $this->_country;
@@ -723,7 +728,7 @@ class Request implements \ArrayAccess
      *
      * @return array
      */
-    public function getDevice()
+    public function getDevice(): array
     {
         $this->_device ?: $this->_findDevice();
         return $this->_device;
@@ -734,7 +739,7 @@ class Request implements \ArrayAccess
      *
      * @return string
      */
-    public function getLanguage()
+    public function getLanguage(): string
     {
         $this->_findLanguage();
         return $this->_lang;
@@ -745,29 +750,29 @@ class Request implements \ArrayAccess
      *
      * @return string
      */
-    public function getFormatType()
+    public function getFormatType(): string
     {
-        $format = $this['get']['fmt'] ?? \loeye\base\RENDER_TYPE_SEGMENT;
-        if (in_array($format, $this->_allowedFormatType)) {
+        $format = $this['get']['fmt'] ?? RENDER_TYPE_SEGMENT;
+        if (in_array($format, $this->_allowedFormatType, true)) {
             return $format;
-        } else {
-            return \loeye\base\RENDER_TYPE_SEGMENT;
         }
+
+        return RENDER_TYPE_SEGMENT;
     }
 
     /**
      * getUri
      *
-     * @return \GuzzleHttp\Psr7\Uri
+     * @return Uri
      */
-    public function getUri()
+    public function getUri(): ?Uri
     {
-        if ($this->_uri instanceof \GuzzleHttp\Psr7\Uri) {
-            return $this->_uri;
-        } else {
-            $this->_setUri();
+        if ($this->_uri instanceof Uri) {
             return $this->_uri;
         }
+
+        $this->_setUri();
+        return $this->_uri;
     }
 
 }

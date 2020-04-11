@@ -28,18 +28,18 @@ interface Render
     /**
      * header
      *
-     * @param \loeye\std\Response $response response
+     * @param Response $response response
      *
      * @return void
      */
-    public function header(Response $response);
+    public function header(Response $response): void ;
 
     /**
-     * oupput
+     * output
      *
-     * @param \loeye\std\Response $response response
+     * @param Response $response response
      *
      * @return void
      */
-    public function output(Response $response);
+    public function output(Response $response): void ;
 }

@@ -112,7 +112,7 @@ class Cache
                 $this->instance = new ApcuAdapter($namespace, $defaultLifetime);
                 break;
             case self::CACHE_TYPE_MEMCACHED:
-                $client = $this->getMeachedClient($setting);
+                $client = $this->getMemcachedClient($setting);
                 $this->instance = new MemcachedAdapter($client, $namespace, $defaultLifetime);
                 break;
             case self::CACHE_TYPE_REDIS:

@@ -17,6 +17,9 @@
 
 namespace loeye\std;
 
+use Memcached;
+use Redis;
+
 /**
  * CacheTrait
  *
@@ -25,19 +28,31 @@ namespace loeye\std;
 trait  CacheTrait
 {
 
-    public function getMeachedClient($setting)
+    /**
+     * getMemcachedClient
+     *
+     * @param $setting
+     * @return Memcached
+     */
+    public function getMemcachedClient($setting): Memcached
     {
-        $persistent_id = isset($setting['persistent_id']) ? $setting['persistent_id'] : PROJECT_NAMESPACE;
-        $client        = new \Memcached($persistent_id);
+        $persistent_id = $setting['persistent_id'] ?? PROJECT_NAMESPACE;
+        $client        = new Memcached($persistent_id);
         assert($setting['servers'], 'Invalid Memcached Server.');
         $client->addServers($setting['servers']);
         return $client;
     }
 
-    public function getRedisClient($setting)
+    /**
+     * getRedisClient
+     *
+     * @param $setting
+     * @return Redis
+     */
+    public function getRedisClient($setting): Redis
     {
-        $client     = new \Redis();
-        $persistent = isset($setting['persistent']) ? $setting['persistent'] : false;
+        $client     = new Redis();
+        $persistent = $setting['persistent'] ?? false;
         $host       = $setting['host'] ?? '127.0.0.1';
         $port       = $setting['port'] ?? 6379;
         $password   = $setting['password'] ?? null;

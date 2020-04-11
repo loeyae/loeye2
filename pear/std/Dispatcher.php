@@ -29,6 +29,7 @@ use loeye\web\Resource;
 use loeye\web\Template;
 use ReflectionException;
 use Smarty;
+use SmartyException;
 
 if (!defined('LOEYE_PROCESS_MODE__NORMAL')) {
     define('LOEYE_PROCESS_MODE__NORMAL', 0);
@@ -177,7 +178,6 @@ abstract class Dispatcher
      * initGenericObj
      *
      * @return void
-     * @throws Exception
      */
     protected function initAppConfig(): void
     {
@@ -196,7 +196,6 @@ abstract class Dispatcher
      * initConfigConstants
      *
      * @return void
-     * @throws Exception
      */
     protected function initConfigConstants(): void
     {
@@ -214,7 +213,6 @@ abstract class Dispatcher
      * initLogLevel
      *
      * @return void
-     * @throws Exception
      */
     protected function initLogger(): void
     {
@@ -227,7 +225,6 @@ abstract class Dispatcher
      * setTimezone
      *
      * @return void
-     * @throws Exception
      */
     protected function setTimezone(): void
     {
@@ -241,7 +238,6 @@ abstract class Dispatcher
      * initComponent
      *
      * @return void
-     * @throws Exception
      */
     protected function initComponent(): void
     {
@@ -357,6 +353,7 @@ abstract class Dispatcher
      * @return void
      * @throws Exception
      * @throws ResourceException
+     * @throws SmartyException
      */
     protected function executeView($view): void
     {

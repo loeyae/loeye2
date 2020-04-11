@@ -30,8 +30,8 @@ abstract class Plugin
     /**
      * process
      *
-     * @param Context $context  Context
-     * @param array               $inputs  array
+     * @param Context $context Context
+     * @param array $inputs array
      *
      * @return mixed
      */

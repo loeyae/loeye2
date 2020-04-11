@@ -162,7 +162,7 @@ class DB
             $cache = new MemcachedCache();
             $config = $this->cacheConfig($appConfig);
             $setting = $config->get($cacheType);
-            $memcached = $this->getMeachedClient($setting);
+            $memcached = $this->getMemcachedClient($setting);
             $cache->setMemcached($memcached);
         } else {
             $directory = RUNTIME_CACHE_DIR . D_S . self::BUNDLE;

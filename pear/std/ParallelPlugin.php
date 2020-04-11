@@ -31,8 +31,8 @@ abstract class ParallelPlugin extends Plugin
     /**
      * prepare
      *
-     * @param Context $context  Context
-     * @param array               $inputs  array
+     * @param Context $context Context
+     * @param array $inputs array
      *
      * @return mixed
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)

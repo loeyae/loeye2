@@ -17,6 +17,11 @@
 
 namespace loeye\std;
 
+use loeye\base\AppConfig;
+use loeye\base\Cache;
+use loeye\base\Configuration;
+use loeye\base\DB;
+use loeye\config\cache\ConfigDefinition;
 use \Symfony\Component\Config\Definition\ConfigurationInterface;
 
 /**
@@ -30,56 +35,56 @@ trait ConfigTrait
     /**
      * bundleConfig
      *
-     * @param string                            $property   property
-     * @param string                            $bundle     bundle
+     * @param string $property property
+     * @param string $bundle bundle
      * @param array|ConfigurationInterface|null $definition definition
      *
-     * @return \loeye\base\Configuration
+     * @return Configuration
      */
-    protected function bundleConfig($property, $bundle = null, $definition = null)
+    protected function bundleConfig($property, $bundle = null, $definition = null): Configuration
     {
         $bundle = $property . ($bundle ? '/' . $bundle : '');
-        $definition ?? $definition = (property_exists($this, 'definition') ? $this->definition : null);
-        return new \loeye\base\Configuration(static::BUNDLE, $bundle, $definition);
+        $definition = property_exists($this, 'definition') ? $this->definition : $definition;
+        return new Configuration(static::BUNDLE, $bundle, $definition);
     }
 
     /**
      * propertyConfig
      *
-     * @param string                            $property   property
-     * @param string                            $bundle     bundle
+     * @param string $property property
+     * @param string $bundle bundle
      * @param array|ConfigurationInterface|null $definition definition
      *
-     * @return \loeye\base\Configuration
+     * @return Configuration
      */
-    protected function propertyConfig($property, $bundle = null, $definition = null)
+    protected function propertyConfig($property, $bundle = null, $definition = null): Configuration
     {
-        $definition ?? ($definition = property_exists($this, 'definition') ? $this->definition : null);
-        return new \loeye\base\Configuration($property, $bundle, $definition);
+        $definition = property_exists($this, 'definition') ? $this->definition : $definition;
+        return new Configuration($property, $bundle, $definition);
     }
 
     /**
      * cacheConfig
      *
-     * @param \loeye\base\AppConfig $appConfig
-     * @return \loeye\base\Configuration
+     * @param AppConfig $appConfig
+     * @return Configuration
      */
-    protected function cacheConfig(\loeye\base\AppConfig $appConfig)
+    protected function cacheConfig(AppConfig $appConfig): Configuration
     {
-        $definition = new \loeye\config\cache\ConfigDefinition();
-        return $this->propertyConfig($appConfig->getPropertyName(), \loeye\base\Cache::BUNDLE, $definition);
+        $definition = new ConfigDefinition();
+        return $this->propertyConfig($appConfig->getPropertyName(), Cache::BUNDLE, $definition);
     }
 
     /**
      * databaseConfig
      *
-     * @param \loeye\base\AppConfig $appConfig
-     * @return \loeye\base\Configuration
+     * @param AppConfig $appConfig
+     * @return Configuration
      */
-    protected function databaseConfig(\loeye\base\AppConfig $appConfig)
+    protected function databaseConfig(AppConfig $appConfig): Configuration
     {
         $definition = new \loeye\config\database\ConfigDefinition();
-        return $this->propertyConfig($appConfig->getPropertyName(), \loeye\base\DB::BUNDLE, $definition);
+        return $this->propertyConfig($appConfig->getPropertyName(), DB::BUNDLE, $definition);
     }
 
 
