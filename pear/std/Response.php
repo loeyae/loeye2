@@ -17,12 +17,14 @@
 
 namespace loeye\std;
 
+use ArrayAccess;
+
 /**
  * interface Response
  *
  * @author   Zhang Yi <loeyae@gmail.com>
  */
-abstract class Response implements \ArrayAccess
+abstract class Response implements ArrayAccess
 {
 
     protected $header = array();
@@ -36,7 +38,7 @@ abstract class Response implements \ArrayAccess
      *
      * @return boolean
      */
-    public function offsetExists($offset)
+    public function offsetExists($offset): bool
     {
         return true;
     }
@@ -46,7 +48,7 @@ abstract class Response implements \ArrayAccess
      *
      * @param mixed $offset offset
      *
-     * @return void
+     * @return mixed
      */
     public function offsetGet($offset)
     {
@@ -59,11 +61,10 @@ abstract class Response implements \ArrayAccess
      * @param mixed $offset offset
      * @param mixed $value  value
      *
-     * @return void
+     * @return mixed|void
      */
     public function offsetSet($offset, $value)
     {
-        return;
     }
 
     /**
@@ -71,11 +72,10 @@ abstract class Response implements \ArrayAccess
      *
      * @param mixed $offset offset
      *
-     * @return void
+     * @return mixed|void
      */
     public function offsetUnset($offset)
     {
-        return;
     }
 
     /**
@@ -86,7 +86,7 @@ abstract class Response implements \ArrayAccess
      *
      * @return void
      */
-    public function addHeader($name, $value)
+    public function addHeader($name, $value): void
     {
         $this->header[$name] = $value;
     }
@@ -99,7 +99,7 @@ abstract class Response implements \ArrayAccess
      *
      * @return void
      */
-    public function addOutput($data, $key = null)
+    public function addOutput($data, $key = null): void
     {
         if ($key !== null) {
             $this->output[$key] = $data;
@@ -115,7 +115,7 @@ abstract class Response implements \ArrayAccess
      *
      * @return void
      */
-    public function setFormat($format)
+    public function setFormat($format): void
     {
         $this->format = $format;
     }
@@ -133,9 +133,9 @@ abstract class Response implements \ArrayAccess
     /**
      * getHeader
      *
-     * @return string
+     * @return array
      */
-    public function getHeaders()
+    public function getHeaders(): array
     {
         return $this->header;
     }
@@ -145,8 +145,8 @@ abstract class Response implements \ArrayAccess
      * setHeaders
      *
      * @return void
-     */
-    public function setHeaders()
+*/
+    public function setHeaders(): void
     {
         foreach ($this->header as $key => $value) {
             if (is_numeric($key)) {

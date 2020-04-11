@@ -17,11 +17,13 @@
 
 namespace loeye\service;
 
+use Exception;
 use loeye\base\AppConfig;
 use loeye\base\Factory;
 use loeye\base\UrlManager;
 use loeye\base\Utils;
 use loeye\error\ResourceException;
+use ReflectionClass;
 use ReflectionException;
 
 /**
@@ -75,11 +77,11 @@ class Dispatcher extends \loeye\std\Dispatcher
             if (!class_exists($handler)) {
                 throw new ResourceException(ResourceException::PAGE_NOT_FOUND_MSG, ResourceException::PAGE_NOT_FOUND_CODE);
             }
-            $ref = new \ReflectionClass($handler);
+            $ref = new ReflectionClass($handler);
             $handlerObject = $ref->newInstance($this->context);
             $handlerObject->handle();
             $this->executeOutput();
-        } catch (\Exception $exc) {
+        } catch (Exception $exc) {
             Utils::errorLog($exc);
             $request = ($this->getContext()->getRequest() ?? new Request());
             $response = ($this->getContext()->getResponse() ?? new Response($request));

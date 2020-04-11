@@ -17,6 +17,10 @@
 
 namespace loeye\service;
 
+use const loeye\base\RENDER_TYPE_JSON;
+use const loeye\base\RENDER_TYPE_SEGMENT;
+use const loeye\base\RENDER_TYPE_XML;
+
 /**
  * Request
  *
@@ -28,9 +32,10 @@ class Request extends \loeye\std\Request
     private $_content;
 
     protected $_allowedFormatType = array(
-        \loeye\base\RENDER_TYPE_SEGMENT,
-        \loeye\base\RENDER_TYPE_XML,
-        \loeye\base\RENDER_TYPE_JSON,
+
+        RENDER_TYPE_SEGMENT,
+        RENDER_TYPE_XML,
+        RENDER_TYPE_JSON,
     );
 
     /**
@@ -40,11 +45,11 @@ class Request extends \loeye\std\Request
      *
      * @return bool
      */
-    public function offsetExists($offset)
+    public function offsetExists($offset): bool
     {
-        if ($offset == 'content'):
+        if ($offset === 'content'):
             return $this->_content ? true : false;
-        elseif ($offset == 'contentLength'):
+        elseif ($offset === 'contentLength'):
             return $this->_content ? true : false;
         else:
             return parent::offsetExists($offset);
@@ -60,9 +65,9 @@ class Request extends \loeye\std\Request
      */
     public function offsetGet($offset)
     {
-        if ($offset == 'content'):
+        if ($offset === 'content'):
             return $this->getContent();
-        elseif ($offset == 'contentLength'):
+        elseif ($offset === 'contentLength'):
             return $this->getContentLength();
         else:
             return parent::offsetGet($offset);
@@ -74,14 +79,14 @@ class Request extends \loeye\std\Request
      *
      * @return string
      */
-    public function getFormatType()
+    public function getFormatType(): string
     {
-        $format = $this->getParameterGet('fmt') ?? \loeye\base\RENDER_TYPE_JSON;
-        if (in_array($format, $this->_allowedFormatType)) {
+        $format = $this->getParameterGet('fmt') ?? RENDER_TYPE_JSON;
+        if (in_array($format, $this->_allowedFormatType, true)) {
             return $format;
-        } else {
-            return \loeye\base\RENDER_TYPE_SEGMENT;
         }
+
+        return RENDER_TYPE_SEGMENT;
     }
 
     /**
@@ -89,7 +94,7 @@ class Request extends \loeye\std\Request
      *
      * @return string
      */
-    public function getContent()
+    public function getContent(): string
     {
         $this->_content ?: $this->_content = file_get_contents('php://input');
         return $this->_content;
@@ -100,7 +105,7 @@ class Request extends \loeye\std\Request
      *
      * @return int
      */
-    public function getContentLength()
+    public function getContentLength(): int
     {
         return strlen($this->getContent());
     }
@@ -110,7 +115,7 @@ class Request extends \loeye\std\Request
      *
      * @return null|string
      */
-    public function getRemoteAddr()
+    public function getRemoteAddr(): ?string
     {
         if (filter_has_var(INPUT_SERVER, 'REMOTE_ADDR')) {
             return filter_input(INPUT_SERVER, 'REMOTE_ADDR');
@@ -123,7 +128,7 @@ class Request extends \loeye\std\Request
      *
      * @return string
      */
-    public function getServerProtocol()
+    public function getServerProtocol(): string
     {
         return $this->server['SERVER_PROTOCOL'] ?? 'HTTP/1.0';
     }

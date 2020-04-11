@@ -29,11 +29,15 @@ class Response extends \loeye\std\Response
     private $_statusCode;
     private $_statusMessage;
     private $_contentType;
+    /**
+     * @var string
+     */
+    private $_responseData;
 
     /**
      * __construct
      *
-     * @param \loeye\service\Request $req request
+     * @param Request $req request
      *
      * @return void
      */
@@ -54,7 +58,7 @@ class Response extends \loeye\std\Response
      *
      * @return void
      */
-    public function setStatusCode($code)
+    public function setStatusCode($code): void
     {
         $this->_statusCode = $code;
     }
@@ -66,7 +70,7 @@ class Response extends \loeye\std\Response
      *
      * @return void
      */
-    public function setStatusMessage($message)
+    public function setStatusMessage($message): void
     {
         $this->_statusMessage = $message;
     }
@@ -79,7 +83,7 @@ class Response extends \loeye\std\Response
      *
      * @return void
      */
-    public function setContent($data, $contentType = null)
+    public function setContent($data, $contentType = null): void
     {
         if (!empty($contentType)) {
             $this->_contentType = $contentType;
@@ -87,7 +91,10 @@ class Response extends \loeye\std\Response
         $this->output = $data;
     }
 
-    public function setHeaders()
+    /**
+     * {@inheritDoc}
+     */
+    public function setHeaders(): void
     {
         $header = $this->_serverProtocol . ' ' . $this->_statusCode . ' ' . $this->_statusMessage;
         header($header);
@@ -100,7 +107,7 @@ class Response extends \loeye\std\Response
     /**
      * output
      *
-     * @return void
+     * @return mixed
      */
     public function getOutput()
     {

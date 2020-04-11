@@ -17,6 +17,9 @@
 
 namespace loeye\service;
 
+use loeye\base\Context;
+use loeye\std\ConfigTrait;
+
 /**
  * Resource
  *
@@ -24,17 +27,17 @@ namespace loeye\service;
  */
 abstract class Resource implements \loeye\std\Handler
 {
-    use \loeye\std\ConfigTrait;
+    use ConfigTrait;
 
-    const BUNDLE = 'service';
+    public const BUNDLE = 'service';
 
     /**
      *
-     * @var \loeye\base\Context
+     * @var Context
      */
     protected $context;
 
-    public function __construct(\loeye\base\Context $context)
+    public function __construct(Context $context)
     {
         $this->context = $context;
     }
@@ -42,40 +45,40 @@ abstract class Resource implements \loeye\std\Handler
     /**
      * get
      *
-     * @param \loeye\service\Request  $req
-     * @param \loeye\service\Response $resp
+     * @param Request $req
+     * @param Response $resp
      *
-     * @return void
+     * @return mixed
      */
     abstract protected function get(Request $req, Response $resp);
 
     /**
      * post
      *
-     * @param \loeye\service\Request  $req
-     * @param \loeye\service\Response $resp
+     * @param Request $req
+     * @param Response $resp
      *
-     * @return void
+     * @return mixed
      */
     abstract protected function post(Request $req, Response $resp);
 
     /**
      * delete
      *
-     * @param \loeye\service\Request  $req
-     * @param \loeye\service\Response $resp
+     * @param Request $req
+     * @param Response $resp
      *
-     * @return void
+     * @return mixed
      */
     abstract protected function put(Request $req, Response $resp);
 
     /**
      * post
      *
-     * @param \loeye\service\Request  $req
-     * @param \loeye\service\Response $resp
+     * @param Request $req
+     * @param Response $resp
      *
-     * @return void
+     * @return mixed
      */
     abstract protected function delete(Request $req, Response $resp);
 
@@ -84,7 +87,7 @@ abstract class Resource implements \loeye\std\Handler
      *
      * @return void
      */
-    public function handle()
+    public function handle(): void
     {
         $response = $this->context->getResponse();
         $request  = $this->context->getRequest();
