@@ -17,9 +17,10 @@
 
 namespace loeye\socket;
 
-use \Workerman\Worker;
-use \Workerman\Channel\Server;
-use \Workerman\Channel\Client;
+use Channel\Server;
+use Channel\Client;
+use Closure;
+use Exception;
 
 /**
  * Worker
@@ -29,28 +30,68 @@ use \Workerman\Channel\Client;
 abstract class Worker
 {
 
-    const EVENT_BUFFER_FULL   = 'bufferFull';
-    const EVENT_BUFFER_DRAIN  = 'bufferDrain';
-    const EVENT_CONNECT       = 'connect';
-    const EVENT_CLOSE         = 'close';
-    const EVENT_ERROR         = 'error';
-    const EVENT_MESSAGE       = 'message';
-    const EVENT_WORKER_START  = 'workerStart';
-    const EVENT_WORKER_RELOAD = 'workerReload';
-    const EVENT_WORKER_STOP   = 'workerStop';
+    public const EVENT_BUFFER_FULL   = 'bufferFull';
+    public const EVENT_BUFFER_DRAIN  = 'bufferDrain';
+    public const EVENT_CONNECT       = 'connect';
+    public const EVENT_CLOSE         = 'close';
+    public const EVENT_ERROR         = 'error';
+    public const EVENT_MESSAGE       = 'message';
+    public const EVENT_WORKER_START  = 'workerStart';
+    public const EVENT_WORKER_RELOAD = 'workerReload';
+    public const EVENT_WORKER_STOP   = 'workerStop';
+    /**
+     * @var Closure
+     */
+    private $onBufferDrain;
+    /**
+     * @var Closure
+     */
+    private $onBufferFull;
+    /**
+     * @var Closure
+     */
+    private $onConnect;
+    /**
+     * @var Closure
+     */
+    private $onClose;
+    /**
+     * @var Closure
+     */
+    private $onError;
+    /**
+     * @var Closure
+     */
+    private $onMessage;
+    /**
+     * @var Closure
+     */
+    private $onWorkerStart;
+    /**
+     * @var Closure
+     */
+    private $onWorkerReload;
+    /**
+     * @var Closure
+     */
+    private $onWorkerStop;
 
     /**
      * buildWorker
      *
-     * @param string $socket   socket name
-     * @param array  $context  context option
+     * @param string $socket socket name
+     * @param array $context context option
      * @param string $workerId worker id
      *
-     * @return Worker
+     * @return \Workerman\Worker
      */
-    public static function buildWorker($socket, $context = [], $workerId = null)
+    public static function buildWorker($socket, $context = [], $workerId = null): \Workerman\Worker
     {
-        return new Worker($socket, $context, $workerId);
+        $worker = new \Workerman\Worker($socket, $context);
+        if (null !== $workerId) {
+            $worker->workerId = $workerId;
+        }
+        return $worker;
     }
 
     /**
@@ -61,7 +102,7 @@ abstract class Worker
      *
      * @return Server
      */
-    public static function buildChannelServer($ip = '0.0.0.0', $port = 2206)
+    public static function buildChannelServer($ip = '0.0.0.0', $port = 2206): Server
     {
         return new Server($ip, $port);
     }
@@ -69,14 +110,15 @@ abstract class Worker
     /**
      * getChannelClient
      *
-     * @param string $ip   ip address
-     * @param int    $port port
+     * @param string $ip ip address
+     * @param int $port port
      *
-     * @return Client
+     * @return void
+     * @throws Exception
      */
-    public static function connectChannelServer($ip = '127.0.0.1', $port = 2206)
+    public static function connectChannelServer($ip = '127.0.0.1', $port = 2206): void
     {
-        return Client::connect($ip, $port);
+        Client::connect($ip, $port);
     }
 
     /**
@@ -84,17 +126,17 @@ abstract class Worker
      *
      * @return void
      */
-    abstract public function initWorker();
+    abstract public function initWorker(): void;
 
     /**
      * bind
      *
-     * @param \Workerman\Worker $worker   worker instance
-     * @param string            $event    event name
+     * @param Worker $worker worker instance
+     * @param string $event event name
      * <p>
      * bufferFull bufferDrain connect close error workerStart workerReload workerStop
      * </p>
-     * @param callable          $callback call back
+     * @param callable $callback call back
      * <p>
      * bufferFull   => function (\Workerman\Connection\ConnectionInterface $conn,
      * \Workerman\Worker $worker) {} <br />
@@ -115,51 +157,52 @@ abstract class Worker
      *
      * @return void
      */
-    public static function bind(Worker $worker, $event, callable $callback)
+    public static function bind(Worker $worker, $event, callable $callback): void
     {
         switch ($event) {
             case self::EVENT_BUFFER_DRAIN:
-                $worker->onBufferDrain = function ($connection) use ($callback, $worker) {
-                    call_user_func($callback, $connection, $worker);
+                $worker->onBufferDrain = static function ($connection) use ($callback, $worker) {
+                    $callback($connection, $worker);
                 };
                 break;
             case self::EVENT_BUFFER_FULL:
-                $worker->onBufferFull = function ($connection) use ($callback, $worker) {
-                    call_user_func($callback, $connection, $worker);
+                $worker->onBufferFull = static function ($connection) use ($callback, $worker) {
+                    $callback($connection, $worker);
                 };
+                break;
             case self::EVENT_CONNECT:
-                $worker->onConnect = function ($connection) use ($callback, $worker) {
-                    call_user_func($callback, $connection, $worker);
+                $worker->onConnect = static function ($connection) use ($callback, $worker) {
+                    $callback($connection, $worker);
                 };
                 break;
             case self::EVENT_CLOSE:
-                $worker->onClose = function ($connection) use ($callback, $worker) {
-                    call_user_func($callback, $connection, $worker);
+                $worker->onClose = static function ($connection) use ($callback, $worker) {
+                    $callback($connection, $worker);
                 };
                 break;
             case self::EVENT_ERROR:
-                $worker->onError = function ($connection, $code, $message) use ($callback, $worker) {
-                    call_user_func($callback, $connection, $code, $message, $worker);
+                $worker->onError = static function ($connection, $code, $message) use ($callback, $worker) {
+                    $callback($connection, $code, $message, $worker);
                 };
                 break;
             case self::EVENT_MESSAGE:
-                $worker->onMessage = function ($connection, $data) use ($callback, $worker) {
-                    call_user_func($callback, $connection, $data, $worker);
+                $worker->onMessage = static function ($connection, $data) use ($callback, $worker) {
+                    $callback($connection, $data, $worker);
                 };
                 break;
             case self::EVENT_WORKER_START:
-                $worker->onWorkerStart = function ($worker) use ($callback) {
-                    call_user_func($callback, $worker);
+                $worker->onWorkerStart = static function ($worker) use ($callback) {
+                    $callback($worker);
                 };
                 break;
             case self::EVENT_WORKER_RELOAD:
-                $worker->onWorkerReload = function ($worker) use ($callback) {
-                    call_user_func($callback, $worker);
+                $worker->onWorkerReload = static function ($worker) use ($callback) {
+                    $callback($worker);
                 };
                 break;
             case self::EVENT_WORKER_STOP:
-                $worker->onWorkerStop = function ($worker) use ($callback) {
-                    call_user_func($callback, $worker);
+                $worker->onWorkerStop = static function ($worker) use ($callback) {
+                    $callback($worker);
                 };
                 break;
             default:
@@ -172,10 +215,10 @@ abstract class Worker
      *
      * @return void
      */
-    public function run()
+    public function run(): void
     {
         $this->initWorker();
-        Worker::runAll();
+        \Workerman\Worker::runAll();
     }
 
 }

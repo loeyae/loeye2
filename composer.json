@@ -25,6 +25,7 @@
     "doctrine/orm": "^2.6",
     "gedmo/doctrine-extensions": "^2.4",
     "workerman/workerman": "^3.5",
+    "workerman/channel": "^1.0.5",
     "jsonrpc/jsonrpc": "^1.0",
     "twbs/bootstrap": "^4.1",
     "guzzlehttp/guzzle": "^6.3",
@@ -35,7 +36,6 @@
     "ext-openssl": "*",
     "ext-xmlreader": "*",
     "ext-xmlwriter": "*",
-    "ext-sysvshm": "*",
     "ext-simplexml": "*",
     "ext-libxml": "*",
     "ext-dom": "*"
