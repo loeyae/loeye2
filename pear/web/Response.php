@@ -180,9 +180,9 @@ class Response extends \loeye\std\Response
     /**
      * getRenderId
      *
-     * @return string
+     * @return string|null
      */
-    public function getRenderId(): string
+    public function getRenderId(): ?string
     {
         return $this->_renderId;
     }
@@ -240,9 +240,9 @@ class Response extends \loeye\std\Response
     /**
      * getRedirectUrl
      *
-     * @return string
+     * @return string|null
      */
-    public function getRedirectUrl(): string
+    public function getRedirectUrl(): ?string
     {
         return $this->_redirectUrl;
     }

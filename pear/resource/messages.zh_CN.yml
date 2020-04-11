@@ -12,4 +12,4 @@
 'crumb check failed': crumb校验失败
 'repeated request': 重复请求
 'Page and Hits must be number': 非法的页码或分页记录数
-'project property not exists' property不存在
+'project property not exists': property不存在

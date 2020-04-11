@@ -69,6 +69,10 @@ class Context implements ArrayAccess
      */
     private $_router;
     /**
+     * @var UrlManager
+     */
+    private $_urManager;
+    /**
      * @var int
      */
     private $_expire;
@@ -537,9 +541,9 @@ class Context implements ArrayAccess
     /**
      * getAppConfig
      *
-     * @return AppConfig
+     * @return AppConfig|null
      */
-    public function getAppConfig(): AppConfig
+    public function getAppConfig(): ?AppConfig
     {
         return $this->_appConfig;
     }
@@ -559,9 +563,9 @@ class Context implements ArrayAccess
     /**
      * getRequest
      *
-     * @return Request
+     * @return Request|null
      */
-    public function getRequest(): Request
+    public function getRequest(): ?Request
     {
         return $this->_request;
     }
@@ -581,9 +585,9 @@ class Context implements ArrayAccess
     /**
      * getResponse
      *
-     * @return Response $response response
+     * @return Response|null $response response
      */
-    public function getResponse(): Response
+    public function getResponse(): ?Response
     {
         return $this->_response;
     }
@@ -602,9 +606,9 @@ class Context implements ArrayAccess
     /**
      * getParallelClientMgr
      *
-     * @return ParallelClientManager
+     * @return ParallelClientManager|null
      */
-    public function getParallelClientManager(): ParallelClientManager
+    public function getParallelClientManager(): ?ParallelClientManager
     {
         return $this->_parallelClientManager;
     }
@@ -624,9 +628,9 @@ class Context implements ArrayAccess
     /**
      * getRouter
      *
-     * @return Router
+     * @return Router|null
      */
-    public function getRouter(): Router
+    public function getRouter(): ?Router
     {
         return $this->_router;
     }
@@ -640,17 +644,17 @@ class Context implements ArrayAccess
      */
     public function setUrlManager(UrlManager $router): void
     {
-        $this->_router = $router;
+        $this->_urManager = $router;
     }
 
     /**
      * getUrlManager
      *
-     * @return Router
+     * @return UrlManager|null
      */
-    public function getUrlManager(): Router
+    public function getUrlManager(): ?UrlManager
     {
-        return $this->_router;
+        return $this->_urManager;
     }
 
     /**
@@ -668,9 +672,9 @@ class Context implements ArrayAccess
     /**
      * getModule
      *
-     * @return ModuleDefinition
+     * @return ModuleDefinition|null
      */
-    public function getModule(): ModuleDefinition
+    public function getModule(): ?ModuleDefinition
     {
         return $this->_mDfnObj;
     }
@@ -690,9 +694,9 @@ class Context implements ArrayAccess
     /**
      * getTemplate
      *
-     * @return Template
+     * @return Template|null
      */
-    public function getTemplate(): Template
+    public function getTemplate(): ?Template
     {
         return $this->_template;
     }

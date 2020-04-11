@@ -18,11 +18,11 @@
 namespace loeye\config;
 
 use Psr\Cache\InvalidArgumentException;
-use \Symfony\Component\Cache\Adapter\PhpFilesAdapter;
+use Symfony\Component\Cache\Adapter\PhpFilesAdapter;
 use Symfony\Component\Cache\Exception\CacheException;
-use Symfony\Component\Config\Resource\GlobResource;
-use \Symfony\Component\Filesystem\Exception\IOException;
-use \Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\Config\Resource\SelfCheckingResourceInterface;
+use Symfony\Component\Filesystem\Exception\IOException;
+use Symfony\Component\Filesystem\Filesystem;
 
 /**
  * ConfigCache
@@ -110,9 +110,9 @@ class ConfigCache {
     /**
      * getResourceByMetaFile
      * 
-     * @return GlobResource
+     * @return SelfCheckingResourceInterface
      */
-    public function getResourceByMetaFile(): GlobResource
+    public function getResourceByMetaFile(): SelfCheckingResourceInterface
     {
         $resource = null;
         if (file_exists($this->metaFile)) {
