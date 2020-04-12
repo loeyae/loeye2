@@ -199,12 +199,12 @@ class SimpleCache
                 return zlib_encode(serialize($data), ZLIB_ENCODING_GZIP, 9);
             }
             return serialize($data);
-        } else {
-            if (extension_loaded('zlib')) {
-                return unserialize(zlib_decode($data), null);
-            }
-            return unserialize($data, null);
         }
+
+        if (extension_loaded('zlib')) {
+            return unserialize(zlib_decode($data), ['allowed_classes' => true]);
+        }
+        return unserialize($data, ['allowed_classes' => true]);
     }
 
 }

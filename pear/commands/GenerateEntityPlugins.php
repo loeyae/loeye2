@@ -14,12 +14,12 @@ namespace loeye\commands;
 
 use Doctrine\Persistence\Mapping\ClassMetadata;
 use loeye\console\Command;
-use Symfony\Component\Console\{Input\InputInterface, Output\OutputInterface, Style\SymfonyStyle};
 use loeye\console\helper\EntityGeneratorTrait;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionMethod;
 use ReflectionParameter;
+use Symfony\Component\Console\{Input\InputInterface, Style\SymfonyStyle};
 
 /**
  * GenerateEntityPlugins
@@ -172,9 +172,10 @@ EOF;
      *
      * @param InputInterface $input
      *
+     * @param SymfonyStyle $ui
      * @return string
      */
-    protected function getDestPath(InputInterface $input): string
+    protected function getDestPath(InputInterface $input, SymfonyStyle $ui): string
     {
         return PROJECT_DIR . D_S . 'plugins' . D_S . $input->getArgument('property');
     }
@@ -215,7 +216,7 @@ EOF;
             '<className>' => $className,
         ];
 
-        return str_replace(array_keys($variables), array_values($variables), self::$_template);
+        return self::generateTemplate($variables, self::$_template);
     }
 
     /**
@@ -244,7 +245,7 @@ EOF;
             '<returnType>' => $returnType,
         ];
 
-        return str_replace(array_keys($variables), array_values($variables), self::$_pluginTemplate);
+        return self::generateTemplate($variables, self::$_pluginTemplate);
     }
 
     /**
@@ -259,7 +260,7 @@ EOF;
     public function writeAbstractPluginClass(SymfonyStyle $ui, $namespace, $className, $outputDirectory, $force = false): void
     {
         $fullAbstractClassName = $namespace . '\\' . $className;
-        $ui->text(sprintf('Processing Server "<info>%s</info>"', $fullAbstractClassName));
+        $ui->text(sprintf('Processing AbstractPlugin "<info>%s</info>"', $fullAbstractClassName));
         $code = $this->generateAbstractPluginClass($namespace, $className);
 
         $this->writeFile($outputDirectory, $className, $code, $force);
@@ -293,7 +294,7 @@ EOF;
             $nClassName = ucfirst($className) . ucfirst($methodName) . 'Plugin';
 
             $fullClassName = $namespace . '\\' . $nClassName;
-            $ui->text(sprintf('Processing Server "<info>%s</info>"', $fullClassName));
+            $ui->text(sprintf('Processing Plugin "<info>%s</info>"', $fullClassName));
             $paramsStatement = $this->generateParamsStatement($method, $nClassName);
             $params = $this->generateParams($method);
             $code = $this->generatePluginClass($namespace, $nClassName, $abstractClassName, $serverClass, $methodName, $paramsStatement, $params, $returnType);
@@ -337,7 +338,7 @@ EOF;
             '<className>' => $className,
         ];
 
-        return str_replace(array_keys($variables), array_values($variables), self::$_statement);
+        return self::generateTemplate($variables, self::$_statement);
     }
 
     /**

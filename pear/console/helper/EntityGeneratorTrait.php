@@ -47,10 +47,10 @@ trait EntityGeneratorTrait {
      * @param InputInterface $input
      * @param OutputInterface $output
      *
-     * @return int
+     * @return mixed
      * @throws Exception
      */
-    public function process(InputInterface $input, OutputInterface $output): int
+    public function process(InputInterface $input, OutputInterface $output)
     {
         $ui       = new SymfonyStyle($input, $output);
         $property = $input->getArgument('property');
@@ -61,10 +61,10 @@ trait EntityGeneratorTrait {
         $db        = DB::getInstance($appConfig, $type);
         $em        = $db->em();
 
-        $metadatas = $em->getMetadataFactory()->getAllMetadata();
-        $metadatas = MetadataFilter::filter($metadatas, $input->getOption('filter'));
+        $metaData = $em->getMetadataFactory()->getAllMetadata();
+        $metaData = MetadataFilter::filter($metaData, $input->getOption('filter'));
 
-        $destPath = $this->getDestPath($input);
+        $destPath = $this->getDestPath($input, $ui);
 
         if (!file_exists($destPath)) {
             $fileSystem = new Filesystem();
@@ -78,7 +78,7 @@ trait EntityGeneratorTrait {
             );
         }
 
-        if (empty($metadatas)) {
+        if (empty($metaData)) {
             $ui->success('No Metadata Classes to process.');
             return 0;
         }
@@ -86,7 +86,7 @@ trait EntityGeneratorTrait {
 
         $numFiles = 0;
 
-        foreach ($metadatas as $metadata) {
+        foreach ($metaData as $metadata) {
             if ($metadata->reflFields) {
                 $this->generateFile($ui, $metadata, $namespace, $destPath, $force);
                 ++$numFiles;
@@ -128,6 +128,19 @@ trait EntityGeneratorTrait {
             file_put_contents($path, $code);
             chmod($path, 0664);
         }
+    }
+
+    /**
+     * generateTemplate
+     *
+     * @param array $variables
+     * @param string $template
+     *
+     * @return string
+     */
+    protected static function generateTemplate(array $variables, string $template): string
+    {
+        return str_replace(array_keys($variables), array_values($variables), $template);
     }
 
 }

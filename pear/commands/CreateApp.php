@@ -15,6 +15,7 @@ namespace loeye\commands;
 use loeye\console\Command;
 use Symfony\Component\Console\{Input\InputInterface, Output\OutputInterface, Style\SymfonyStyle};
 use RuntimeException;
+use Symfony\Component\Filesystem\Filesystem;
 
 /**
  * CreateApp
@@ -192,6 +193,8 @@ EOF;
  * Dispatcher.php
  *
  */
+ use loeye\web\Dispatcher;
+ 
 mb_internal_encoding('UTF-8');
 
 define('APP_BASE_DIR', dirname(__DIR__));
@@ -202,7 +205,7 @@ require_once APP_BASE_DIR . DIRECTORY_SEPARATOR .'vendor'. DIRECTORY_SEPARATOR .
 
 define('LOEYE_MODE', LOEYE_MODE_DEV);
 
-$dispatcher = new loeye\web\Dispatcher();
+$dispatcher = new Dispatcher();
 $dispatcher->dispatch();
 EOF;
     protected $generalError = <<<'EOF'
@@ -312,7 +315,7 @@ EOF;
      */
     protected function initFile(SymfonyStyle $ui, string $base): void
     {
-        $fileSystem = new \Symfony\Component\Filesystem\Filesystem();
+        $fileSystem = new Filesystem();
         $appConfig = $this->buildAppConfigFile($base, 'app');
         $fileSystem->dumpFile($appConfig, $this->replaceProperty($this->appConfig));
         $ui->block(sprintf('create file: %1s', $appConfig));
@@ -355,7 +358,7 @@ EOF;
      * @param string $base
      * @param string $type
      *
-     * @return strig
+     * @return string
      */
     protected function buildAppConfigFile(string $base, string $type): string
     {

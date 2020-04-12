@@ -89,6 +89,8 @@ class Dispatcher extends \loeye\std\Dispatcher
             ExceptionHandler($exc, $this->context);
         } catch (\Exception $exc) {
             ExceptionHandler($exc, $this->context);
+        } catch (Throwable $e) {
+            ExceptionHandler($e, $this->context);
         } finally {
             if ($this->processMode > LOEYE_PROCESS_MODE__NORMAL) {
                 $this->setTraceDataIntoContext(array());
@@ -109,7 +111,7 @@ class Dispatcher extends \loeye\std\Dispatcher
     public function setUrlManager(array $setting): void
     {
         $router = new UrlManager($setting);
-        $this->context->setUrlManager($router);
+        $this->context->setRouter($router);
     }
 
 
@@ -177,7 +179,7 @@ class Dispatcher extends \loeye\std\Dispatcher
     protected function initIOObject($moduleId): void
     {
         $request = Factory::request($moduleId);
-
+        $request->setRouter($this->context->getRouter());
         $this->context->setRequest($request);
 
         $response = Factory::response();
@@ -593,7 +595,6 @@ class Dispatcher extends \loeye\std\Dispatcher
      * @param array $errorSetting error setting
      *
      * @return void
-     * @throws Exception
      */
     private function _output($errorSetting): void
     {
@@ -623,7 +624,6 @@ class Dispatcher extends \loeye\std\Dispatcher
      * @param array $errorSetting error setting
      *
      * @return string
-     * @throws Exception
      */
     private function _getRedirectUrl($errorSetting): string
     {
@@ -651,8 +651,8 @@ class Dispatcher extends \loeye\std\Dispatcher
     protected function parseUrl($moduleId = null): string
     {
         if (empty($moduleId)) {
-            if ($this->context->getUrlManager() instanceof UrlManager) {
-                $moduleId = $this->context->getUrlManager()->match(filter_input(INPUT_SERVER, 'REQUEST_URI'));
+            if ($this->context->getRouter() instanceof UrlManager) {
+                $moduleId = $this->context->getRouter()->match(filter_input(INPUT_SERVER, 'REQUEST_URI'));
             } else {
                 if (filter_has_var(INPUT_SERVER, 'REDIRECT_routerDir')) {
                     $routerDir = filter_input(INPUT_SERVER, 'REDIRECT_routerDir', FILTER_SANITIZE_STRING);

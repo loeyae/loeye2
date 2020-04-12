@@ -18,6 +18,7 @@ namespace loeye\base;
 use ArrayAccess;
 use Generator;
 use loeye\client\ParallelClientManager;
+use loeye\std\Router;
 use loeye\std\Request;
 use loeye\std\Response;
 use loeye\web\Template;
@@ -68,10 +69,6 @@ class Context implements ArrayAccess
      * @var Router
      */
     private $_router;
-    /**
-     * @var UrlManager
-     */
-    private $_urManager;
     /**
      * @var int
      */
@@ -177,7 +174,7 @@ class Context implements ArrayAccess
             $array = $this->_cache->get($this->getRequest()->getModuleId());
             if ($array) {
                 foreach ($array as $key => $value) {
-                    $cdata = unserialize($value, null);
+                    $cdata = unserialize($value, ['allowed_classes' => true]);
                     if (($cdata instanceof ContextData) && !$cdata->isExpire()) {
                         $this->_data[$key]  = $cdata;
                         $this->_cdata[$key] = $cdata;
@@ -543,7 +540,7 @@ class Context implements ArrayAccess
      *
      * @return AppConfig
      */
-    public function getAppConfig(): AppConfig
+    public function getAppConfig()
     {
         return $this->_appConfig;
     }
@@ -565,7 +562,7 @@ class Context implements ArrayAccess
      *
      * @return Request
      */
-    public function getRequest(): Request
+    public function getRequest()
     {
         return $this->_request;
     }
@@ -609,9 +606,9 @@ class Context implements ArrayAccess
     /**
      * getParallelClientMgr
      *
-     * @return ParallelClientManager|null
+     * @return ParallelClientManager
      */
-    public function getParallelClientManager(): ?ParallelClientManager
+    public function getParallelClientManager(): ParallelClientManager
     {
         return $this->_parallelClientManager;
     }
@@ -631,33 +628,11 @@ class Context implements ArrayAccess
     /**
      * getRouter
      *
-     * @return Router|null
+     * @return Router
      */
-    public function getRouter(): ?Router
+    public function getRouter()
     {
         return $this->_router;
-    }
-
-    /**
-     * setUrlManager
-     *
-     * @param UrlManager $router router
-     *
-     * @return void
-     */
-    public function setUrlManager(UrlManager $router): void
-    {
-        $this->_urManager = $router;
-    }
-
-    /**
-     * getUrlManager
-     *
-     * @return UrlManager|null
-     */
-    public function getUrlManager(): ?UrlManager
-    {
-        return $this->_urManager;
     }
 
     /**
@@ -677,7 +652,7 @@ class Context implements ArrayAccess
      *
      * @return ModuleDefinition|null
      */
-    public function getModule(): ?ModuleDefinition
+    public function getModule()
     {
         return $this->_mDfnObj;
     }
@@ -699,7 +674,7 @@ class Context implements ArrayAccess
      *
      * @return Template|null
      */
-    public function getTemplate(): ?Template
+    public function getTemplate()
     {
         return $this->_template;
     }

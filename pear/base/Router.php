@@ -26,7 +26,7 @@ use loeye\std\ConfigTrait;
  *
  * @author   Zhang Yi <loeyae@gmail.com>
  */
-class Router implements ArrayAccess
+class Router extends \loeye\std\Router implements ArrayAccess
 {
 
     use ConfigTrait;
@@ -176,10 +176,12 @@ class Router implements ArrayAccess
             }
             $matches = array();
             if (isset($setting['_path']) && preg_match($setting['_path'], $path, $matches)) {
+                $this->setMatchedRule($setting['_path']);
+                $this->setMatchedData($matches);
                 $moduleId = $setting['module_id'];
                 if (isset($setting['params'])) {
                     foreach ($setting['params'] as $key => $value) {
-                        $_REQUEST[$key] = $value;
+                        $this->addPathVariable($key, $value);
                     }
                 }
                 if (isset($setting['format'])) {
@@ -190,9 +192,7 @@ class Router implements ArrayAccess
                             $value     = filter_var($matches[$key], FILTER_SANITIZE_STRING);
                             $search[]  = '{' . $key . '}';
                             $replace[] = $value;
-                            if (mb_strpos($key, '_', '7bit') !== 0) {
-                                $_REQUEST[$key] = urldecode($value);
-                            }
+                            $this->addSetting($key, $value);
                         }
                     }
                     $moduleId = str_replace($search, $replace, $moduleId);
@@ -202,12 +202,11 @@ class Router implements ArrayAccess
                     $replace = array();
                     foreach ($setting['get'] as $key => $pattern) {
                         if (filter_has_var(INPUT_GET, $key)) {
-                            $matche  = array();
                             $pattern = str_replace('#', '\#', $pattern);
-                            preg_match('#(?<' . $key . '>' . $pattern . ')#', filter_input(INPUT_GET, $key), $matche);
-                            if (!empty($matche)) {
+                            preg_match('#(?<' . $key . '>' . $pattern . ')#', filter_input(INPUT_GET, $key), $match);
+                            if (!empty($match)) {
                                 $search[]  = '{' . $key . '}';
-                                $replace[] = $matche[$key];
+                                $replace[] = $match[$key];
                             }
                         }
                     }

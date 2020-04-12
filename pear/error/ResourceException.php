@@ -30,7 +30,7 @@ class ResourceException extends Exception
     /**
      * default error message
      */
-    public const DEFAULT_ERROR_MSG = "Resource Not Found";
+    public const DEFAULT_ERROR_MSG = 'Resource Not Found';
 
     public const PAGE_NOT_FOUND_CODE   = 404;
     public const PAGE_NOT_FOUND_MSG   = 'Page Not Found';

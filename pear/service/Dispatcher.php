@@ -147,7 +147,7 @@ class Dispatcher extends \loeye\std\Dispatcher
     protected function initIOObject($moduleId): void
     {
         $request = new Request($moduleId);
-
+        $request->setRouter($this->context->getRouter());
         $this->context->setRequest($request);
         $response = new Response($request);
         $response->setFormat($request->getFormatType());
@@ -166,6 +166,7 @@ class Dispatcher extends \loeye\std\Dispatcher
         $path = null;
         if ($this->rewrite) {
             $router = new UrlManager($this->rewrite);
+            $this->context->setRouter($router);
             $path = $router->match($requestUrl);
             if ($path === false) {
                 throw new ResourceException(ResourceException::PAGE_NOT_FOUND_MSG, ResourceException::PAGE_NOT_FOUND_CODE);

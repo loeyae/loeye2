@@ -117,7 +117,7 @@ class ConfigCache {
         $resource = null;
         if (file_exists($this->metaFile)) {
             $content  = file_get_contents($this->metaFile);
-            if ($resource = unserialize($content, null)) {
+            if ($resource = unserialize($content, ['allowed_classes' => true])) {
                 $this->resource = $resource;
             }
         }

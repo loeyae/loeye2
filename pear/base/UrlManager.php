@@ -22,7 +22,7 @@ namespace loeye\base;
  *
  * @author   Zhang Yi <loeyae@gmail.com>
  */
-class UrlManager
+class UrlManager extends \loeye\std\Router
 {
 
     private $_rule;
@@ -59,6 +59,8 @@ class UrlManager
             $pattern = '#^' . preg_replace('#<([\w-_]+):([^>]+)>#', '(?\'$1\'$2)', $key) . '$#';
             $matches = [];
             if (preg_match($pattern, $path, $matches)) {
+                $this->setMatchedRule($item);
+                $this->setMatchedData($matches);
                 $iMatches = [];
                 $search = [];
                 $replace = [];
@@ -78,8 +80,10 @@ class UrlManager
                         if (!empty($rKeys)) {
                             $replace[$rKeys[0]] = $value;
                             $_REQUEST[self::REWRITE_KEY_PREFIX . $pkey] = $value;
+                            $this->addSetting($pkey, $value);
                             unset($replaceKey[$rKeys[0]]);
                         } else {
+                            $this->addPathVariable($pkey, $value);
                             $_REQUEST[$pkey] = $value;
                         }
                     }

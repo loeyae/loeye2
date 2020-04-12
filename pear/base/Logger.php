@@ -21,6 +21,7 @@ use DateTimeZone;
 use Monolog;
 use Monolog\Formatter\LineFormatter;
 use Monolog\Handler\RotatingFileHandler;
+use Throwable;
 
 /**
  * Logger
@@ -162,11 +163,11 @@ class Logger
     /**
      * exception
      *
-     * @param \Exception $exc
+     * @param Throwable $exc
      *
      * @return void
      */
-    public static function exception(\Exception $exc): void
+    public static function exception(Throwable $exc): void
     {
         self::trace($exc->getMessage(), $exc->getCode(), $exc->getFile(), $exc->getLine(), self::LOEYE_LOGGER_TYPE_ERROR);
     }

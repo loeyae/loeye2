@@ -26,6 +26,7 @@ use loeye\web\Response;
 use ReflectionClass;
 use ReflectionException;
 use RuntimeException;
+use Throwable;
 
 /**
  * Description of Factory
@@ -159,13 +160,13 @@ class Factory
      * includeErrorPage
      *
      * @param Context $context context
-     * @param \Exception $e exception
+     * @param Throwable $e exception
      * @param string $errorPage error page
      *
      * @return string
      */
     public static function includeErrorPage(
-        Context $context, \Exception $e, $errorPage = null
+        Context $context, Throwable $e, $errorPage = null
     ): ?string
     {
         $defaultError = 'General';

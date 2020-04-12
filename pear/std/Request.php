@@ -33,6 +33,11 @@ class Request implements ArrayAccess
     private $_country = 'cn';
 
     /**
+     * @var Router
+     */
+    private $router;
+
+    /**
      *
      * @var Uri
      */
@@ -168,6 +173,41 @@ class Request implements ArrayAccess
      */
     public function offsetUnset($offset)
     {
+    }
+
+    /**
+     * setRouter
+     *
+     * @param Router $router
+     * @return Request
+     */
+    public function setRouter(Router $router): Request
+    {
+        $this->router = $router;
+        return $this;
+    }
+
+    /**
+     * @return Router
+     */
+    public function getRouter(): Router
+    {
+        return $this->router;
+    }
+
+    /**
+     * getPathVariable
+     *
+     * @param null $key
+     * @return array|mixed|null
+     */
+    public function getPathVariable($key = null)
+    {
+        if (null === $key) {
+            return $this->router->getPathVariable();
+        }
+        $pathVariable = $this->router->getPathVariable();
+        return $pathVariable[$key] ?? null;
     }
 
     /**

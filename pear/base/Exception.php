@@ -20,16 +20,17 @@ namespace loeye\base;
 use loeye\web\Request;
 use loeye\web\Response;
 use ReflectionException;
+use Throwable;
 
 /**
  * ExceptionHandler
  *
- * @param \Exception $exc exception
+ * @param Throwable $exc exception
  * @param Context $context context
  *
  * @return void
  */
-function ExceptionHandler(\Exception $exc, Context $context)
+function ExceptionHandler(Throwable $exc, Context $context)
 {
     if (!($exc instanceof Exception)) {
         Logger::exception($exc);
@@ -37,12 +38,8 @@ function ExceptionHandler(\Exception $exc, Context $context)
     $format = null;
     $appConfig = $context->getAppConfig();
     if ($context->getRequest() instanceof Request) {
-        try {
-            $format = $appConfig ? $appConfig->getSetting('application.response.format', $context->getRequest()
-                ->getFormatType()) : $context->getRequest()->getFormatType();
-        } catch (Exception $e) {
-            Logger::exception($e);
-        }
+        $format = $appConfig ? $appConfig->getSetting('application.response.format', $context->getRequest()
+            ->getFormatType()) : $context->getRequest()->getFormatType();
     }
     switch ($format) {
         case 'xml':

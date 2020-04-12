@@ -78,9 +78,10 @@ class <className> extends <serverName>
      *
      * @param InputInterface $input
      *
+     * @param SymfonyStyle $ui
      * @return string
      */
-    protected function getDestPath(InputInterface $input): string
+    protected function getDestPath(InputInterface $input, SymfonyStyle $ui): string
     {
         return PROJECT_MODELS_DIR . D_S . 'server' . D_S . $input->getArgument('property');
     }
