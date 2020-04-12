@@ -30,16 +30,16 @@ use ReflectionException;
 abstract class Handler extends Resource
 {
 
-    public const METHOD_GET    = 'GET';
-    public const METHOD_POST   = 'POST';
-    public const METHOD_PUT    = 'PUT';
+    public const METHOD_GET = 'GET';
+    public const METHOD_POST = 'POST';
+    public const METHOD_PUT = 'PUT';
     public const METHOD_DELETE = 'DELETE';
 
     protected $withDefaultRequestHeader = true;
-    protected $withDefaultRequestKey    = 'request_data';
-    protected $queryParameter           = array();
-    protected $unRawQueryParameter      = array();
-    protected $pathParameter            = array();
+    protected $withDefaultRequestKey = 'request_data';
+    protected $queryParameter = array();
+    protected $unRawQueryParameter = array();
+    protected $pathParameter = array();
     protected $req;
     protected $resp;
     protected $cmd;
@@ -67,12 +67,12 @@ abstract class Handler extends Resource
                     throw new RequestParameterException(RequestParameterException::REQUEST_BODY_EMPTY_MSG, RequestParameterException::REQUEST_BODY_EMPTY_CODE);
                 }
                 $requestData = $this->_getRequestData($req);
-                $data        = $this->process($requestData);
+                $data = $this->process($requestData);
                 break;
             case self::METHOD_PUT:
                 if ($req->getContentLength() > 1) {
                     $requestData = $this->_getRequestData($req);
-                    $data        = $this->process($requestData);
+                    $data = $this->process($requestData);
                 }
                 break;
             default:
@@ -102,10 +102,10 @@ abstract class Handler extends Resource
      */
     private function _getRequestData(Request $req)
     {
-        $data        = $req->getContent();
+        $data = $req->getContent();
         $requestData = json_decode($data, true);
         if (!is_array($requestData)) {
-            throw new RequestParameterException( RequestParameterException::REQUEST_BODY_EMPTY_MSG,
+            throw new RequestParameterException(RequestParameterException::REQUEST_BODY_EMPTY_MSG,
                 RequestParameterException::REQUEST_BODY_EMPTY_CODE);
         }
         if ($this->withDefaultRequestHeader) {
@@ -192,20 +192,16 @@ abstract class Handler extends Resource
      */
     protected function init(Request $req, Response $resp): void
     {
-        $this->pathParameter = explode('/', $req->getUri()->getPath());
-        if (isset($this->pathParameter[3])) {
-            $this->cmd = $this->pathParameter[3];
-        } else {
-            $this->cmd = '';
-        }
+        $this->pathParameter = $req->getPathVariable();
+        $this->cmd = $this->pathParameter['handler'] ?? '';
         $param = filter_input_array(INPUT_GET, FILTER_SANITIZE_FULL_SPECIAL_CHARS, FILTER_FLAG_NO_ENCODE_QUOTES);
         if (!empty($param)) {
             $this->queryParameter = $param;
-            array_walk_recursive($this->queryParameter, static function (&$item, &$key) {
+            array_walk_recursive($this->queryParameter, static function (&$item) {
                 $item = filter_var($item, FILTER_SANITIZE_STRING);
             });
             $this->unRawQueryParameter = $param;
-            array_walk_recursive($this->unRawQueryParameter, static function (&$item, &$key) {
+            array_walk_recursive($this->unRawQueryParameter, static function (&$item) {
                 $item = filter_var($item, FILTER_UNSAFE_RAW);
             });
         }
@@ -214,15 +210,15 @@ abstract class Handler extends Resource
 
     /**
      *
-     * @param Response $resp    Response instance
-     * @param int                     $code    code
-     * @param string                  $message message
+     * @param Response $resp Response instance
+     * @param int $code code
+     * @param string $message message
      */
     protected function render(Response $resp, $code = LOEYE_REST_STATUS_OK, $message = 'OK'): void
     {
-        $status                 = array();
-        $status['code']         = $code;
-        $status['message']      = $message;
+        $status = array();
+        $status['code'] = $code;
+        $status['message'] = $message;
         $this->output['status'] = $status;
         $resp->setContent($this->output);
     }
@@ -230,43 +226,41 @@ abstract class Handler extends Resource
     /**
      * checkRequiredPathParameter
      *
-     * @param int    $position position
-     * @param string $field    field name
+     * @param string $key key name
      *
      * @return string|null
      * @throws Exception
      */
-    protected function checkRequiredPathParameter($position, $field): ?string
+    protected function checkRequiredPathParameter($key): ?string
     {
-        if (isset($this->pathParameter) && is_array($this->pathParameter) && array_key_exists($position, $this->pathParameter)
+        if (isset($this->pathParameter) && is_array($this->pathParameter) && array_key_exists($key, $this->pathParameter)
         ) {
-            return $this->pathParameter[$position];
+            return $this->pathParameter[$key];
         }
 
         throw new RequestParameterException(RequestParameterException::$PARAMETER_ERROR_MSG_TEMPLATES['path_var_required'],
-            RequestParameterException::REQUEST_PARAMETER_ERROR_CODE, ['field' =>$field]);
+            RequestParameterException::REQUEST_PARAMETER_ERROR_CODE, ['field' => $key]);
     }
 
     /**
      * checkNotEmptyPathParameter
      *
-     * @param int    $position position
-     * @param string $field    field name
-     * @param mixed  $default  default value
+     * @param string $key key name
+     * @param mixed $default default value
      *
      * @return string
      * @throws Exception
      */
-    protected function checkNotEmptyPathParameter($position, $field, $default = null): string
+    protected function checkNotEmptyPathParameter($key, $default = null): string
     {
-        $value = $this->checkRequiredPathParameter($position, $field);
+        $value = $this->checkRequiredPathParameter($key);
         if ($default !== null && $value === $default) {
             return $value;
         }
 
         if (empty($value)) {
             throw new RequestParameterException(RequestParameterException::$PARAMETER_ERROR_MSG_TEMPLATES['path_var_not_empty'],
-                RequestParameterException::REQUEST_PARAMETER_ERROR_CODE, ['field' =>$field]);
+                RequestParameterException::REQUEST_PARAMETER_ERROR_CODE, ['field' => $key]);
         }
         return $value;
     }
@@ -274,8 +268,8 @@ abstract class Handler extends Resource
     /**
      * checkRequiredParameter
      *
-     * @param array  $data data
-     * @param string $key  key
+     * @param array $data data
+     * @param string $key key
      *
      * @return mixed
      * @throws Exception
@@ -287,15 +281,15 @@ abstract class Handler extends Resource
         }
 
         throw new RequestParameterException(RequestParameterException::$PARAMETER_ERROR_MSG_TEMPLATES['parameter_not_empty'],
-            RequestParameterException::REQUEST_PARAMETER_ERROR_CODE, ['field' =>$key]);
+            RequestParameterException::REQUEST_PARAMETER_ERROR_CODE, ['field' => $key]);
     }
 
     /**
      * checkNotEmptyParameter
      *
-     * @param array  $data    data
-     * @param string $key     key
-     * @param mixed  $default default value
+     * @param array $data data
+     * @param string $key key
+     * @param mixed $default default value
      *
      * @return mixed
      * @throws Exception
@@ -308,7 +302,7 @@ abstract class Handler extends Resource
         }
 
         if (empty($value)) {
-            throw new RequestParameterException(RequestParameterException::$PARAMETER_ERROR_MSG_TEMPLATES['parameter_required'], RequestParameterException::REQUEST_PARAMETER_ERROR_CODE, ["field"=>$key]);
+            throw new RequestParameterException(RequestParameterException::$PARAMETER_ERROR_MSG_TEMPLATES['parameter_required'], RequestParameterException::REQUEST_PARAMETER_ERROR_CODE, ["field" => $key]);
         }
         return $value;
     }

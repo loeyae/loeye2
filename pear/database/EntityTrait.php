@@ -20,6 +20,7 @@ namespace loeye\database;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use Doctrine\ORM\TransactionRequiredException;
+use loeye\base\DB;
 use loeye\base\Utils;
 use loeye\error\DataException;
 use ReflectionException;
@@ -33,7 +34,7 @@ trait EntityTrait
 {
     /**
      *
-     * @var \loeye\base\DB
+     * @var DB
      */
     protected $db;
 

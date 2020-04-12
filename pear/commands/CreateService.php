@@ -72,6 +72,12 @@ require_once APP_BASE_DIR . DIRECTORY_SEPARATOR .'vendor'. DIRECTORY_SEPARATOR .
 define('LOEYE_MODE', LOEYE_MODE_DEV);
 
 $dispatcher = new Dispatcher();
+$dispatcher->init([
+    'rewrite' => [
+        '#/<module:\w+>/<service:\w+>/<handler:\w+>/<id:\w+>#' => '{module}/{service}/{handler}',
+        '#/<module:\w+>/<service:\w+>/<handler:\w+>#' => '{module}/{service}/{handler}',
+    ]
+]);
 $dispatcher->dispatch();
 EOF;
 
@@ -261,7 +267,7 @@ EOF;
         $methods = $refClass->getMethods();
         $body = [];
         foreach ($methods as $method) {
-            if ($method->isConstructor() || $method->isFinal()) {
+            if ($method->isConstructor() || $method->isFinal() || $method->isPrivate()) {
                 continue;
             }
             [$paramsStatement, $params, $type, $path, $requestBody] = $this->generateParameter($method, $property,
@@ -293,7 +299,7 @@ EOF;
         $paramsArray = [];
         $parameters = $method->getParameters();
         $path = '\'/' . $property . '/' . $entityName . '/' . $method->getName();
-        $type = in_array($method->getName(), ['get', 'one']) ? 'GET' : 'POST';
+        $type = $method->getName() === 'get' ? 'GET' : 'POST';
         foreach ($parameters as $parameter) {
             $pType = $parameter->getType();
             if (!$pType) {
@@ -309,7 +315,7 @@ EOF;
         if (!empty($parameters)) {
             if ($type === 'GET') {
                 $m = array_map(static function ($item) {
-                    return $item . '/\'. $' . $item;
+                    return '\'. $' . $item;
                 }, $paramsArray);
                 $path .= '/' . implode('.\'/', $m);
             } else {
