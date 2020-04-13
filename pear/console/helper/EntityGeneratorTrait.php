@@ -17,6 +17,7 @@ use Symfony\Component\Console\{Input\InputInterface, Output\OutputInterface, Sty
 use InvalidArgumentException;
 use loeye\base\DB;
 use loeye\base\Exception;
+use phpseclib\File\ASN1;
 use RuntimeException;
 use Symfony\Component\Filesystem\Filesystem;
 
@@ -141,6 +142,21 @@ trait EntityGeneratorTrait {
     protected static function generateTemplate(array $variables, string $template): string
     {
         return str_replace(array_keys($variables), array_values($variables), $template);
+    }
+
+    /**
+     * getClassName
+     *
+     * @param string $fullClassName
+     * @return bool|string
+     */
+    protected static function getClassName(string $fullClassName)
+    {
+        $pos = strrpos($fullClassName, '\\');
+        if ($pos === false) {
+            return $fullClassName;
+        }
+        return substr( $fullClassName,$pos + 1);
     }
 
 }

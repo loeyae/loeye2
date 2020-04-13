@@ -23,6 +23,7 @@ use loeye\console\helper\EntityGeneratorTrait;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionMethod;
+use ReflectionParameter;
 use RuntimeException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -74,8 +75,8 @@ define('LOEYE_MODE', LOEYE_MODE_DEV);
 $dispatcher = new Dispatcher();
 $dispatcher->init([
     'rewrite' => [
-        '#/<module:\w+>/<service:\w+>/<handler:\w+>/<id:\w+>#' => '{module}/{service}/{handler}',
-        '#/<module:\w+>/<service:\w+>/<handler:\w+>#' => '{module}/{service}/{handler}',
+        '/<module:\w+>/<service:\w+>/<handler:\w+>/<id:\w+>' => '{module}/{service}/{handler}',
+        '/<module:\w+>/<service:\w+>/<handler:\w+>' => '{module}/{service}/{handler}',
     ]
 ]);
 $dispatcher->dispatch();
@@ -200,7 +201,7 @@ use loeye\base\Context;
 use loeye\service\Handler;
 
 /**
- * AbstractBaseHandler
+ * <className>
  *
  * @author Zhang Yi <loeyae@gmail.com>
  */
@@ -208,7 +209,7 @@ abstract class <className> extends Handler
 {
 
     /**
-     * @var <serverName>
+     * @var <serverClass>
      */
     protected $server;
 
@@ -218,12 +219,92 @@ abstract class <className> extends Handler
     public function __construct(Context $context)
     {
         parent::__construct($context);
-        $this->server = new <serverName>($context->getAppConfig());
+        $this->server = new <serverClass>($context->getAppConfig());
     }
 
 }
 EOF;
 
+    protected $handlerTemplate = <<<'EOF'
+<?php
+
+/**
+ * <className>.php
+ *
+ * @author Zhang Yi <loeyae@gmail.com>
+ * @license http://www.apache.org/licenses/LICENSE-2.0 Apache License
+ * @version <datetime>
+ */
+
+namespace <namespace>;
+
+/**
+ * <className>
+ *
+ * @author Zhang Yi <loeyae@gmail.com>
+ */
+class <className> extends <abstractClassName>
+{
+
+    /**
+     * @inheritDoc
+     */
+    protected function process($req)
+    {
+<parameterStatement>
+        return $this->server-><method>(<parameter>);
+    }
+}
+EOF;
+
+    protected $getHandlerParameterStatementTemplate = <<<'EOF'
+        $<parameter> = $this->pathParameter['<parameter>'];
+EOF;
+
+
+    protected $postHandlerParameterStatementTemplate = <<<'EOF'
+        $<parameter> = $req['<parameter>'];
+EOF;
+
+    protected $pageHandlerTemplate = <<<'EOF'
+<?php
+
+/**
+ * <className>.php
+ *
+ * @author Zhang Yi <loeyae@gmail.com>
+ * @license http://www.apache.org/licenses/LICENSE-2.0 Apache License
+ * @version <datetime>
+ */
+
+namespace <namespace>;
+
+use loeye\base\Logger;
+use Throwable;
+
+/**
+ * <className>
+ *
+ * @author Zhang Yi <loeyae@gmail.com>
+ */
+class <className> extends <abstractClassName>
+{
+
+    /**
+     * @inheritDoc
+     */
+    protected function process($req)
+    {
+<parameterStatement>
+        try {
+            return $this->server-><method>(<parameter>);
+        } catch (Throwable $e) {
+            Logger::exception($e);
+        }
+        return [];
+    }
+}
+EOF;
 
     private $handlerDir;
     private $clientDir;
@@ -245,8 +326,7 @@ EOF;
         $destPath .= D_S . $entityName;
         $serverClass = $this->getServerClass($metadata->reflClass->name);
         $this->writeClient($ui, $entityName, $serverClass, $force);
-        $abstractClassName = 'Abstract' . ucfirst($entityName) . 'Handler';
-        $this->writeAbstractHandler($ui, $namespace, $abstractClassName, $destPath, $force);
+        $this->writeAbstractHandler($ui, $namespace, $entityName, $serverClass, $destPath, $force);
         $this->writeHandler($ui, $namespace, $entityName, $serverClass, $destPath, $force);
     }
 
@@ -375,29 +455,116 @@ EOF;
         return [implode("\r\n", $paramsStatementArray), implode(', ', $mappedParamsArray), $type, $path, $requestBody];
     }
 
-    protected function writeAbstractHandler(SymfonyStyle $ui, $namespace, $className, $destPath, $force)
+    /**
+     * writeAbstractHandler
+     *
+     * @param SymfonyStyle $ui
+     * @param $namespace
+     * @param $className
+     * @param $serverClass
+     * @param $destPath
+     * @param $force
+     */
+    protected function writeAbstractHandler(SymfonyStyle $ui, $namespace, $className, $serverClass, $destPath, $force): void
     {
-        $ui->block($className);
+        $abstractClassName = 'Abstract' . ucfirst($className) . 'Handler';
+        $fullClassName = $namespace .'\\'. $abstractClassName;
+        $ui->text(sprintf('Processing AbstractClassFile "<info>%s</info>"', $fullClassName));
+        $variable = [
+            '<className>' => $abstractClassName,
+            '<namespace>' => $namespace,
+            '<datetime>' => date('Y-m-d H:i:s'),
+            '<fullServerClass>' => $serverClass,
+            '<serverClass>' => self::getClassName($serverClass),
+        ];
+        $code = self::generateTemplate($variable, $this->abstractHandlerTemplate);
+        $this->writeFile($destPath, $abstractClassName, $code, $force);
     }
 
-    protected function writeHandler(SymfonyStyle $ui, $namespace, $className, $serverClass, $destPath, $force)
+    /**
+     * writeHandler
+     *
+     * @param SymfonyStyle $ui
+     * @param $namespace
+     * @param $className
+     * @param $serverClass
+     * @param $destPath
+     * @param $force
+     * @throws ReflectionException
+     */
+    protected function writeHandler(SymfonyStyle $ui, $namespace, $className, $serverClass, $destPath, $force): void
     {
         $refClass = new ReflectionClass($serverClass);
         $methods = $refClass->getMethods();
         foreach ($methods as $method) {
-            if ($method->isConstructor() || $method->isFinal()) {
+            if ($method->isConstructor() || $method->isFinal() || $method->isPrivate()) {
                 continue;
             }
             $methodName = $method->getName();
-            $nClassName = ucfirst($className) . ucfirst($methodName) . 'Handler';
-
+            $nClassName =  ucfirst($methodName) . 'Handler';
+            $abstractClassName = 'Abstract' . ucfirst($className) . 'Handler';
             $fullClassName = $namespace . '\\' . $nClassName;
-            $ui->block($namespace);
-            $ui->block($fullClassName);
-            $ui->block($destPath);
+            $ui->text(sprintf('Processing ClassFile "<info>%s</info>"', $fullClassName));
+            $type = $methodName === 'get' ? 'GET' : 'POST';
+            $parameters = $method->getParameters();
+            if ($type === 'GET') {
+                [$parameterStatement, $parameter] = $this->generateGetHandlerParameter($parameters);
+            } else {
+                [$parameterStatement, $parameter] = $this->generatePostHandlerParameter($parameters);
+            }
+            $variable = [
+                '<className>' => $nClassName,
+                '<namespace>' => $namespace,
+                '<datetime>' => date('Y-m-d H:i:s'),
+                '<abstractClassName>' => $abstractClassName,
+                '<method>' => $method->getName(),
+                '<parameterStatement>' => $parameterStatement,
+                '<parameter>' => $parameter,
+            ];
+            if ($methodName === 'page') {
+                $code = self::generateTemplate($variable, $this->pageHandlerTemplate);
+            } else {
+                $code = self::generateTemplate($variable, $this->handlerTemplate);
+            }
+            $this->writeFile($destPath, $nClassName, $code, $force);
         }
     }
 
+    /**
+     * generateGetHandlerParameter
+     *
+     * @param ReflectionParameter[] $parameters
+     * @return array
+     */
+    protected function generateGetHandlerParameter($parameters): array
+    {
+        $codes = [];
+        $parameterList = [];
+        foreach ($parameters as $parameter) {
+            $codes[] = self::generateTemplate(['<parameter>' => $parameter->getName()],
+                $this->getHandlerParameterStatementTemplate);
+            $parameterList[] = '$'. $parameter->getName();
+        }
+        return [implode("\r\n", $codes), implode(', ', $parameterList)];
+    }
+
+    /**
+     * generatePostHandlerParameter
+     *
+     * @param ReflectionParameter[] $parameters
+     * @return array
+     */
+    protected function generatePostHandlerParameter($parameters): array
+    {
+        $codes = [];
+        $parameterList = [];
+        foreach ($parameters as $parameter) {
+            $codes[] = self::generateTemplate(['<parameter>' => $parameter->getName()],
+                $this->postHandlerParameterStatementTemplate);
+            $parameterList[] = '$'. $parameter->getName();
+        }
+        return [implode("\r\n", $codes), implode(', ', $parameterList)];
+    }
 
     /**
      * getServerClass

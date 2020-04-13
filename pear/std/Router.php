@@ -57,9 +57,9 @@ abstract class Router
     /**
      * getMatchedRule
      *
-     * @return string
+     * @return string|null
      */
-    public function getMatchedRule(): string
+    public function getMatchedRule(): ?string
     {
         return $this->matchedRule;
     }
@@ -79,9 +79,9 @@ abstract class Router
     /**
      * getMatchedData
      *
-     * @return array
+     * @return array|null
      */
-    public function getMatchedData(): array
+    public function getMatchedData(): ?array
     {
         return $this->matchedData;
     }
@@ -101,9 +101,9 @@ abstract class Router
     /**
      * getParameter
      *
-     * @return array
+     * @return array|null
      */
-    public function getPathVariable(): array
+    public function getPathVariable(): ?array
     {
         return $this->pathVariable;
     }
@@ -136,9 +136,9 @@ abstract class Router
     /**
      * getSettings
      *
-     * @return array
+     * @return array|null
      */
-    public function getSettings(): array
+    public function getSettings(): ?array
     {
         return $this->settings;
     }

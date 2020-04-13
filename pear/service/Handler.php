@@ -17,9 +17,10 @@
 
 namespace loeye\service;
 
+use loeye\database\Entity;
 use loeye\base\Exception;
 use loeye\base\Utils;
-use \loeye\error\RequestParameterException;
+use loeye\error\RequestParameterException;
 use ReflectionException;
 
 /**
@@ -79,9 +80,9 @@ abstract class Handler extends Resource
                 $data = $this->process([]);
                 break;
         }
-        if (is_array($data)) {
+        if (is_array($data) && isset($data[0]) && $data[0] instanceof Entity) {
             $data = Utils::entities2array($this->context->db()->entityManager(), $data);
-        } elseif (is_object($data)) {
+        } elseif ($data instanceof Entity) {
             $data = Utils::entity2array($this->context->db()->entityManager(), $data);
         }
         if ($this->withDefaultRequestHeader) {

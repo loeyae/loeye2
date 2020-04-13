@@ -584,11 +584,8 @@ class Context implements ArrayAccess
      *
      * @return Response $response response
      */
-    public function getResponse(): Response
+    public function getResponse()
     {
-        if (null === $this->_response) {
-            $this->_response = Factory::response();
-        }
         return $this->_response;
     }
 
