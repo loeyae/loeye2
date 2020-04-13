@@ -26,9 +26,9 @@ use ReflectionMethod;
 use ReflectionParameter;
 use RuntimeException;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Filesystem\Filesystem;
+use Throwable;
 
 /**
  * Class CreateService
@@ -559,8 +559,21 @@ EOF;
         $codes = [];
         $parameterList = [];
         foreach ($parameters as $parameter) {
-            $codes[] = self::generateTemplate(['<parameter>' => $parameter->getName()],
+            $code = self::generateTemplate(['<parameter>' => $parameter->getName()],
                 $this->postHandlerParameterStatementTemplate);
+            try {
+                $default = $parameter->getDefaultValue();
+                if (is_numeric($default) || is_bool($default)) {
+                    $code = str_replace(';', ' ?? ' . $default. ';', $code);
+                } else if ($default === null) {
+                    $code = str_replace(';', ' ?? null;', $code);
+                }else {
+                    $code = str_replace(';', ' ?? \'' . $default . '\';', $code);
+                }
+            } catch (Throwable $e) {
+                $e->getTraceAsString();
+            }
+            $codes[] = $code;
             $parameterList[] = '$'. $parameter->getName();
         }
         return [implode("\r\n", $codes), implode(', ', $parameterList)];
