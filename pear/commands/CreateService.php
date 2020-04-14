@@ -246,6 +246,7 @@ namespace <namespace>;
 class <className> extends <abstractClassName>
 {
 
+<propertyStatement>
     /**
      * @inheritDoc
      */
@@ -290,6 +291,7 @@ use Throwable;
 class <className> extends <abstractClassName>
 {
 
+<propertyStatement>
     /**
      * @inheritDoc
      */
@@ -543,6 +545,7 @@ EOF;
         foreach ($parameters as $parameter) {
             $codes[] = self::generateTemplate(['<parameter>' => $parameter->getName()],
                 $this->getHandlerParameterStatementTemplate);
+            $codes[] =
             $parameterList[] = '$'. $parameter->getName();
         }
         return [implode("\r\n", $codes), implode(', ', $parameterList)];

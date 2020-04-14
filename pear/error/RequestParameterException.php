@@ -42,9 +42,9 @@ class RequestParameterException extends Exception
     public const REQUEST_PARAMETER_ERROR_CODE = 410200;
 
     public static $PARAMETER_ERROR_MSG_TEMPLATES = [
-        'path_var_not_empty' => 'Path Variable %field% Not Emprty',
+        'path_var_not_empty' => 'Path Variable %field% Not Empty',
         'path_var_required' => 'Path Variable %field% Must Be Required',
-        'parameter_not_empty' => 'Parameter Variable %field% Not Emprty',
+        'parameter_not_empty' => 'Parameter Variable %field% Not Empty',
         'parameter_required' => 'Parameter Variable %field% Must Be Required',
     ];
 
