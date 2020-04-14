@@ -52,7 +52,7 @@ class DB
     use ConfigTrait;
     use CacheTrait;
 
-    const BUNDLE = 'database';
+    public const BUNDLE = 'database';
 
     /**
      *
@@ -122,8 +122,11 @@ class DB
      * @param string $type type
      *
      * @return void
-     * @throws Throwable
+     * @throws AnnotationException
+     * @throws BusinessException
+     * @throws CacheException
      * @throws InvalidArgumentException
+     * @throws ORMException
      */
     private function _getEntityManager(AppConfig $appConfig, Configuration $config, $property, $type): void
     {

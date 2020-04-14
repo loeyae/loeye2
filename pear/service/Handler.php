@@ -281,6 +281,8 @@ abstract class Handler extends Resource
      * @param null $group
      * @return array
      * @throws ValidateError
+     * @throws InvalidArgumentException
+     * @throws Throwable
      */
     protected function validate($data, $entity, $group = null): array
     {
@@ -297,18 +299,7 @@ abstract class Handler extends Resource
                 }
                 return Utils::entity2array(Factory::db()->em(), $entityObject);
             } catch (ReflectionException $e) {
-                Logger::exception($e);
                 $validateError = ['Entity Class Not Exists.'];
-                throw new ValidateError($validateError, ValidateError::DEFAULT_ERROR_MSG,
-                    ValidateError::DEFAULT_ERROR_CODE);
-            } catch (InvalidArgumentException $e) {
-                Logger::exception($e);
-                $validateError = ['Internal Error.'];
-                throw new ValidateError($validateError, ValidateError::DEFAULT_ERROR_MSG,
-                    ValidateError::DEFAULT_ERROR_CODE);
-            } catch (Throwable $e) {
-                Logger::exception($e);
-                $validateError = ['Internal Error.'];
                 throw new ValidateError($validateError, ValidateError::DEFAULT_ERROR_MSG,
                     ValidateError::DEFAULT_ERROR_CODE);
             }
