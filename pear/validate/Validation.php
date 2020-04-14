@@ -15,7 +15,7 @@
  * @link     https://github.com/loeyae/loeye.git
  */
 
-namespace loeye\base;
+namespace loeye\validate;
 
 use \Symfony\Component\Validator\Validator\ValidatorInterface;
 use \Symfony\Component\Validator\ValidatorBuilder;
