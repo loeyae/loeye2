@@ -55,10 +55,11 @@ class ExpressionFactory {
      * createExpr
      *
      * @param array $data
+     * @param string $type
      * @return Expression|null
      * @throws DAOException
      */
-    public static function createExpr(array $data): ?Expression
+    public static function createExpr(array $data, $type = CompositeExpression::TYPE_AND): ?Expression
     {
         if (empty($data)) {
             return null;
@@ -69,7 +70,7 @@ class ExpressionFactory {
                 foreach ($data as $value) {
                     $expires[] = self::createExpr($value);
                 }
-                return new CompositeExpression(CompositeExpression::TYPE_AND, $expires);
+                return new CompositeExpression($type, $expires);
             }
             $count = count($data);
             if ($count > 2) {
@@ -80,9 +81,12 @@ class ExpressionFactory {
             }
             throw new DAOException();
         }
+        if (count($data) === 1) {
+            return self::createExprByKv(key($data), current($data));
+        }
 
         $expires = self::createExprByArray($data);
-        return new CompositeExpression(CompositeExpression::TYPE_AND, $expires);
+        return new CompositeExpression($type, $expires);
     }
 
     /**
@@ -118,7 +122,7 @@ class ExpressionFactory {
             throw new DAOException();
         }
         if (array_key_exists(strtoupper($key), static::$compositeExpressionTypeMapping)) {
-            return static::createCompositeExpression(strtoupper($key), static::createExpr($value));
+            return static::createExpr($value, strtoupper($key));
         }
         if (is_iterable($value)) {
             return static::createComparison($key, $value, Comparison::IN);

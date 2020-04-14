@@ -17,11 +17,16 @@
 
 namespace loeye\service;
 
-use loeye\base\Factory;
-use loeye\base\Logger;
-use loeye\database\Entity;
+use Doctrine\Common\Collections\Criteria;
+use Doctrine\Common\Collections\Expr\Comparison;
+use Doctrine\Common\Collections\Expr\CompositeExpression;
+use Doctrine\Common\Collections\Expr\Expression;
 use loeye\base\Exception;
+use loeye\base\Factory;
 use loeye\base\Utils;
+use loeye\database\Entity;
+use loeye\database\ExpressionFactory;
+use loeye\error\DAOException;
 use loeye\error\RequestParameterException;
 use loeye\error\ValidateError;
 use loeye\validate\Validation;
@@ -271,6 +276,67 @@ abstract class Handler extends Resource
                 RequestParameterException::REQUEST_PARAMETER_ERROR_CODE, ['field' => $key]);
         }
         return $value;
+    }
+
+    /**
+     * @param $query
+     * @return CompositeExpression
+     * @throws DAOException
+     */
+    protected function getExpression($query): CompositeExpression
+    {
+        $expression = ExpressionFactory::createExpr($query);
+        if ($expression instanceof CompositeExpression) {
+            return $expression;
+        }
+        return new CompositeExpression(CompositeExpression::TYPE_AND, [$expression]);
+    }
+
+    /**
+     * expressionToArray
+     *
+     * @param CompositeExpression $expression
+     * @return array
+     */
+    protected function expressionToArray(CompositeExpression $expression): array
+    {
+        $expressionList = $expression->getExpressionList();
+        return array_reduce($expressionList, static function($carry, $item) {
+            if ($item instanceof Comparison) {
+                $carry[$item->getField()] = $item->getValue()->getValue();
+            }
+            return $carry;
+        }, []);
+    }
+
+    /**
+     * filterCompositeExpression
+     *
+     * @param CompositeExpression $expression
+     * @param $data
+     * @return CompositeExpression|null
+     */
+    protected function filterCompositeExpression(CompositeExpression $expression, $data): ?CompositeExpression
+    {
+        $expressionList = $expression->getExpressionList();
+        $filteredExpression = array_filter($expressionList, static function ($item) use ($data) {
+            return ($item instanceof Comparison && array_key_exists($item->getField(), $data));
+        });
+        if ($filteredExpression) {
+            return new CompositeExpression($expression->getType(), $filteredExpression);
+        }
+        return null;
+    }
+
+    /**
+     * expressionToCriteria
+     *
+     * @param Expression $expression
+     * @return Criteria
+     */
+    protected function expressionToCriteria(Expression $expression): Criteria
+    {
+        return Criteria::create()->andWhere($expression);
     }
 
     /**

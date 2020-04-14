@@ -1212,7 +1212,7 @@ class Utils
                 $value = self::getReadMethodValue($entity, $key);
                 if (is_array($value)) {
                     $rs = self::entities2array($em, $value, $ignoreClass);
-                } else {
+                } else if ($value) {
                     $rs = self::entity2array($em, $value, $ignoreClass);
                 }
                 $r[$key] = $rs;

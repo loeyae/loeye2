@@ -529,10 +529,15 @@ EOF;
                 } else {
                     [$parameterStatement, $parameter] = $this->generatePostHandlerParameter($parameters);
                 }
-                $useStatement = 'use loeye\error\ValidateError;';
-                $useStatement .= "\r\nuse " . $className .';';
+                $useStatement = 'use ' . $className .';';
+                $useStatement .= "\r\nuse loeye\\error\\ValidateError;";
                 $methodDoc .= "\r\n     * @throws ValidateError";
                 $propertyStatement = "    protected \$group = '" . $methodName . "';\r\n";
+                if ($methodName === 'page') {
+                    $useStatement .= "\r\nuse Psr\Cache\InvalidArgumentException;";
+                    $methodDoc .= "\r\n     * @throws Throwable";
+                    $methodDoc .= "\r\n     * @throws InvalidArgumentException";
+                }
             }
             $variable = [
                 '<className>' => $nClassName,
@@ -565,12 +570,12 @@ EOF;
     {
         $parameterStatement = <<<'EOF'
         $criteria = $req['criteria'] ?? null;
-        $this->validate($criteria, <entityName>::class, $this->group);
+        $validateData = $this->validate($criteria, <entityName>::class, $this->group);
         $orderBy = $this->getOrderBy($req);
         $start = $req['start'] ?? null;
         $offset = $req['offset'] ?? null;
 EOF;
-        $parameter = '$criteria, $orderBy, $start, $offset';
+        $parameter = '$validateData, $orderBy, $start, $offset';
         return [self::generateTemplate(['<entityName>' => $entityName], $parameterStatement), $parameter];
     }
 
@@ -584,9 +589,9 @@ EOF;
     {
         $parameterStatement = <<<'EOF'
         $id = $req['id'];
-        $this->validate(['id' => $id], <entityName>::class, $this->group);
+        $validatedData = $this->validate(['id' => $id], <entityName>::class, $this->group);
 EOF;
-        $parameter = '$id';
+        $parameter = '$validatedData[\'id\']';
         return [self::generateTemplate(['<entityName>' => $entityName], $parameterStatement), $parameter];
     }
 
@@ -600,9 +605,9 @@ EOF;
     {
         $parameterStatement = <<<'EOF'
         $data = $req['data'];
-        $this->validate($data, <entityName>::class, $this->group);
+        $validatedData = $this->validate($data, <entityName>::class, $this->group);
 EOF;
-        $parameter = '$data';
+        $parameter = '$validatedData';
         return [self::generateTemplate(['<entityName>' => $entityName], $parameterStatement), $parameter];
     }
 
@@ -616,10 +621,10 @@ EOF;
     {
         $parameterStatement = <<<'EOF'
         $criteria = $req['criteria'];
-        $this->validate($criteria, <entityName>::class, $this->group);
+        $validatedData = $this->validate($criteria, <entityName>::class, $this->group);
         $orderBy = $this->getOrderBy($req);
 EOF;
-        $parameter = '$criteria, $orderBy';
+        $parameter = '$validatedData, $orderBy';
         return [self::generateTemplate(['<entityName>' => $entityName], $parameterStatement), $parameter];
     }
 
@@ -633,14 +638,17 @@ EOF;
     {
         $parameterStatement = <<<'EOF'
         $query = $req['query'];
-        $this->validate($query, <entityName>::class, $this->group);
+        $expression = $this->getExpression($query);
+        $validatedData = $this->validate($this->expressionToArray($expression), <entityName>::class, $this->group);
+        $filteredCompositeExpression = $this->filterCompositeExpression($expression, $validatedData);
+        $criteria = $filteredCompositeExpression ? $this->expressionToCriteria($filteredCompositeExpression) : null;
         $start = $req['start'] ?? 0;
         $offset = $req['offset'] ?? 10;
         $orderBy = $this->getOrderBy($req);
         $groupBy = $this->getGroupBy($req);
         $having = $req['having'] ?? null;
 EOF;
-        $parameter = '$query, $start, $offset, $orderBy, $groupBy, $having';
+        $parameter = '$criteria, $start, $offset, $orderBy, $groupBy, $having';
         return [self::generateTemplate(['<entityName>' => $entityName], $parameterStatement), $parameter];
     }
 
@@ -655,9 +663,11 @@ EOF;
         $parameterStatement = <<<'EOF'
         $id = $req['id'];
         $data = $req['data'];
-        $this->validate(array_merge(['id' => $id], $data), <entityName>::class, $this->group);
+        $validatedData = $this->validate(array_merge(['id' => $id], $data), <entityName>::class, $this->group);
+        $id = $validatedData['id'];
+        unset($validatedData['id']);
 EOF;
-        $parameter = '$id, $data';
+        $parameter = '$id, $validatedData';
         return [self::generateTemplate(['<entityName>' => $entityName], $parameterStatement), $parameter];
     }
 
