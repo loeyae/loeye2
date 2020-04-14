@@ -523,14 +523,16 @@ EOF;
                 $useStatement = 'use loeye\base\Exception;';
                 $methodDoc .= "\r\n     * @throws Exception";
             } else {
-//                [$parameterStatement, $parameter] = $this->generatePostHandlerParameter($parameters);
                 $generateMethod = 'generate' . ucfirst($methodName) . 'HandlerParameter';
-                [$parameterStatement, $parameter] = $this->$generateMethod();
+                if (method_exists($this, $generateMethod)) {
+                    [$parameterStatement, $parameter] = $this->$generateMethod($entityName);
+                } else {
+                    [$parameterStatement, $parameter] = $this->generatePostHandlerParameter($parameters);
+                }
                 $useStatement = 'use loeye\error\ValidateError;';
-                $useStatement .= "\r\nuse " . $className;
+                $useStatement .= "\r\nuse " . $className .';';
                 $methodDoc .= "\r\n     * @throws ValidateError";
-                $propertyStatement = '    protected $entityClass = ' . $entityName . '::class;';
-                $propertyStatement .= "\r\n    protected \$group = '" . $methodName . "';";
+                $propertyStatement = "    protected \$group = '" . $methodName . "';\r\n";
             }
             $variable = [
                 '<className>' => $nClassName,
@@ -553,14 +555,110 @@ EOF;
         }
     }
 
-    protected function generateOneHandlerParameter()
+    /**
+     * generateAllHandlerParameter
+     *
+     * @param $entityName
+     * @return array
+     */
+    protected function generateAllHandlerParameter($entityName): array
+    {
+        $parameterStatement = <<<'EOF'
+        $criteria = $req['criteria'] ?? null;
+        $this->validate($criteria, <entityName>::class, $this->group);
+        $orderBy = $this->getOrderBy($req);
+        $start = $req['start'] ?? null;
+        $offset = $req['offset'] ?? null;
+EOF;
+        $parameter = '$criteria, $orderBy, $start, $offset';
+        return [self::generateTemplate(['<entityName>' => $entityName], $parameterStatement), $parameter];
+    }
+
+    /**
+     * generateDeleteHandlerParameter
+     *
+     * @param $entityName
+     * @return array
+     */
+    protected function generateDeleteHandlerParameter($entityName): array
+    {
+        $parameterStatement = <<<'EOF'
+        $id = $req['id'];
+        $this->validate(['id' => $id], <entityName>::class, $this->group);
+EOF;
+        $parameter = '$id';
+        return [self::generateTemplate(['<entityName>' => $entityName], $parameterStatement), $parameter];
+    }
+
+    /**
+     * generateInsertHandlerParameter
+     *
+     * @param $entityName
+     * @return array
+     */
+    protected function generateInsertHandlerParameter($entityName): array
+    {
+        $parameterStatement = <<<'EOF'
+        $data = $req['data'];
+        $this->validate($data, <entityName>::class, $this->group);
+EOF;
+        $parameter = '$data';
+        return [self::generateTemplate(['<entityName>' => $entityName], $parameterStatement), $parameter];
+    }
+
+    /**
+     * generateOneHandlerParameter
+     *
+     * @param $entityName
+     * @return array
+     */
+    protected function generateOneHandlerParameter($entityName): array
     {
         $parameterStatement = <<<'EOF'
         $criteria = $req['criteria'];
-        $this->validate($criteria);
-        $orderBy = $req['orderBy'] ?? null;
+        $this->validate($criteria, <entityName>::class, $this->group);
+        $orderBy = $this->getOrderBy($req);
 EOF;
         $parameter = '$criteria, $orderBy';
+        return [self::generateTemplate(['<entityName>' => $entityName], $parameterStatement), $parameter];
+    }
+
+    /**
+     * generatePageHandlerParameter
+     *
+     * @param $entityName
+     * @return array
+     */
+    protected function generatePageHandlerParameter($entityName): array
+    {
+        $parameterStatement = <<<'EOF'
+        $query = $req['query'];
+        $this->validate($query, <entityName>::class, $this->group);
+        $start = $req['start'] ?? 0;
+        $offset = $req['offset'] ?? 10;
+        $orderBy = $this->getOrderBy($req);
+        $groupBy = $this->getGroupBy($req);
+        $having = $req['having'] ?? null;
+EOF;
+        $parameter = '$query, $start, $offset, $orderBy, $groupBy, $having';
+        return [self::generateTemplate(['<entityName>' => $entityName], $parameterStatement), $parameter];
+    }
+
+    /**
+     * generateUpdateHandlerParameter
+     *
+     * @param $entityName
+     * @return array
+     */
+    protected function generateUpdateHandlerParameter($entityName): array
+    {
+        $parameterStatement = <<<'EOF'
+        $id = $req['id'];
+        $data = $req['data'];
+        $this->validate(array_merge(['id' => $id], $data), <entityName>::class, $this->group);
+EOF;
+        $parameter = '$id, $data';
+        return [self::generateTemplate(['<entityName>' => $entityName], $parameterStatement), $parameter];
     }
 
     /**

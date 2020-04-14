@@ -19,6 +19,8 @@ namespace loeye\console;
 
 use FilesystemIterator;
 use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
+use ReflectionException;
 use Symfony\Component\Console\Application as Base;
 
 /**
@@ -60,10 +62,11 @@ class Application extends Base
      * @param string $dir
      * @param string $ns
      * @return void
+     * @throws ReflectionException
      */
     protected function loadCommandByDir($dir, $ns): void
     {
-        foreach (new \RecursiveIteratorIterator(new RecursiveDirectoryIterator($dir, FilesystemIterator::SKIP_DOTS)) as $file) {
+        foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator($dir, FilesystemIterator::SKIP_DOTS)) as $file) {
             if ($file->isFile()) {
                 $path = $file->getPath();
                 if ($path !== $ns) {
@@ -72,7 +75,10 @@ class Application extends Base
                 } else {
                     $cn = $ns . '\\' . $file->getBasename('.' . $file->getExtension());
                 }
-                $this->add(new $cn());
+                $reflection = new \ReflectionClass($cn);
+                if ($reflection->isSubclassOf(Command::class)) {
+                    $this->add($reflection->newInstanceArgs());
+                }
             }
         }
     }

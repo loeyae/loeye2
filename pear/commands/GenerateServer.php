@@ -137,7 +137,7 @@ class <className> extends <serverName>
      *
      * @param string $namespace
      * @param string $className
-     * @prara String  $entityClass
+     * @param string $entityClass
      * @param string $outputDirectory
      * @param boolean $force
      */

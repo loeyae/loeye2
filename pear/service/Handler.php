@@ -17,6 +17,7 @@
 
 namespace loeye\service;
 
+use loeye\base\Factory;
 use loeye\base\Logger;
 use loeye\database\Entity;
 use loeye\base\Exception;
@@ -25,7 +26,9 @@ use loeye\error\RequestParameterException;
 use loeye\error\ValidateError;
 use loeye\validate\Validation;
 use loeye\validate\Validator;
+use Psr\Cache\InvalidArgumentException;
 use ReflectionException;
+use Throwable;
 
 /**
  * Description of BaseHandler
@@ -49,8 +52,6 @@ abstract class Handler extends Resource
     protected $pathParameter = array();
     protected $cmd;
     protected $output;
-    protected $entityClass;
-    protected $group;
 
     /**
      * _processRequest
@@ -276,26 +277,43 @@ abstract class Handler extends Resource
      * validate
      *
      * @param $data
+     * @param $entity
+     * @param null $group
+     * @return array
      * @throws ValidateError
      */
-    protected function validate($data): void
+    protected function validate($data, $entity, $group = null): array
     {
-        if ($this->entityClass) {
+        if ($entity) {
             try {
-                $entityObject = Utils::source2entity($data, $this->entityClass);
+                $entityObject = Utils::source2entity($data, $entity);
                 $validator = Validation::createValidator();
-                $violationList = $validator->validate($entityObject, null, $this->group);
-                $validateError = Validator::buildErrmsg($violationList, Validator::initTranslator
-                ($this->context->getAppConfig()));
-                throw new ValidateError($validateError, ValidateError::DEFAULT_ERROR_MSG,
-                    ValidateError::DEFAULT_ERROR_CODE);
+                $violationList = $validator->validate($entityObject, null, $group);
+                if ($violationList->count() > 0) {
+                    $validateError = Validator::buildErrmsg($violationList, Validator::initTranslator
+                    ($this->context->getAppConfig()));
+                    throw new ValidateError($validateError, ValidateError::DEFAULT_ERROR_MSG,
+                        ValidateError::DEFAULT_ERROR_CODE);
+                }
+                return Utils::entity2array(Factory::db()->em(), $entityObject);
             } catch (ReflectionException $e) {
                 Logger::exception($e);
                 $validateError = ['Entity Class Not Exists.'];
                 throw new ValidateError($validateError, ValidateError::DEFAULT_ERROR_MSG,
                     ValidateError::DEFAULT_ERROR_CODE);
+            } catch (InvalidArgumentException $e) {
+                Logger::exception($e);
+                $validateError = ['Internal Error.'];
+                throw new ValidateError($validateError, ValidateError::DEFAULT_ERROR_MSG,
+                    ValidateError::DEFAULT_ERROR_CODE);
+            } catch (Throwable $e) {
+                Logger::exception($e);
+                $validateError = ['Internal Error.'];
+                throw new ValidateError($validateError, ValidateError::DEFAULT_ERROR_MSG,
+                    ValidateError::DEFAULT_ERROR_CODE);
             }
         }
+        return $data;
     }
 
     /**

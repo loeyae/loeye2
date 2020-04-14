@@ -17,6 +17,7 @@
 
 namespace loeye\base;
 
+use Doctrine\Common\Annotations\AnnotationException;
 use Doctrine\Common\Cache\ApcuCache;
 use Doctrine\Common\Cache\ArrayCache;
 use Doctrine\Common\Cache\MemcachedCache;
@@ -35,7 +36,10 @@ use loeye\error\BusinessException;
 use loeye\lib\Secure;
 use loeye\std\CacheTrait;
 use loeye\std\ConfigTrait;
+use Psr\Cache\InvalidArgumentException;
 use Symfony\Component\Cache\Adapter\ApcuAdapter;
+use Symfony\Component\Cache\Exception\CacheException;
+use Throwable;
 
 /**
  * Description of DB
@@ -65,7 +69,8 @@ class DB
      *
      * @param AppConfig $appConfig AppConfig
      * @param string|null $type type
-     * @throws Exception
+     * @throws Throwable
+     * @throws InvalidArgumentException
      */
     public function __construct(AppConfig $appConfig, $type = null)
     {
@@ -95,7 +100,8 @@ class DB
      * @param string|null $sign sign
      *
      * @return DB
-     * @throws Exception
+     * @throws InvalidArgumentException
+     * @throws Throwable
      */
     public static function getInstance(AppConfig $appConfig, $type = null, $sign = null): DB
     {
@@ -116,7 +122,8 @@ class DB
      * @param string $type type
      *
      * @return void
-     * @throws Exception
+     * @throws Throwable
+     * @throws InvalidArgumentException
      */
     private function _getEntityManager(AppConfig $appConfig, Configuration $config, $property, $type): void
     {

@@ -23,6 +23,7 @@ use loeye\std\ParallelPlugin;
 use loeye\std\Plugin;
 use loeye\web\Request;
 use loeye\web\Response;
+use Psr\Cache\InvalidArgumentException;
 use ReflectionClass;
 use ReflectionException;
 use RuntimeException;
@@ -391,7 +392,8 @@ EOF;
      * @staticvar array  $db   array of DB's instance
      * @param string $type
      * @return DB
-     * @throws Exception
+     * @throws Throwable
+     * @throws InvalidArgumentException
      */
     public static function db($type = 'default'): DB
     {
