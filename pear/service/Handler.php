@@ -17,10 +17,14 @@
 
 namespace loeye\service;
 
+use loeye\base\Logger;
 use loeye\database\Entity;
 use loeye\base\Exception;
 use loeye\base\Utils;
 use loeye\error\RequestParameterException;
+use loeye\error\ValidateError;
+use loeye\validate\Validation;
+use loeye\validate\Validator;
 use ReflectionException;
 
 /**
@@ -35,16 +39,18 @@ abstract class Handler extends Resource
     public const METHOD_POST = 'POST';
     public const METHOD_PUT = 'PUT';
     public const METHOD_DELETE = 'DELETE';
+    public const ORDER_ASC = 'ASC';
+    public const ORDER_DESC = 'DESC';
 
     protected $withDefaultRequestHeader = true;
     protected $withDefaultRequestKey = 'request_data';
     protected $queryParameter = array();
     protected $unRawQueryParameter = array();
     protected $pathParameter = array();
-    protected $req;
-    protected $resp;
     protected $cmd;
     protected $output;
+    protected $entityClass;
+    protected $group;
 
     /**
      * _processRequest
@@ -234,7 +240,7 @@ abstract class Handler extends Resource
      */
     protected function checkRequiredPathParameter($key): ?string
     {
-        if (isset($this->pathParameter) && is_array($this->pathParameter) && array_key_exists($key, $this->pathParameter)
+        if (array_key_exists($key, $this->pathParameter)
         ) {
             return $this->pathParameter[$key];
         }
@@ -259,7 +265,7 @@ abstract class Handler extends Resource
             return $value;
         }
 
-        if (empty($value)) {
+        if ($value !== 0 && empty($value)) {
             throw new RequestParameterException(RequestParameterException::$PARAMETER_ERROR_MSG_TEMPLATES['path_var_not_empty'],
                 RequestParameterException::REQUEST_PARAMETER_ERROR_CODE, ['field' => $key]);
         }
@@ -267,45 +273,67 @@ abstract class Handler extends Resource
     }
 
     /**
-     * checkRequiredParameter
+     * validate
      *
-     * @param array $data data
-     * @param string $key key
-     *
-     * @return mixed
-     * @throws Exception
+     * @param $data
+     * @throws ValidateError
      */
-    protected function checkRequiredParameter($data, $key)
+    protected function validate($data): void
     {
-        if (is_array($data) && array_key_exists($key, $data)) {
-            return $data[$key];
+        if ($this->entityClass) {
+            try {
+                $entityObject = Utils::source2entity($data, $this->entityClass);
+                $validator = Validation::createValidator();
+                $violationList = $validator->validate($entityObject, null, $this->group);
+                $validateError = Validator::buildErrmsg($violationList, Validator::initTranslator
+                ($this->context->getAppConfig()));
+                throw new ValidateError($validateError, ValidateError::DEFAULT_ERROR_MSG,
+                    ValidateError::DEFAULT_ERROR_CODE);
+            } catch (ReflectionException $e) {
+                Logger::exception($e);
+                $validateError = ['Entity Class Not Exists.'];
+                throw new ValidateError($validateError, ValidateError::DEFAULT_ERROR_MSG,
+                    ValidateError::DEFAULT_ERROR_CODE);
+            }
         }
-
-        throw new RequestParameterException(RequestParameterException::$PARAMETER_ERROR_MSG_TEMPLATES['parameter_not_empty'],
-            RequestParameterException::REQUEST_PARAMETER_ERROR_CODE, ['field' => $key]);
     }
 
     /**
-     * checkNotEmptyParameter
+     * getOrderBy
      *
-     * @param array $data data
-     * @param string $key key
-     * @param mixed $default default value
-     *
-     * @return mixed
-     * @throws Exception
+     * @param $req
+     * @return array|null
      */
-    protected function checkNotEmptyParameter($data, $key, $default = null)
+    protected function getOrderBy($req): ?array
     {
-        $value = $this->checkRequiredParameter($data, $key);
-        if ($default !== null && $value === $default) {
-            return $value;
+        $orderBy = $req['orderBy'] ?? null;
+        if (!$orderBy || !is_array($orderBy)) {
+            return null;
         }
+        $sort = array_keys($orderBy);
+        $order = array_values($orderBy);
+        return array_combine(array_map(static function($item){
+            return htmlentities($item);
+        }, $sort), array_map(static function($item){
+            return $item > 0 ? self::ORDER_ASC :self::ORDER_DESC;
+        }, $order));
+    }
 
-        if (empty($value)) {
-            throw new RequestParameterException(RequestParameterException::$PARAMETER_ERROR_MSG_TEMPLATES['parameter_required'], RequestParameterException::REQUEST_PARAMETER_ERROR_CODE, ["field" => $key]);
+    /**
+     * getGroupBy
+     *
+     * @param $req
+     * @return array|null
+     */
+    protected function getGroupBy($req): ?array
+    {
+        $groupBy = $req['groupBy'] ?? null;
+        if (!$groupBy) {
+            return null;
         }
-        return $value;
+        return array_map(static function ($item) {
+            return htmlentities($item);
+        }, (array)$groupBy);
     }
 
     /**

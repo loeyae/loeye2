@@ -13,3 +13,4 @@
 'repeated request': 重复请求
 'Page and Hits must be number': 非法的页码或分页记录数
 'project property not exists': property不存在
+'Entity Class Not Exists.': 实体类不存在

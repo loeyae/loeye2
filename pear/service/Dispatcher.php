@@ -24,6 +24,7 @@ use loeye\base\Logger;
 use loeye\base\UrlManager;
 use loeye\base\Utils;
 use loeye\error\ResourceException;
+use loeye\error\ValidateError;
 use loeye\render\SegmentRender;
 use ReflectionClass;
 use ReflectionException;
@@ -82,6 +83,29 @@ class Dispatcher extends \loeye\std\Dispatcher
             $handlerObject = $ref->newInstance($this->context);
             $handlerObject->handle();
             $this->executeOutput();
+        } catch (ValidateError $exc) {
+            $request = ($this->getContext()->getRequest() ?? new Request());
+            $response = ($this->getContext()->getResponse() ?? new Response($request));
+            $format = ($request->getFormatType());
+            if (empty($format)) {
+                $response->setFormat('json');
+            }
+            $response->setStatusCode(LOEYE_REST_STATUS_OK);
+            $response->setStatusMessage('Ok');
+            $response->addOutput(
+                ['code' => $exc->getCode(), 'message' => $exc->getMessage()], 'status');
+            $response->addOutput($exc->getValidateMessage(), 'data');
+            try {
+                $renderObj = Factory::getRender($response->getFormat());
+
+                $renderObj->header($response);
+                $renderObj->output($response);
+            } catch (ReflectionException $e) {
+                Logger::exception($e);
+                $renderObj = new SegmentRender();
+                $renderObj->header($response);
+                $renderObj->output($response);
+            }
         } catch (Exception $exc) {
             Utils::errorLog($exc);
             $request = ($this->getContext()->getRequest() ?? new Request());

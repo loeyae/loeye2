@@ -33,9 +33,9 @@
 'Permission Error': 权限错误
 'Request Method Not Allowed': 请求方式不被允许
 'Request Parameter Error': 请求参数错误
-'Path Variable %field% Not Emprty': 路径变量：%field%不能为空
+'Path Variable %field% Not Empty': 路径变量：%field%不能为空
 'Path Variable %field% Must Be Required': 必须包含路径变量：%field%
-'Parameter Variable %field% Not Emprty': 参数变量：%field%不能为空
+'Parameter Variable %field% Not Empty': 参数变量：%field%不能为空
 'Parameter Variable %field% Must Be Required': 必须包含参数变量：%field%
 '%key% of context not exists': context中不存在：%key%
 '%key% of context is empty': context中：%key%为空

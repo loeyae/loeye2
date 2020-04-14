@@ -13,6 +13,7 @@
 namespace loeye\plugin;
 
 use loeye\{base\Context, base\Factory, base\Utils, std\Plugin};
+use function GuzzleHttp\Psr7\str;
 use const loeye\base\PROJECT_SUCCESS;
 
 /**
@@ -100,10 +101,21 @@ class BuildQueryPlugin extends Plugin {
         $context->set($prefix . '_start', ($page - 1) * $hits);
         $context->set($prefix . '_offset', $hits);
         if ($sort) {
-            $context->set($prefix . '_orderBy', [htmlentities($sort, ENT_QUOTES), ($order > 0 ? self::ORDER_ASC : self::ORDER_DESC)]);
+            $sortArray = (array)$sort;
+            $orderArray = (array)$order;
+            $sortCount = count($sortArray);
+            $orderArray = array_slice(array_pad($orderArray, $sortCount, 0), $sortCount);
+            $orderBy = array_combine(array_map(static function($item){
+                return htmlentities($item);
+            }, $sortArray), array_map(static function($item){
+                return $item > 0 ? self::ORDER_ASC :self::ORDER_DESC;
+            }, $orderArray));
+            $context->set($prefix . '_orderBy', $orderBy);
         }
         if ($group) {
-            $context->set($prefix . '_groupBy', htmlentities($group, ENT_QUOTES));
+            $context->set($prefix . '_groupBy', array_map(static function($item){
+                return htmlentities($item);
+            }, (array)$group));
         }
         if ($having) {
             $context->set($prefix . '_having', $having);

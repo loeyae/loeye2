@@ -20,10 +20,10 @@ namespace loeye\plugin;
 use loeye\base\Context;
 use loeye\base\Exception;
 use loeye\base\Utils;
-use loeye\base\Validation;
-use loeye\base\Validator;
 use loeye\error\BusinessException;
 use loeye\std\Plugin;
+use loeye\validate\Validation;
+use loeye\validate\Validator;
 use ReflectionException;
 use const INPUT_GET;
 use const INPUT_POST;
@@ -83,7 +83,7 @@ class ValidatePlugin extends Plugin
             $customBundle = Utils::getData($inputs, self::BUNDLE_KEY, null);
             $validation = new Validator($context->getAppConfig(), $customBundle);
             $report     = $validation->validate($data, $rule);
-            if ($report['has_error'] == true) {
+            if ($report['has_error']) {
                 Utils::addErrors(
                         $report['error_message'], $context, $inputs, self::ERROR_KEY);
             }
@@ -109,7 +109,7 @@ class ValidatePlugin extends Plugin
                 return filter_input_array(INPUT_GET);
             case self::INPUT_ORIGIN:
                 $data = file_get_contents('php://input');
-                return \json_decode($data, true);
+                return json_decode($data, true);
             default:
                 return $_REQUEST;
         }

@@ -15,16 +15,22 @@
  * @link     https://github.com/loeyae/loeye2.git
  */
 
-namespace loeye\base;
+namespace loeye\validate;
 
 use FilesystemIterator;
+use loeye\base\AppConfig;
+use loeye\base\Configuration;
+use loeye\base\Exception;
+use loeye\base\Factory;
 use loeye\config\validate\DeltaConfigDefinition;
 use loeye\config\validate\RulesetConfigDefinition;
 use loeye\error\BusinessException;
 use loeye\std\ConfigTrait;
+use loeye\validate\groups\InsertGroup;
 use ReflectionClass;
 use ReflectionException;
 use Symfony\Component\Translation as I18n;
+use Symfony\Component\Translation\Translator;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Constraints\All;
 use Symfony\Component\Validator\Constraints\Callback;
@@ -68,7 +74,6 @@ class Validator
      *
      * @param AppConfig $appConfig AppConfig instance
      * @param string|null $bundle bundle
-     * @throws Exception
      */
     public function __construct(AppConfig $appConfig, $bundle = null)
     {
@@ -666,9 +671,9 @@ class Validator
      *
      * @param AppConfig $appConfig AppConfig instance
      *
-     * @return I18n\Translator
+     * @return Translator
      */
-    public static function initTranslator(AppConfig $appConfig): \Symfony\Component\Translation\Translator
+    public static function initTranslator(AppConfig $appConfig): Translator
     {
         $translator = Factory::translator($appConfig)->getTranslator();
         $loader = new I18n\Loader\XliffFileLoader();
@@ -729,10 +734,10 @@ class Validator
      * buildErrmsg
      *
      * @param ConstraintViolationListInterface $violationList
-     * @param \Symfony\Component\Translation\Translator $translator
+     * @param Translator $translator
      * @return array
      */
-    public static function buildErrmsg(ConstraintViolationListInterface $violationList, \Symfony\Component\Translation\Translator
+    public static function buildErrmsg(ConstraintViolationListInterface $violationList, Translator
     $translator): array
     {
         $error = [];
