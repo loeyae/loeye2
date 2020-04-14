@@ -10,14 +10,13 @@
  * @version 2020年2月20日 下午3:24:25
  */
 
-namespace loeye\console\helper;
+namespace loeye\commands\helper;
 
 use Doctrine\ORM\Tools\Console\MetadataFilter;
 use Symfony\Component\Console\{Input\InputInterface, Output\OutputInterface, Style\SymfonyStyle};
 use InvalidArgumentException;
 use loeye\base\DB;
 use loeye\base\Exception;
-use phpseclib\File\ASN1;
 use RuntimeException;
 use Symfony\Component\Filesystem\Filesystem;
 

@@ -19,7 +19,7 @@ namespace loeye\commands;
 
 use Doctrine\Persistence\Mapping\ClassMetadata;
 use loeye\console\Command;
-use loeye\console\helper\EntityGeneratorTrait;
+use loeye\commands\helper\EntityGeneratorTrait;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionMethod;

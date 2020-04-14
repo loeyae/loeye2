@@ -15,7 +15,7 @@ namespace loeye\commands;
 use Doctrine\Persistence\Mapping\ClassMetadata;
 use loeye\console\Command;
 use Symfony\Component\Console\{Input\InputInterface, Output\OutputInterface, Style\SymfonyStyle};
-use loeye\console\helper\EntityGeneratorTrait;
+use loeye\commands\helper\EntityGeneratorTrait;
 use loeye\database\Server;
 
 /**
