@@ -18,6 +18,8 @@
 namespace loeye\database;
 
 use Doctrine\Common\Collections\Criteria;
+use Doctrine\Common\Collections\Expr\Comparison;
+use Doctrine\Common\Collections\Expr\CompositeExpression;
 use Doctrine\ORM\Query;
 use Doctrine\ORM\Query\Expr\GroupBy;
 use Doctrine\ORM\Query\Expr\OrderBy;
@@ -175,13 +177,12 @@ trait RepositoryTrait
     private function parseGroupBy(QueryBuilder $qb, $groupBy): QueryBuilder
     {
         if ($groupBy) {
-            $expr = new GroupBy();
             if (is_array($groupBy)) {
-                foreach ($groupBy as $value) {
-                    $expr->add(self::$alias . '.' . $value);
-                }
+                $qb->groupBy(implode(', ', array_map(static function($item){
+                    return self::$alias .'.'. $item;
+                }, $groupBy)));
             } else {
-                $expr->add(self::$alias . '.' . $groupBy);
+                $qb->groupBy(self::$alias . '.' . $groupBy);
             }
         }
         return $qb;
@@ -193,11 +194,36 @@ trait RepositoryTrait
      * @param QueryBuilder $qb QueryBuilder
      * @param mixed $having having
      * @return QueryBuilder
+     * @throws DAOException
      */
     private function parseHaving(QueryBuilder $qb, $having): QueryBuilder
     {
         if ($having) {
-            $qb->having(self::$alias . '.' . $having);
+            $object = null;
+            $expr = ExpressionFactory::createExpr($having);
+            if ($expr instanceof CompositeExpression) {
+                $type = $expr->getType();
+                $exprList = $expr->getExpressionList();
+                if ($type === CompositeExpression::TYPE_AND) {
+                    $object = new Query\Expr\Andx();
+                } else {
+                    $object = new Query\Expr\Orx();
+                }
+                foreach ($exprList as $key => $item) {
+
+                    if ($item instanceof Comparison) {
+                        $object->add(new Query\Expr\Comparison(self::$alias . '.' . htmlentities($item->getField()),
+                            $item->getOperator(), ':having_'.$key));
+
+                        $qb->setParameter('having_'.$key, $item->getValue()->getValue());
+                    }
+                }
+            } else if ($expr instanceof Comparison){
+                $object = new Query\Expr\Comparison(self::$alias . '.' . htmlentities($expr->getField()),
+                        $expr->getOperator(), ':having_0');
+                $qb->setParameter('having_0', $expr->getValue()->getValue());
+            }
+            $qb->having($object);
         }
         return $qb;
     }

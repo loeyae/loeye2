@@ -237,6 +237,7 @@ EOF;
  */
 
 namespace <namespace>;
+<useStatement>
 
 /**
  * <className>
@@ -248,7 +249,7 @@ class <className> extends <abstractClassName>
 
 <propertyStatement>
     /**
-     * @inheritDoc
+<methodDoc>
      */
     protected function process($req)
     {
@@ -259,7 +260,11 @@ class <className> extends <abstractClassName>
 EOF;
 
     protected $getHandlerParameterStatementTemplate = <<<'EOF'
-        $<parameter> = $this->pathParameter['<parameter>'];
+        $<parameter> = $this->checkNotEmptyPathParameter('<parameter>');
+EOF;
+
+    protected $methodDocTemplate = <<<'EOF'
+     * @inheritDoc
 EOF;
 
 
@@ -282,6 +287,7 @@ namespace <namespace>;
 
 use loeye\base\Logger;
 use Throwable;
+<useStatement>
 
 /**
  * <className>
@@ -293,7 +299,7 @@ class <className> extends <abstractClassName>
 
 <propertyStatement>
     /**
-     * @inheritDoc
+<methodDoc>
      */
     protected function process($req)
     {
@@ -329,7 +335,7 @@ EOF;
         $serverClass = $this->getServerClass($metadata->reflClass->name);
         $this->writeClient($ui, $entityName, $serverClass, $force);
         $this->writeAbstractHandler($ui, $namespace, $entityName, $serverClass, $destPath, $force);
-        $this->writeHandler($ui, $namespace, $entityName, $serverClass, $destPath, $force);
+        $this->writeHandler($ui, $namespace, $metadata->reflClass->name, $serverClass, $destPath, $force);
     }
 
     /**
@@ -470,7 +476,7 @@ EOF;
     protected function writeAbstractHandler(SymfonyStyle $ui, $namespace, $className, $serverClass, $destPath, $force): void
     {
         $abstractClassName = 'Abstract' . ucfirst($className) . 'Handler';
-        $fullClassName = $namespace .'\\'. $abstractClassName;
+        $fullClassName = $namespace . '\\' . $abstractClassName;
         $ui->text(sprintf('Processing AbstractClassFile "<info>%s</info>"', $fullClassName));
         $variable = [
             '<className>' => $abstractClassName,
@@ -497,25 +503,40 @@ EOF;
     protected function writeHandler(SymfonyStyle $ui, $namespace, $className, $serverClass, $destPath, $force): void
     {
         $refClass = new ReflectionClass($serverClass);
+        $entityName = self::getClassName($className);
         $methods = $refClass->getMethods();
         foreach ($methods as $method) {
             if ($method->isConstructor() || $method->isFinal() || $method->isPrivate()) {
                 continue;
             }
             $methodName = $method->getName();
-            $nClassName =  ucfirst($methodName) . 'Handler';
-            $abstractClassName = 'Abstract' . ucfirst($className) . 'Handler';
+            $nClassName = ucfirst($methodName) . 'Handler';
+            $abstractClassName = 'Abstract' . $entityName . 'Handler';
             $fullClassName = $namespace . '\\' . $nClassName;
             $ui->text(sprintf('Processing ClassFile "<info>%s</info>"', $fullClassName));
             $type = $methodName === 'get' ? 'GET' : 'POST';
             $parameters = $method->getParameters();
+            $propertyStatement = '';
+            $methodDoc = $this->methodDocTemplate;
             if ($type === 'GET') {
                 [$parameterStatement, $parameter] = $this->generateGetHandlerParameter($parameters);
+                $useStatement = 'use loeye\base\Exception;';
+                $methodDoc .= "\r\n     * @throws Exception";
             } else {
-                [$parameterStatement, $parameter] = $this->generatePostHandlerParameter($parameters);
+//                [$parameterStatement, $parameter] = $this->generatePostHandlerParameter($parameters);
+                $generateMethod = 'generate' . ucfirst($methodName) . 'HandlerParameter';
+                [$parameterStatement, $parameter] = $this->$generateMethod();
+                $useStatement = 'use loeye\error\ValidateError;';
+                $useStatement .= "\r\nuse " . $className;
+                $methodDoc .= "\r\n     * @throws ValidateError";
+                $propertyStatement = '    protected $entityClass = ' . $entityName . '::class;';
+                $propertyStatement .= "\r\n    protected \$group = '" . $methodName . "';";
             }
             $variable = [
                 '<className>' => $nClassName,
+                '<useStatement>' => $useStatement,
+                '<propertyStatement>' => $propertyStatement,
+                '<methodDoc>' => $methodDoc,
                 '<namespace>' => $namespace,
                 '<datetime>' => date('Y-m-d H:i:s'),
                 '<abstractClassName>' => $abstractClassName,
@@ -532,6 +553,16 @@ EOF;
         }
     }
 
+    protected function generateOneHandlerParameter()
+    {
+        $parameterStatement = <<<'EOF'
+        $criteria = $req['criteria'];
+        $this->validate($criteria);
+        $orderBy = $req['orderBy'] ?? null;
+EOF;
+        $parameter = '$criteria, $orderBy';
+    }
+
     /**
      * generateGetHandlerParameter
      *
@@ -546,7 +577,7 @@ EOF;
             $codes[] = self::generateTemplate(['<parameter>' => $parameter->getName()],
                 $this->getHandlerParameterStatementTemplate);
             $codes[] =
-            $parameterList[] = '$'. $parameter->getName();
+            $parameterList[] = '$' . $parameter->getName();
         }
         return [implode("\r\n", $codes), implode(', ', $parameterList)];
     }
@@ -567,17 +598,17 @@ EOF;
             try {
                 $default = $parameter->getDefaultValue();
                 if (is_numeric($default) || is_bool($default)) {
-                    $code = str_replace(';', ' ?? ' . $default. ';', $code);
+                    $code = str_replace(';', ' ?? ' . $default . ';', $code);
                 } else if ($default === null) {
                     $code = str_replace(';', ' ?? null;', $code);
-                }else {
+                } else {
                     $code = str_replace(';', ' ?? \'' . $default . '\';', $code);
                 }
             } catch (Throwable $e) {
                 $e->getTraceAsString();
             }
             $codes[] = $code;
-            $parameterList[] = '$'. $parameter->getName();
+            $parameterList[] = '$' . $parameter->getName();
         }
         return [implode("\r\n", $codes), implode(', ', $parameterList)];
     }

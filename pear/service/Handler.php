@@ -39,6 +39,8 @@ abstract class Handler extends Resource
     public const METHOD_POST = 'POST';
     public const METHOD_PUT = 'PUT';
     public const METHOD_DELETE = 'DELETE';
+    public const ORDER_ASC = 'ASC';
+    public const ORDER_DESC = 'DESC';
 
     protected $withDefaultRequestHeader = true;
     protected $withDefaultRequestKey = 'request_data';
@@ -285,15 +287,53 @@ abstract class Handler extends Resource
                 $violationList = $validator->validate($entityObject, null, $this->group);
                 $validateError = Validator::buildErrmsg($violationList, Validator::initTranslator
                 ($this->context->getAppConfig()));
-                throw new ValidateError($validateError,ValidateError::DEFAULT_ERROR_MSG,
+                throw new ValidateError($validateError, ValidateError::DEFAULT_ERROR_MSG,
                     ValidateError::DEFAULT_ERROR_CODE);
             } catch (ReflectionException $e) {
                 Logger::exception($e);
                 $validateError = ['Entity Class Not Exists.'];
-                throw new ValidateError($validateError,ValidateError::DEFAULT_ERROR_MSG,
+                throw new ValidateError($validateError, ValidateError::DEFAULT_ERROR_MSG,
                     ValidateError::DEFAULT_ERROR_CODE);
             }
         }
+    }
+
+    /**
+     * getOrderBy
+     *
+     * @param $req
+     * @return array|null
+     */
+    protected function getOrderBy($req): ?array
+    {
+        $orderBy = $req['orderBy'] ?? null;
+        if (!$orderBy || !is_array($orderBy)) {
+            return null;
+        }
+        $sort = array_keys($orderBy);
+        $order = array_values($orderBy);
+        return array_combine(array_map(static function($item){
+            return htmlentities($item);
+        }, $sort), array_map(static function($item){
+            return $item > 0 ? self::ORDER_ASC :self::ORDER_DESC;
+        }, $order));
+    }
+
+    /**
+     * getGroupBy
+     *
+     * @param $req
+     * @return array|null
+     */
+    protected function getGroupBy($req): ?array
+    {
+        $groupBy = $req['groupBy'] ?? null;
+        if (!$groupBy) {
+            return null;
+        }
+        return array_map(static function ($item) {
+            return htmlentities($item);
+        }, (array)$groupBy);
     }
 
     /**

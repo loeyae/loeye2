@@ -136,7 +136,9 @@ class ExpressionFactory {
      */
     public static function createCompositeExpression($type, $expressions = null): Expression
     {
-        return call_user_func(static::$compositeExpressionTypeMapping[$type], $expressions);
+        $callable = static::$compositeExpressionTypeMapping[$type];
+        $callable[0] = new ExpressionBuilder();
+        return $callable($expressions);
     }
 
     /**
@@ -151,7 +153,9 @@ class ExpressionFactory {
     public static function createComparison($field, $value, $operator): ?Comparison
     {
         if (array_key_exists($operator, static::$comparisonTypeMapping)) {
-            return call_user_func(static::$comparisonTypeMapping[$operator], $field, $value);
+            $callable = static::$comparisonTypeMapping[$operator];
+            $callable[0] = new ExpressionBuilder();
+            return $callable($field, $value);
         }
         return null;
     }
