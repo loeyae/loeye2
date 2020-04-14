@@ -641,7 +641,7 @@ EOF;
         $expression = $this->getExpression($query);
         $validatedData = $this->validate($this->expressionToArray($expression), <entityName>::class, $this->group);
         $filteredCompositeExpression = $this->filterCompositeExpression($expression, $validatedData);
-        $criteria = $filteredCompositeExpression ? $this->expressionToCriteria($filteredCompositeExpression) : null;
+        $criteria = $this->expressionToCriteria($filteredCompositeExpression);
         $start = $req['start'] ?? 0;
         $offset = $req['offset'] ?? 10;
         $orderBy = $this->getOrderBy($req);

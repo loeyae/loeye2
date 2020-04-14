@@ -332,11 +332,11 @@ abstract class Handler extends Resource
      * expressionToCriteria
      *
      * @param Expression $expression
-     * @return Criteria
+     * @return Criteria|null
      */
-    protected function expressionToCriteria(Expression $expression): Criteria
+    protected function expressionToCriteria(Expression $expression = null): ?Criteria
     {
-        return Criteria::create()->andWhere($expression);
+        return $expression ? Criteria::create()->andWhere($expression) : null;
     }
 
     /**
