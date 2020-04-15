@@ -6,6 +6,7 @@
  * @author  Zhang Yi <loeyae@gmail.com>
  * @version SVN: $Id: Zhang Yi $
  */
+
 use Doctrine\ORM\Tools\Console\ConsoleRunner;
 
 if (!defined('LOEYE_MODE')) {

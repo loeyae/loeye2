@@ -7,13 +7,12 @@
  * @author  Zhang Yi <loeyae@gmail.com>
  * @version SVN: $Id: Zhang Yi $
  */
+
 use Doctrine\ORM\Tools\Console\ConsoleRunner;
-use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Output\ConsoleOutput;
 
 mb_internal_encoding('UTF-8');
 
-define('BASE_DIR', realpath(__DIR__ . '/../'));
+define('BASE_DIR', dirname(__DIR__) . '/');
 
 $projectDirs = [
     __DIR__ . '/../app',
