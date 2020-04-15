@@ -162,9 +162,9 @@ class CreateApp extends Command
         $css = GeneratorUtils::buildPath($base, 'app', 'htdocs', 'static', 'css', 'bootstrap.css');
         $fileSystem->dumpFile($css, $this->replaceProperty('app/BootstrapCSS'));
         $ui->block(sprintf('create file: %1s', $css));
-        $htaccss = GeneratorUtils::buildPath($base, 'app', 'htdocs', '.htaccess');
-        $fileSystem->dumpFile($htaccss, $this->replaceProperty('app/Htaccess'));
-        $ui->block(sprintf('create file: %1s', $htaccss));
+        $htaccess = GeneratorUtils::buildPath($base, 'app', 'htdocs', '.htaccess');
+        $fileSystem->dumpFile($htaccess, $this->replaceProperty('app/Htaccess'));
+        $ui->block(sprintf('create file: %1s', $htaccess));
         $dispatcher = GeneratorUtils::buildPath($base, 'app', 'htdocs', 'Dispatcher.php');
         $fileSystem->dumpFile($dispatcher, $this->replaceProperty('app/Dispatcher'));
         $ui->block(sprintf('create file: %1s', $dispatcher));
