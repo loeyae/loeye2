@@ -28,6 +28,17 @@ use SmartyException;
 class GeneratorUtils
 {
 
+    /**
+     * buildPath
+     *
+     * @param string ...$path
+     *
+     * @return string
+     */
+    public function buildPath(string ...$path): string
+    {
+        return implode(D_S, $path);
+    }
 
     /**
      * getNamespace
