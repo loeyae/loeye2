@@ -18,7 +18,7 @@
 namespace loeye\config\app;
 
 use loeye\base\Cache;
-use \loeye\config\TreeBuilder;
+use loeye\config\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 use const loeye\base\ENCRYPT_MODE_CRYPT;
 use const loeye\base\ENCRYPT_MODE_EXPLICIT;

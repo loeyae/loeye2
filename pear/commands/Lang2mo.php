@@ -13,12 +13,9 @@
 namespace loeye\commands;
 
 use loeye\console\Command;
-use \Symfony\Component\Console\{
-    Input\InputInterface,
-    Output\OutputInterface
-};
 use RuntimeException;
 use SplFileObject;
+use Symfony\Component\Console\{Input\InputInterface, Output\OutputInterface};
 
 /**
  * Lang2mo
