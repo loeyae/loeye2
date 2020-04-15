@@ -46,7 +46,7 @@ abstract class <{$className}> extends ParallelPlugin
     /**
      * @var mixed result
      */
-    private $ret;
+    protected $ret;
 
     /**
      * @param Context $context instance of Context

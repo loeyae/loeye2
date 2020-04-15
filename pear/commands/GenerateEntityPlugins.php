@@ -48,6 +48,10 @@ class GenerateEntityPlugins extends Command
         $<{$param}> = Utils::getData($context, '<{$className}>_<{$param}>');
 EOF;
 
+    private static $_firstStatement = <<<'EOF'
+        $<{$param}> = Utils::getData($context, '<{$className}>_input');
+EOF;
+
     /**
      * generateFile
      *
@@ -62,8 +66,8 @@ EOF;
     protected function generateFile(SymfonyStyle $ui, ClassMetadata $metadata, $namespace, $destPath, $force): void
     {
         $entityName = GeneratorUtils::getClassName($metadata->reflClass->name);
-        $namespace .= '\\' . $entityName;
-        $destPath .= D_S . $entityName;
+        $namespace .= '\\' . lcfirst($entityName);
+        $destPath .= D_S . lcfirst($entityName);
         $abstractClassName = 'Abstract' . ucfirst($entityName) . 'BasePlugin';
         $serverClass = $this->getServerClass($metadata->reflClass->name);
         $this->writeAbstractPluginClass($ui, $namespace, $abstractClassName, $serverClass, $destPath, $force);
@@ -213,30 +217,22 @@ EOF;
         $params = $method->getParameters();
         if ($params) {
             $content = [];
+            $first = true;
             foreach ($params as $param) {
-                $content[] = $this->generateParameterStatement($param, $className);
+                $variables = [
+                    'param' => $param->getName(),
+                    'className' => $className,
+                ];
+                if ($first) {
+                    $content[] = GeneratorUtils::generateCodeByTemplate($variables, self::$_firstStatement);
+                    $first = false;
+                } else {
+                    $content[] = GeneratorUtils::generateCodeByTemplate($variables, self::$_statement);
+                }
             }
             return implode("\r\n", $content);
         }
         return '';
-    }
-
-    /**
-     * generate parameter statement
-     *
-     * @param ReflectionParameter $param
-     * @param string $className
-     * @return string
-     */
-    protected function generateParameterStatement(ReflectionParameter $param, $className): string
-    {
-
-        $variables = [
-            'param' => $param->getName(),
-            'className' => $className,
-        ];
-
-        return GeneratorUtils::generateCodeByTemplate($variables, self::$_statement);
     }
 
     /**

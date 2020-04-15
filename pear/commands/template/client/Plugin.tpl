@@ -45,6 +45,6 @@ class <{$className}> extends <{$abstractClassName}>
     protected function execute(Context $context, array $inputs): void
     {
 <{$parameterStatement}>
-        $this->client->insert(<{$parameter}>);
+        $this->client-><{$method}>(<{$parameter}>, $this->ret);
     }
 }
