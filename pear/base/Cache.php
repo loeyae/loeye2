@@ -17,20 +17,19 @@
 
 namespace loeye\base;
 
-use Symfony\Component\Cache\Adapter\{AdapterInterface,
-    ApcuAdapter,
-    FilesystemAdapter,
-    MemcachedAdapter,
-    RedisAdapter,
-    ArrayAdapter,
-    PhpArrayAdapter,
-    PhpFilesAdapter
-};
 use loeye\std\CacheTrait;
 use loeye\std\ConfigTrait;
 use Psr\Cache\InvalidArgumentException;
 use ReflectionException;
 use ReflectionMethod;
+use Symfony\Component\Cache\Adapter\{AdapterInterface,
+    ApcuAdapter,
+    ArrayAdapter,
+    FilesystemAdapter,
+    MemcachedAdapter,
+    PhpArrayAdapter,
+    PhpFilesAdapter,
+    RedisAdapter};
 use Symfony\Component\Cache\CacheItem;
 use Symfony\Component\Cache\Exception\CacheException;
 use Traversable;

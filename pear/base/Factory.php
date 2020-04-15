@@ -19,9 +19,8 @@ namespace loeye\base;
 
 use FilesystemIterator;
 use loeye\client\ParallelClientManager;
-use \loeye\error\BusinessException;
+use loeye\error\BusinessException;
 use loeye\error\ResourceException;
-use loeye\std\ParallelPlugin;
 use loeye\std\Plugin;
 use loeye\web\Request;
 use loeye\web\Response;

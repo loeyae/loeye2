@@ -18,8 +18,8 @@
 namespace loeye\base;
 
 use loeye\config\module\ConfigDefinition;
+use loeye\error\{BusinessException, ResourceException};
 use loeye\std\ConfigTrait;
-use loeye\error\{ResourceException, BusinessException};
 
 /**
  * Description of ModuleDefinition
