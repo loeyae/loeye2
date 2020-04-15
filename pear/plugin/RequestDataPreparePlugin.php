@@ -26,7 +26,7 @@ use loeye\std\Plugin;
  *
  * @author   Zhang Yi <loeyae@gmail.com>
  */
-class RequestDataPreparePlugin extends Plugin
+class RequestDataPreparePlugin implements Plugin
 {
     private $_keyList = 'key_list';
 

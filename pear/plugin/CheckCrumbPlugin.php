@@ -21,13 +21,15 @@ use loeye\base\Context;
 use loeye\base\Utils;
 use loeye\error\PermissionException;
 use loeye\lib\Cookie;
+use loeye\std\Plugin;
+use Throwable;
 
 /**
  * CheckCrumbPlugin
  *
  * @author   Zhang Yi <loeyae@gmail.com>
  */
-class CheckCrumbPlugin extends \loeye\std\Plugin
+class CheckCrumbPlugin implements Plugin
 {
 
     private $_crumbKey = '_crumb';
@@ -40,6 +42,7 @@ class CheckCrumbPlugin extends \loeye\std\Plugin
      * @param array $inputs inputs
      *
      * @return void
+     * @throws Throwable
      */
     public function process(Context $context, array $inputs): void
     {

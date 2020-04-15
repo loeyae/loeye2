@@ -34,7 +34,7 @@ use const loeye\base\RENDER_TYPE_XML;
  *
  * @author   Zhang Yi <loeyae@gmail.com>
  */
-class SetRenderPlugin extends Plugin
+class SetRenderPlugin implements Plugin
 {
     /**
      * @var array

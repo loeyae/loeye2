@@ -30,7 +30,7 @@ use const loeye\base\RENDER_TYPE_SEGMENT;
  *
  * @author   Zhang Yi <loeyae@gmail.com>
  */
-class OutputPlugin extends Plugin
+class OutputPlugin implements Plugin
 {
 
     /**

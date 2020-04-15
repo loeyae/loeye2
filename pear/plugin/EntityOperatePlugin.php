@@ -28,7 +28,7 @@ use loeye\std\plugin;
  *
  * @author   Zhang Yi <loeyae@gmail.com>
  */
-class EntityOperatePlugin extends Plugin
+class EntityOperatePlugin implements Plugin
 {
 
     /**

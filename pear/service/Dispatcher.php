@@ -17,8 +17,8 @@
 
 namespace loeye\service;
 
-use Exception;
 use loeye\base\AppConfig;
+use loeye\base\Exception;
 use loeye\base\Factory;
 use loeye\base\Logger;
 use loeye\base\UrlManager;
@@ -28,6 +28,7 @@ use loeye\error\ValidateError;
 use loeye\render\SegmentRender;
 use ReflectionClass;
 use ReflectionException;
+use Throwable;
 
 /**
  * Dispatcher
@@ -81,6 +82,9 @@ class Dispatcher extends \loeye\std\Dispatcher
             }
             $ref = new ReflectionClass($handler);
             $handlerObject = $ref->newInstance($this->context);
+            if (!($handlerObject instanceof Handler)) {
+                throw new ResourceException(ResourceException::PAGE_NOT_FOUND_MSG, ResourceException::PAGE_NOT_FOUND_CODE);
+            }
             $handlerObject->handle();
             $this->executeOutput();
         } catch (ValidateError $exc) {
@@ -106,7 +110,7 @@ class Dispatcher extends \loeye\std\Dispatcher
                 $renderObj->header($response);
                 $renderObj->output($response);
             }
-        } catch (Exception $exc) {
+        } catch (Throwable $exc) {
             Utils::errorLog($exc);
             $request = ($this->getContext()->getRequest() ?? new Request());
             $response = ($this->getContext()->getResponse() ?? new Response($request));

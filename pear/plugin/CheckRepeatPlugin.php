@@ -20,13 +20,16 @@ use loeye\base\Context;
 use loeye\base\Exception;
 use loeye\base\Utils;
 use loeye\error\PermissionException;
+use loeye\lib\Cookie;
+use loeye\std\Plugin;
+use Throwable;
 
 /**
  * CheckRepeatPlugin
  *
  * @author   Zhang Yi <loeyae@gmail.com>
  */
-class CheckRepeatPlugin extends \loeye\std\Plugin
+class CheckRepeatPlugin implements Plugin
 {
 
     protected $cookieName = '_repeat';
@@ -38,14 +41,14 @@ class CheckRepeatPlugin extends \loeye\std\Plugin
      * @param array $inputs inputs
      *
      * @return mixed
-     * @throws Exception
+     * @throws Throwable
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     public function process(Context $context, array $inputs)
     {
         $res   = print_r($_REQUEST, true);
         $name  = md5($res);
-        $crumb = \loeye\lib\Cookie::createCrumb($name);
+        $crumb = Cookie::createCrumb($name);
         $check = Utils::getData($inputs, 'check');
         if ($check === 'true') {
             if (Cookie::getCookie($this->cookieName) === $crumb) {

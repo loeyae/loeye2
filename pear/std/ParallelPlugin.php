@@ -25,7 +25,7 @@ use const loeye\base\PROJECT_SUCCESS;
  *
  * @author   Zhang Yi <loeyae@gmail.com>
  */
-abstract class ParallelPlugin extends Plugin
+abstract class ParallelPlugin implements Plugin
 {
 
     /**

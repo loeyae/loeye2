@@ -29,7 +29,7 @@ use const loeye\base\PROJECT_SUCCESS;
  *
  * @author   Zhang Yi <loeyae@gmail.com>
  */
-class FilterDataPlugin extends Plugin
+class FilterDataPlugin implements Plugin
 {
 
     protected $defaultDataKey = 'filter_data';

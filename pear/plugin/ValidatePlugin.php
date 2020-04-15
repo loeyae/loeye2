@@ -34,7 +34,7 @@ use const INPUT_REQUEST;
  *
  * @author   Zhang Yi <loeyae@gmail.com>
  */
-class ValidatePlugin extends Plugin
+class ValidatePlugin implements Plugin
 {
 
     public const INPUT_ORIGIN   = 2;

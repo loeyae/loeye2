@@ -43,6 +43,7 @@ class Application extends Base
      * loadCommand
      *
      * @return void
+     * @throws ReflectionException
      */
     protected function loadCommand(): void
     {
@@ -67,7 +68,7 @@ class Application extends Base
     protected function loadCommandByDir($dir, $ns): void
     {
         foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator($dir, FilesystemIterator::SKIP_DOTS)) as $file) {
-            if ($file->isFile()) {
+            if ($file->isFile() && $file->getExtension() === 'php') {
                 $path = $file->getPath();
                 if ($path !== $ns) {
                     $_ns = str_replace(array($dir, '/'), array($ns, '\\'), $path);

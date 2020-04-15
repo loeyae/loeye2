@@ -31,7 +31,7 @@ use loeye\std\Plugin;
  * @license  http://www.apache.org/licenses/LICENSE-2.0 Apache License
  * @link     URL description
  */
-class TranslatorPlugin extends Plugin
+class TranslatorPlugin implements Plugin
 {
 
     /**

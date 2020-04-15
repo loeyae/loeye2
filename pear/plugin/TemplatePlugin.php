@@ -32,7 +32,7 @@ use const loeye\base\PROJECT_SUCCESS;
  *
  * @author   Zhang Yi <loeyae@gmail.com>
  */
-class TemplatePlugin extends Plugin
+class TemplatePlugin implements Plugin
 {
 
     protected $allowedPluginsType = array(

@@ -27,7 +27,7 @@ use loeye\std\Plugin;
  *
  * @author   Zhang Yi <loeyae@gmail.com>
  */
-class PrivacyCookiePlugin extends Plugin
+class PrivacyCookiePlugin implements Plugin
 {
     protected $dataKey = 'set_loeye_cookie_data';
     protected $outKey = 'get_loeye_cookie_result';

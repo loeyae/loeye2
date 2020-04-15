@@ -607,6 +607,9 @@ class Context implements ArrayAccess
      */
     public function getParallelClientManager(): ParallelClientManager
     {
+        if ($this->_parallelClientManager === null) {
+            $this->_parallelClientManager = Factory::parallelClientManager();
+        }
         return $this->_parallelClientManager;
     }
 

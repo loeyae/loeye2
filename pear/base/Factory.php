@@ -18,7 +18,9 @@
 namespace loeye\base;
 
 use FilesystemIterator;
+use loeye\client\ParallelClientManager;
 use \loeye\error\BusinessException;
+use loeye\error\ResourceException;
 use loeye\std\ParallelPlugin;
 use loeye\std\Plugin;
 use loeye\web\Request;
@@ -54,12 +56,16 @@ class Factory
         $class = $pluginSetting['name'];
         if (!isset($pluginSetting['src'])) {
             $rec = new ReflectionClass($class);
-            return $rec->newInstanceArgs();
+        } else {
+            $file = AutoLoadRegister::realAliasFile($pluginSetting['src']);
+            AutoLoadRegister::loadFile($file);
+            $rec = new ReflectionClass($class);
         }
-        $file = AutoLoadRegister::realAliasFile($pluginSetting['src']);
-        AutoLoadRegister::loadFile($file);
-        $rec = new ReflectionClass($class);
-        return $rec->newInstanceArgs();
+        $plugin =  $rec->newInstanceArgs();
+        if (!($plugin instanceof Plugin)) {
+            throw new ResourceException(ResourceException::PAGE_NOT_FOUND_MSG, ResourceException::PAGE_NOT_FOUND_CODE);
+        }
+        return $plugin;
     }
 
     /**
@@ -451,6 +457,20 @@ EOF;
             $response = new Response();
         }
         return $response;
+    }
+
+    /**
+     * parallelClientManager
+     *
+     * @return ParallelClientManager
+     */
+    public static function parallelClientManager(): ParallelClientManager
+    {
+        static $manager = null;
+        if (null === $manager) {
+            $manager = new ParallelClientManager();
+        }
+        return $manager;
     }
 
 }

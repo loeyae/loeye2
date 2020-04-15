@@ -24,7 +24,7 @@ use loeye\base\Context;
  *
  * @author   Zhang Yi <loeyae@gmail.com>
  */
-abstract class Plugin
+interface Plugin
 {
 
     /**
@@ -33,7 +33,7 @@ abstract class Plugin
      * @param Context $context Context
      * @param array $inputs array
      *
-     * @return mixed
+     * @return mixed|void
      */
-    abstract public function process(Context $context, array $inputs);
+    public function process(Context $context, array $inputs);
 }

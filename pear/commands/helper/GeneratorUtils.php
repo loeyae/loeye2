@@ -18,6 +18,8 @@
 namespace loeye\commands\helper;
 
 use RuntimeException;
+use Smarty;
+use SmartyException;
 
 /**
  * Class GeneratorUtils
@@ -64,16 +66,20 @@ class GeneratorUtils
     }
 
     /**
-     * generateTemplate
+     * generateCodeByTemplate
      *
      * @param array $variables
      * @param string $template
      *
      * @return string
      */
-    public static function generateTemplate(array $variables, string $template): string
+    public static function generateCodeByTemplate(array $variables, string $template): string
     {
-        return str_replace(array_keys($variables), array_values($variables), $template);
+        $keys = array_keys($variables);
+        $padKeys = array_map(static function($item) {
+            return '<{$'.$item.'}}';
+        }, $keys);
+        return str_replace($padKeys, array_values($variables), $template);
     }
 
     /**
@@ -89,6 +95,43 @@ class GeneratorUtils
             return $fullClassName;
         }
         return substr( $fullClassName,$pos + 1);
+    }
+
+    /**
+     * getCodeFromTemplate
+     *
+     * @param $templateName
+     * @param $data
+     * @return string
+     * @throws SmartyException
+     */
+    public static function getCodeFromTemplate($templateName, $data): string
+    {
+        /**
+         * @var Smarty
+         */
+        static $smarty;
+        if (!$smarty) {
+            $smarty = new Smarty();
+            $smarty->setTemplateDir(dirname(__DIR__) .D_S.'template');
+            $smarty->setLeftDelimiter('<{');
+            $smarty->setRightDelimiter('}>');
+        }
+        $smarty->assign($data);
+        return $smarty->fetch($templateName.'.tpl');
+    }
+
+    /**
+     * generateClassName
+     *
+     * @param $namespace
+     * @param $className
+     *
+     * @return string
+     */
+    public static function generateClassName($namespace, $className): string
+    {
+        return $namespace .'\\'. $className;
     }
 
 }

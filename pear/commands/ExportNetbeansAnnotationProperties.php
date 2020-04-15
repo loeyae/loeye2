@@ -15,7 +15,10 @@ namespace loeye\commands;
 use Doctrine\Common\Annotations\Annotation\Target;
 use Doctrine\Common\Annotations\DocParser;
 use Doctrine\ORM\Mapping\Annotation;
+use FilesystemIterator;
+use IteratorIterator;
 use loeye\console\Command;
+use ReflectionClass;
 use SplFileInfo;
 use Symfony\Component\Console\{Input\InputInterface, Output\OutputInterface};
 use Symfony\Component\Filesystem\Filesystem;
@@ -154,7 +157,7 @@ EOF;
         $messages    = [];
         foreach ($this->mapping as $key => $item) {
             $dir = realpath($composerDir . D_S . $item['root'] . D_S . $item['namespace']) ?: realpath($composerDir . D_S . $item['root']);
-            foreach (new \IteratorIterator(new \FilesystemIterator($dir)) as $path => $fileInfo) {
+            foreach (new IteratorIterator(new FilesystemIterator($dir)) as $path => $fileInfo) {
                 if ($fileInfo->isFile()) {
                     $message = $this->parse($docParser, $input, $output, $fileInfo, $item);
                     if ($message) {
@@ -199,7 +202,7 @@ EOF;
         $className = '\\' . $item['namespace'] . '\\' . $fileInfo->getBaseName('.php');
         $annotationName = $input->getOption('short') ? $item['short'] .'\\\\'.$fileInfo->getBaseName('.php') : str_replace('\\', '\\\\', ltrim($className, '\\'));
         try {
-            $refClass = new \ReflectionClass($className);
+            $refClass = new ReflectionClass($className);
             if (!$refClass->isInterface() && !$refClass->isAbstract()) {
                 $annotations = $docParser->parse($refClass->getDocComment());
                 if ($annotations) {

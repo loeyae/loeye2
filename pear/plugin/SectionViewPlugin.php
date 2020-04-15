@@ -29,7 +29,7 @@ use SmartyException;
  *
  * @author   Zhang Yi <loeyae@gmail.com>
  */
-class SectionViewPlugin extends Plugin
+class SectionViewPlugin implements Plugin
 {
 
     /**

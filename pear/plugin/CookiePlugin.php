@@ -17,15 +17,17 @@
 
 namespace loeye\plugin;
 
+use loeye\base\Context;
 use loeye\base\Utils;
 use loeye\lib\Cookie;
+use loeye\std\Plugin;
 
 /**
  * CookiePlugin
  *
  * @author   Zhang Yi <loeyae@gmail.com>
  */
-class CookiePlugin extends \loeye\std\Plugin
+class CookiePlugin implements Plugin
 {
 
     protected $dataKey = 'set_cookie_data';
@@ -34,15 +36,15 @@ class CookiePlugin extends \loeye\std\Plugin
     /**
      * process
      *
-     * @param \loeye\base\Context $context context
-     * @param array               $inputs  inputs
+     * @param Context $context context
+     * @param array $inputs inputs
      *
      * @return void
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
-    public function process(\loeye\base\Context $context, array $inputs): void
+    public function process(Context $context, array $inputs): void
     {
-        $setKey  = Utils::getData($inputs, 'set', $this->dataKey);
+        $setKey = Utils::getData($inputs, 'set', $this->dataKey);
         $setData = Utils::getData($context, $setKey);
         if (!empty($setData)) {
             foreach ($setData as $key => $value) {
@@ -52,7 +54,7 @@ class CookiePlugin extends \loeye\std\Plugin
                 Cookie::setCookie($key, $value);
             }
         }
-        $key  = Utils::getData($inputs, 'get', null);
+        $key = Utils::getData($inputs, 'get', null);
         $data = array();
         if (empty($key)) {
             $cookie = $context->getRequest()->getCookie();
@@ -62,7 +64,7 @@ class CookiePlugin extends \loeye\std\Plugin
                 }
             }
         } else {
-            foreach ((array) $key as $item) {
+            foreach ((array)$key as $item) {
                 $data[$item] = $context->getRequest()->getCookie($item);
             }
         }

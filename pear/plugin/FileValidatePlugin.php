@@ -29,7 +29,7 @@ use loeye\std\Plugin;
  *
  * @author   Zhang Yi <loeyae@gmail.com>
  */
-class FileValidatePlugin extends Plugin
+class FileValidatePlugin implements Plugin
 {
 
     /**

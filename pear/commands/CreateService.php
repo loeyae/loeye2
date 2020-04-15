@@ -26,6 +26,7 @@ use ReflectionException;
 use ReflectionMethod;
 use ReflectionParameter;
 use RuntimeException;
+use SmartyException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Filesystem\Filesystem;
@@ -54,266 +55,23 @@ class CreateService extends Command
     ];
     protected $property;
 
-    protected $dispatcher = <<<'EOF'
-<?php
-
-/**
- * Dispatcher.php
- *
- */
- use loeye\service\Dispatcher;
- 
-mb_internal_encoding('UTF-8');
-
-define('APP_BASE_DIR', dirname(__DIR__));
-define('PROJECT_NAMESPACE', 'app');
-define('PROJECT_DIR', realpath(APP_BASE_DIR . '/' . PROJECT_NAMESPACE));
-
-require_once APP_BASE_DIR . DIRECTORY_SEPARATOR .'vendor'. DIRECTORY_SEPARATOR .'autoload.php';
-
-define('LOEYE_MODE', LOEYE_MODE_DEV);
-
-$dispatcher = new Dispatcher();
-$dispatcher->init([
-    'rewrite' => [
-        '/<module:\w+>/<service:\w+>/<handler:\w+>/<id:\w+>' => '{module}/{service}/{handler}',
-        '/<module:\w+>/<service:\w+>/<handler:\w+>' => '{module}/{service}/{handler}',
-    ]
-]);
-$dispatcher->dispatch();
-EOF;
-
-    protected $clientTemplate = <<<'EOF'
-<?php
-
-/**
- * <className>.php
- *
- * @author Zhang Yi <loeyae@gmail.com>
- * @license http://www.apache.org/licenses/LICENSE-2.0 Apache License
- * @version <datetime>
- */
-namespace <namespace>;
-
-use loeye\base\Exception;
-use loeye\client\Client;
-use loeye\client\Request;
-use loeye\client\Response;
-
-/**
- * <className>
- *
- * @author Zhang Yi <loeyae@gmail.com>
- */
-class <className> extends Client
-{
-    /**
-     * property name
-     */
-    private $bundle = '<property>';
-
-    /**
-     * @inheritDoc
-     */
-    public function __construct()
-    {
-        parent::__construct($this->bundle);
-    }
-
-<classBody>
-
-    /**
-     * @inheritDoc
-     */
-    public function responseHandle($cmd, Response $resp)
-    {
-        $result = json_decode($resp->getContent(), true);
-        $code = $result['status']['code'];
-        $statusCode = $resp->getStatusCode();
-        if ($statusCode === self::REQUEST_STATUS_OK && (int)$code === LOEYE_REST_STATUS_OK) {
-            switch ($cmd) {
-                default:
-                    return $result;
-            }
-        } else {
-            $req_url = $resp->getRequest()->getUri();
-            if ($code !== LOEYE_REST_STATUS_OK) {
-                $errmsg = $result['status']['message'];
-                $msg = sprintf(
-                    "[%s] request :%s \nhttp_code : %s\nmessage:%s",
-                    self::class, $req_url, $statusCode, $errmsg
-                );
-                return new Exception($msg, $code);
-            }
-
-            $errcode = $resp->getErrorCode();
-            $errmsg = $resp->getErrorMsg();
-            $msg = sprintf(
-                "[%s] request :%s \nhttp_code : %s\nmessage:%s",
-                self::class, $req_url, $errcode, $errmsg
-            );
-            return new \Exception($msg, $errcode);
-        }
-    }
-}
-EOF;
-
-    protected $clientMethodTemplate = <<<'EOF'
-
-    /**
-     * <methodName>
-     *
-<paramsStatement>
-     * @param mixed &$ret  result
-     *
-     * @return mixed
-     */
-    public function <methodName>(<params>, &$ret = false)
-    {
-        $path = <path>;
-        $req = new Request();
-        $this->setReq($req, '<method>', $path);
-        <requestBody>
-        return $this->request(__FUNCTION__, $req, $ret);
-    }
-EOF;
-
     protected $requestBodyTemplate = <<<'EOF'
-$req->setContent('application/json', json_encode(array('request_data' => <parameter>), JSON_UNESCAPED_SLASHES | 
+$req->setContent('application/json', json_encode(array('request_data' => <{$parameter}>), JSON_UNESCAPED_SLASHES | 
 JSON_UNESCAPED_UNICODE));
 EOF;
 
-
-    protected $abstractHandlerTemplate = <<<'EOF'
-<?php
-
-/**
- * <className>.php
- *
- * @author Zhang Yi <loeyae@gmail.com>
- * @license http://www.apache.org/licenses/LICENSE-2.0 Apache License
- * @version <datetime>
- */
-namespace <namespace>;
-
-
-use <fullServerClass>;
-use loeye\base\Context;
-use loeye\service\Handler;
-
-/**
- * <className>
- *
- * @author Zhang Yi <loeyae@gmail.com>
- */
-abstract class <className> extends Handler
-{
-
-    /**
-     * @var <serverClass>
-     */
-    protected $server;
-
-    /**
-     * @inheritDoc
-     */
-    public function __construct(Context $context)
-    {
-        parent::__construct($context);
-        $this->server = new <serverClass>($context->getAppConfig());
-    }
-
-}
-EOF;
-
-    protected $handlerTemplate = <<<'EOF'
-<?php
-
-/**
- * <className>.php
- *
- * @author Zhang Yi <loeyae@gmail.com>
- * @license http://www.apache.org/licenses/LICENSE-2.0 Apache License
- * @version <datetime>
- */
-
-namespace <namespace>;
-<useStatement>
-
-/**
- * <className>
- *
- * @author Zhang Yi <loeyae@gmail.com>
- */
-class <className> extends <abstractClassName>
-{
-
-<propertyStatement>
-    /**
-<methodDoc>
-     */
-    protected function process($req)
-    {
-<parameterStatement>
-        return $this->server-><method>(<parameter>);
-    }
-}
-EOF;
-
     protected $getHandlerParameterStatementTemplate = <<<'EOF'
-        $<parameter> = $this->checkNotEmptyPathParameter('<parameter>');
+        $<{$parameter}> = $this->checkNotEmptyPathParameter('<{$parameter}>');
+EOF;
+
+    protected $postHandlerParameterStatementTemplate = <<<'EOF'
+        $<{$parameter}> = $req['<{$parameter}>'];
 EOF;
 
     protected $methodDocTemplate = <<<'EOF'
      * @inheritDoc
 EOF;
 
-
-    protected $postHandlerParameterStatementTemplate = <<<'EOF'
-        $<parameter> = $req['<parameter>'];
-EOF;
-
-    protected $pageHandlerTemplate = <<<'EOF'
-<?php
-
-/**
- * <className>.php
- *
- * @author Zhang Yi <loeyae@gmail.com>
- * @license http://www.apache.org/licenses/LICENSE-2.0 Apache License
- * @version <datetime>
- */
-
-namespace <namespace>;
-
-use loeye\base\Logger;
-use Throwable;
-<useStatement>
-
-/**
- * <className>
- *
- * @author Zhang Yi <loeyae@gmail.com>
- */
-class <className> extends <abstractClassName>
-{
-
-<propertyStatement>
-    /**
-<methodDoc>
-     */
-    protected function process($req)
-    {
-<parameterStatement>
-        try {
-            return $this->server-><method>(<parameter>);
-        } catch (Throwable $e) {
-            Logger::exception($e);
-        }
-        return [];
-    }
-}
-EOF;
 
     private $handlerDir;
     private $clientDir;
@@ -327,10 +85,11 @@ EOF;
      * @param string $destPath
      * @param boolean $force
      * @throws ReflectionException
+     * @throws SmartyException
      */
     protected function generateFile(SymfonyStyle $ui, ClassMetadata $metadata, $namespace, $destPath, $force): void
     {
-        $entityName = $this->getEntityName($metadata->reflClass->name);
+        $entityName = GeneratorUtils::getClassName($metadata->reflClass->name);
         $namespace .= '\\' . $entityName;
         $destPath .= D_S . $entityName;
         $serverClass = $this->getServerClass($metadata->reflClass->name);
@@ -347,12 +106,13 @@ EOF;
      * @param string $serverClass
      * @param bool $force
      * @throws ReflectionException
+     * @throws SmartyException
      */
     protected function writeClient(SymfonyStyle $ui, $entityName, $serverClass, $force = false): void
     {
 
         $clientName = ucfirst($entityName) . 'Client';
-        $namespace = $this->getNamespace($this->clientDir);
+        $namespace = GeneratorUtils::getNamespace($this->clientDir);
         $fullClientClassName = $namespace . $clientName;
         $ui->text(sprintf('Processing Client "<info>%s</info>"', $fullClientClassName));
         $classBody = $this->generateClientBody($serverClass, $this->property, $entityName);
@@ -370,18 +130,18 @@ EOF;
      * @param string $classBody
      *
      * @return string
+     * @throws SmartyException
      */
     protected function generateClientFile($className, $namespace, $property, $classBody): string
     {
         $variables = [
-            '<className>' => $className,
-            '<datetime>' => date('Y-m-d H:i:s'),
-            '<namespace>' => $namespace,
-            '<property>' => $property,
-            '<classBody>' => $classBody,
+            'className' => $className,
+            'namespace' => $namespace,
+            'property' => $property,
+            'classBody' => $classBody,
         ];
 
-        return GeneratorUtils::generateTemplate($variables, $this->clientTemplate);
+        return GeneratorUtils::getCodeFromTemplate('service/Client', $variables);
     }
 
     /**
@@ -392,6 +152,7 @@ EOF;
      * @param $entityName
      * @return string
      * @throws ReflectionException
+     * @throws SmartyException
      */
     protected function generateClientBody($serverClass, $property, $entityName): string
     {
@@ -405,14 +166,14 @@ EOF;
             [$paramsStatement, $params, $type, $path, $requestBody] = $this->generateParameter($method, $property,
                 $entityName);
             $variables = [
-                '<methodName>' => $method->getName(),
-                '<paramsStatement>' => $paramsStatement,
-                '<params>' => $params,
-                '<path>' => $path,
-                '<method>' => $type,
-                '<requestBody>' => $requestBody,
+                'methodName' => $method->getName(),
+                'paramsStatement' => $paramsStatement,
+                'params' => $params,
+                'path' => $path,
+                'method' => $type,
+                'requestBody' => $requestBody,
             ];
-            $body[] = GeneratorUtils::generateTemplate($variables, $this->clientMethodTemplate);
+            $body[] = GeneratorUtils::getCodeFromTemplate('service/ClientMethod', $variables);
         }
         return implode("\r\n", $body);
     }
@@ -455,8 +216,8 @@ EOF;
                 $m = array_map(static function ($item) {
                     return '\'' . $item . '\' => $' . $item;
                 }, $paramsArray);
-                $p = ['<parameter>' => '[' . implode(',', $m) . ']'];
-                $requestBody = GeneratorUtils::generateTemplate($p, $this->requestBodyTemplate);
+                $p = ['parameter' => '[' . implode(',', $m) . ']'];
+                $requestBody = GeneratorUtils::generateCodeByTemplate($p, $this->requestBodyTemplate);
             }
         } else {
             $path .= '\'';
@@ -473,6 +234,7 @@ EOF;
      * @param $serverClass
      * @param $destPath
      * @param $force
+     * @throws SmartyException
      */
     protected function writeAbstractHandler(SymfonyStyle $ui, $namespace, $className, $serverClass, $destPath, $force): void
     {
@@ -480,13 +242,12 @@ EOF;
         $fullClassName = $namespace . '\\' . $abstractClassName;
         $ui->text(sprintf('Processing AbstractClassFile "<info>%s</info>"', $fullClassName));
         $variable = [
-            '<className>' => $abstractClassName,
-            '<namespace>' => $namespace,
-            '<datetime>' => date('Y-m-d H:i:s'),
-            '<fullServerClass>' => $serverClass,
-            '<serverClass>' => GeneratorUtils::getClassName($serverClass),
+            'className' => $abstractClassName,
+            'namespace' => $namespace,
+            'fullServerClass' => $serverClass,
+            'serverClass' => GeneratorUtils::getClassName($serverClass),
         ];
-        $code = GeneratorUtils::generateTemplate($variable, $this->abstractHandlerTemplate);
+        $code = GeneratorUtils::getCodeFromTemplate('service/AbstractBaseHandler', $variable);
         GeneratorUtils::writeFile($destPath, $abstractClassName, $code, $force);
     }
 
@@ -500,6 +261,7 @@ EOF;
      * @param $destPath
      * @param $force
      * @throws ReflectionException
+     * @throws SmartyException
      */
     protected function writeHandler(SymfonyStyle $ui, $namespace, $className, $serverClass, $destPath, $force): void
     {
@@ -541,21 +303,20 @@ EOF;
                 }
             }
             $variable = [
-                '<className>' => $nClassName,
-                '<useStatement>' => $useStatement,
-                '<propertyStatement>' => $propertyStatement,
-                '<methodDoc>' => $methodDoc,
-                '<namespace>' => $namespace,
-                '<datetime>' => date('Y-m-d H:i:s'),
-                '<abstractClassName>' => $abstractClassName,
-                '<method>' => $method->getName(),
-                '<parameterStatement>' => $parameterStatement,
-                '<parameter>' => $parameter,
+                'className' => $nClassName,
+                'useStatement' => $useStatement,
+                'propertyStatement' => $propertyStatement,
+                'methodDoc' => $methodDoc,
+                'namespace' => $namespace,
+                'abstractClassName' => $abstractClassName,
+                'method' => $method->getName(),
+                'parameterStatement' => $parameterStatement,
+                'parameter' => $parameter,
             ];
             if ($methodName === 'page') {
-                $code = GeneratorUtils::generateTemplate($variable, $this->pageHandlerTemplate);
+                $code = GeneratorUtils::getCodeFromTemplate('service/PageHandler', $variable);
             } else {
-                $code = GeneratorUtils::generateTemplate($variable, $this->handlerTemplate);
+                $code = GeneratorUtils::getCodeFromTemplate('service/Handler', $variable);
             }
             GeneratorUtils::writeFile($destPath, $nClassName, $code, $force);
         }
@@ -571,13 +332,13 @@ EOF;
     {
         $parameterStatement = <<<'EOF'
         $criteria = $req['criteria'] ?? null;
-        $validateData = $this->validate($criteria, <entityName>::class, $this->group);
+        $validateData = $this->validate($criteria, <{$entityName}>::class, $this->group);
         $orderBy = $this->getOrderBy($req);
         $start = $req['start'] ?? null;
         $offset = $req['offset'] ?? null;
 EOF;
         $parameter = '$validateData, $orderBy, $start, $offset';
-        return [GeneratorUtils::generateTemplate(['<entityName>' => $entityName], $parameterStatement), $parameter];
+        return [GeneratorUtils::generateCodeByTemplate(['entityName' => $entityName], $parameterStatement), $parameter];
     }
 
     /**
@@ -590,10 +351,10 @@ EOF;
     {
         $parameterStatement = <<<'EOF'
         $id = $req['id'];
-        $validatedData = $this->validate(['id' => $id], <entityName>::class, $this->group);
+        $validatedData = $this->validate(['id' => $id], <{$entityName}>::class, $this->group);
 EOF;
         $parameter = '$validatedData[\'id\']';
-        return [GeneratorUtils::generateTemplate(['<entityName>' => $entityName], $parameterStatement), $parameter];
+        return [GeneratorUtils::generateCodeByTemplate(['entityName' => $entityName], $parameterStatement), $parameter];
     }
 
     /**
@@ -606,10 +367,10 @@ EOF;
     {
         $parameterStatement = <<<'EOF'
         $data = $req['data'];
-        $validatedData = $this->validate($data, <entityName>::class, $this->group);
+        $validatedData = $this->validate($data, <{$entityName}>::class, $this->group);
 EOF;
         $parameter = '$validatedData';
-        return [GeneratorUtils::generateTemplate(['<entityName>' => $entityName], $parameterStatement), $parameter];
+        return [GeneratorUtils::generateCodeByTemplate(['entityName' => $entityName], $parameterStatement), $parameter];
     }
 
     /**
@@ -622,11 +383,11 @@ EOF;
     {
         $parameterStatement = <<<'EOF'
         $criteria = $req['criteria'];
-        $validatedData = $this->validate($criteria, <entityName>::class, $this->group);
+        $validatedData = $this->validate($criteria, <{$entityName}>::class, $this->group);
         $orderBy = $this->getOrderBy($req);
 EOF;
         $parameter = '$validatedData, $orderBy';
-        return [GeneratorUtils::generateTemplate(['<entityName>' => $entityName], $parameterStatement), $parameter];
+        return [GeneratorUtils::generateCodeByTemplate(['entityName' => $entityName], $parameterStatement), $parameter];
     }
 
     /**
@@ -640,7 +401,7 @@ EOF;
         $parameterStatement = <<<'EOF'
         $query = $req['query'];
         $expression = $this->getExpression($query);
-        $validatedData = $this->validate($this->expressionToArray($expression), <entityName>::class, $this->group);
+        $validatedData = $this->validate($this->expressionToArray($expression), <{$entityName}>::class, $this->group);
         $filteredCompositeExpression = $this->filterCompositeExpression($expression, $validatedData);
         $criteria = $this->expressionToCriteria($filteredCompositeExpression);
         $start = $req['start'] ?? 0;
@@ -650,7 +411,7 @@ EOF;
         $having = $req['having'] ?? null;
 EOF;
         $parameter = '$criteria, $start, $offset, $orderBy, $groupBy, $having';
-        return [GeneratorUtils::generateTemplate(['<entityName>' => $entityName], $parameterStatement), $parameter];
+        return [GeneratorUtils::generateCodeByTemplate(['entityName' => $entityName], $parameterStatement), $parameter];
     }
 
     /**
@@ -664,12 +425,12 @@ EOF;
         $parameterStatement = <<<'EOF'
         $id = $req['id'];
         $data = $req['data'];
-        $validatedData = $this->validate(array_merge(['id' => $id], $data), <entityName>::class, $this->group);
+        $validatedData = $this->validate(array_merge(['id' => $id], $data), <{$entityName}>::class, $this->group);
         $id = $validatedData['id'];
         unset($validatedData['id']);
 EOF;
         $parameter = '$id, $validatedData';
-        return [GeneratorUtils::generateTemplate(['<entityName>' => $entityName], $parameterStatement), $parameter];
+        return [GeneratorUtils::generateCodeByTemplate(['entityName' => $entityName], $parameterStatement), $parameter];
     }
 
     /**
@@ -683,7 +444,7 @@ EOF;
         $codes = [];
         $parameterList = [];
         foreach ($parameters as $parameter) {
-            $codes[] = GeneratorUtils::generateTemplate(['<parameter>' => $parameter->getName()],
+            $codes[] = GeneratorUtils::generateCodeByTemplate(['parameter' => $parameter->getName()],
                 $this->getHandlerParameterStatementTemplate);
             $codes[] =
             $parameterList[] = '$' . $parameter->getName();
@@ -702,7 +463,7 @@ EOF;
         $codes = [];
         $parameterList = [];
         foreach ($parameters as $parameter) {
-            $code = GeneratorUtils::generateTemplate(['<parameter>' => $parameter->getName()],
+            $code = GeneratorUtils::generateCodeByTemplate(['parameter' => $parameter->getName()],
                 $this->postHandlerParameterStatementTemplate);
             try {
                 $default = $parameter->getDefaultValue();
@@ -733,17 +494,6 @@ EOF;
         return '\\' . str_replace('entity', 'server', $className) . 'Server';
     }
 
-    /**
-     * getEntityName
-     *
-     * @param string $fullClassName
-     * @return string
-     */
-    protected function getEntityName($fullClassName): string
-    {
-        return lcfirst(substr($fullClassName, strrpos($fullClassName, '\\') + 1));
-    }
-
 
     /**
      *
@@ -751,6 +501,7 @@ EOF;
      *
      * @param SymfonyStyle $ui
      * @return string
+     * @throws SmartyException
      */
     protected function getDestPath(InputInterface $input, SymfonyStyle $ui): string
     {
@@ -769,6 +520,7 @@ EOF;
      *
      * @param string $baseDir
      * @param SymfonyStyle $ui
+     * @throws SmartyException
      */
     protected function createServiceDispatcher($baseDir, SymfonyStyle $ui): void
     {
@@ -778,7 +530,7 @@ EOF;
         }
         $fileSystem = new Filesystem();
         $dispatcher = $dir . D_S . 'Service.php';
-        $fileSystem->dumpFile($dispatcher, $this->dispatcher);
+        $fileSystem->dumpFile($dispatcher, GeneratorUtils::getCodeFromTemplate('service/Dispatcher', []));
         $ui->block(sprintf('create file: %1s', $dispatcher));
     }
 

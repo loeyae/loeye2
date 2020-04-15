@@ -28,7 +28,7 @@ use const loeye\base\PROJECT_SUCCESS;
  *
  * @author   Zhang Yi <loeyae@gmail.com>
  */
-abstract class FieldsMapPlugin extends Plugin
+abstract class FieldsMapPlugin implements Plugin
 {
 
     protected $dataKey = 'default_data';

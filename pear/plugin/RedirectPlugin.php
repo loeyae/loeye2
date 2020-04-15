@@ -28,7 +28,7 @@ use loeye\std\Plugin;
  *
  * @author   Zhang Yi <loeyae@gmail.com>
  */
-class RedirectPlugin extends Plugin
+class RedirectPlugin implements Plugin
 {
 
     public const DEFAULT_CACHE_EXPIRY = 60;

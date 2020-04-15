@@ -21,7 +21,7 @@ use const loeye\base\PROJECT_SUCCESS;
  *
  * @author Zhang Yi <loeyae@gmail.com>
  */
-class BuildQueryPlugin extends Plugin {
+class BuildQueryPlugin implements Plugin {
 
     protected $inDataKey     = 'BuildQueryPlugin_input';
     protected $outDataKey    = 'BuildQueryPlugin_output';

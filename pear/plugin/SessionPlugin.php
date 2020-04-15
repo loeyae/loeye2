@@ -26,7 +26,7 @@ use loeye\std\Plugin;
  *
  * @author   Zhang Yi <loeyae@gmail.com>
  */
-class SessionPlugin extends Plugin
+class SessionPlugin implements Plugin
 {
 
     protected $outKey = 'session_get_data';

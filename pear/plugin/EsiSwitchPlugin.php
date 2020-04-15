@@ -25,7 +25,7 @@ use loeye\std\Plugin;
  *
  * @author   Zhang Yi <loeyae@gmail.com>
  */
-class EsiSwitchPlugin extends Plugin
+class EsiSwitchPlugin implements Plugin
 {
 
     /**

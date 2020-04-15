@@ -20,13 +20,14 @@ namespace loeye\plugin;
 use loeye\base\Context;
 use loeye\base\Utils;
 use loeye\error\ResourceException;
+use loeye\std\Plugin;
 
 /**
  * DataObjectPlugin
  *
  * @author   Zhang Yi <loeyae@gmail.com>
  */
-class DataObjectPlugin extends \loeye\std\Plugin
+class DataObjectPlugin implements Plugin
 {
 
     /**

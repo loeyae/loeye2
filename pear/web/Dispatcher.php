@@ -85,10 +85,6 @@ class Dispatcher extends \loeye\std\Dispatcher
             $this->executeOutput();
         } catch (InvalidArgumentException $e) {
             ExceptionHandler($e, $this->context);
-        } catch (Exception $exc) {
-            ExceptionHandler($exc, $this->context);
-        } catch (\Exception $exc) {
-            ExceptionHandler($exc, $this->context);
         } catch (Throwable $e) {
             ExceptionHandler($e, $this->context);
         } finally {
@@ -127,9 +123,7 @@ class Dispatcher extends \loeye\std\Dispatcher
     protected function executeModule(): void
     {
         $this->context->setModule($this->_mDfnObj);
-
-        $clientManager = new ParallelClientManager();
-        $this->context->setParallelClientManager($clientManager);
+        $this->context->setParallelClientManager(Factory::parallelClientManager());
 
         $inputs = $this->_mDfnObj->getInputs();
         $this->_setArrayInContext($inputs);

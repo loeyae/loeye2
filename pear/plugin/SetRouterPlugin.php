@@ -28,7 +28,7 @@ use const loeye\base\PROJECT_SUCCESS;
  *
  * @author   Zhang Yi <loeyae@gmail.com>
  */
-class SetRouterPlugin extends Plugin
+class SetRouterPlugin implements Plugin
 {
 
     /**
