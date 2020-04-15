@@ -26,7 +26,6 @@ use loeye\config\validate\DeltaConfigDefinition;
 use loeye\config\validate\RulesetConfigDefinition;
 use loeye\error\BusinessException;
 use loeye\std\ConfigTrait;
-use loeye\validate\groups\InsertGroup;
 use ReflectionClass;
 use ReflectionException;
 use Symfony\Component\Translation as I18n;

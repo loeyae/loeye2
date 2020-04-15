@@ -18,7 +18,6 @@
 namespace loeye\service;
 
 use loeye\base\AppConfig;
-use loeye\base\Exception;
 use loeye\base\Factory;
 use loeye\base\Logger;
 use loeye\base\UrlManager;

@@ -22,7 +22,7 @@ use loeye\base\Cache;
 use loeye\base\Configuration;
 use loeye\base\DB;
 use loeye\config\cache\ConfigDefinition;
-use \Symfony\Component\Config\Definition\ConfigurationInterface;
+use Symfony\Component\Config\Definition\ConfigurationInterface;
 
 /**
  * ConfigTrait

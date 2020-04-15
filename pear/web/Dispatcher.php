@@ -23,7 +23,6 @@ use loeye\base\ModuleDefinition;
 use loeye\base\Router;
 use loeye\base\UrlManager;
 use loeye\base\Utils;
-use loeye\client\ParallelClientManager;
 use loeye\error\BusinessException;
 use loeye\error\ResourceException;
 use loeye\lib\ModuleParse;

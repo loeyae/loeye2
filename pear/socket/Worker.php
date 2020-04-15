@@ -17,8 +17,8 @@
 
 namespace loeye\socket;
 
-use Channel\Server;
 use Channel\Client;
+use Channel\Server;
 use Closure;
 use Exception;
 

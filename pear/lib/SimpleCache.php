@@ -17,8 +17,8 @@
 
 namespace loeye\lib;
 
-use Symfony\Component\Cache\Adapter\{AdapterInterface, ApcuAdapter, PhpFilesAdapter};
 use Psr\Cache\InvalidArgumentException;
+use Symfony\Component\Cache\Adapter\{AdapterInterface, ApcuAdapter, PhpFilesAdapter};
 use Symfony\Component\Cache\CacheItem;
 use Symfony\Component\Cache\Exception\CacheException;
 use Traversable;

@@ -21,7 +21,6 @@ use Doctrine\Common\Collections\Criteria;
 use Doctrine\Common\Collections\Expr\Comparison;
 use Doctrine\Common\Collections\Expr\CompositeExpression;
 use Doctrine\ORM\Query;
-use Doctrine\ORM\Query\Expr\GroupBy;
 use Doctrine\ORM\Query\Expr\OrderBy;
 use Doctrine\ORM\Query\QueryException;
 use Doctrine\ORM\QueryBuilder;
