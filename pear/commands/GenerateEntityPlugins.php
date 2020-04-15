@@ -13,15 +13,15 @@
 namespace loeye\commands;
 
 use Doctrine\Persistence\Mapping\ClassMetadata;
+use loeye\commands\helper\EntityGeneratorTrait;
 use loeye\commands\helper\GeneratorUtils;
 use loeye\console\Command;
-use loeye\commands\helper\EntityGeneratorTrait;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionMethod;
 use ReflectionParameter;
-use Symfony\Component\Console\{Input\InputInterface, Style\SymfonyStyle};
 use SmartyException;
+use Symfony\Component\Console\{Input\InputInterface, Style\SymfonyStyle};
 
 /**
  * GenerateEntityPlugins

@@ -17,7 +17,6 @@
 namespace loeye\commands;
 
 use FilesystemIterator;
-use IteratorIterator;
 use loeye\client\Client;
 use loeye\commands\helper\GeneratorUtils;
 use loeye\console\Command;

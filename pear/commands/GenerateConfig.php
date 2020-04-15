@@ -17,14 +17,11 @@ use loeye\config\app\DeltaDefinition;
 use loeye\config\validate\DeltaConfigDefinition;
 use loeye\config\validate\RulesetConfigDefinition;
 use loeye\console\Command;
-use \Symfony\Component\Console\{
-    Input\InputInterface,
-    Output\OutputInterface
-};
 use ReflectionClass;
 use ReflectionException;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 use Symfony\Component\Config\Definition\Dumper\YamlReferenceDumper;
+use Symfony\Component\Console\{Input\InputInterface, Output\OutputInterface};
 use Symfony\Component\Filesystem\Filesystem;
 
 /**
@@ -35,7 +32,7 @@ use Symfony\Component\Filesystem\Filesystem;
 class GenerateConfig extends Command {
 
     protected $name   = 'loeye:generate-config';
-    protected $desc   = 'generate configuation file';
+    protected $desc   = 'generate configuration file';
     protected $args   = [
         ['property', 'required' => true, 'help' => 'property name', 'default' => null],
         ['type', 'required' => true, 'help' => 'configuration type: app-master,app-delta,cache,database,module,router,valid-rule,valid-delta,ruleset,delta', 'default' => null],
