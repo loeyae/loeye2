@@ -12,12 +12,14 @@
 
 namespace loeye\commands;
 
+use Doctrine\Common\Annotations\Annotation\Target;
+use Doctrine\Common\Annotations\DocParser;
+use Doctrine\ORM\Mapping\Annotation;
 use loeye\console\Command;
-use \Symfony\Component\Console\{
-    Input\InputInterface,
-    Output\OutputInterface
-};
-use \Doctrine\Common\Annotations\DocParser;
+use SplFileInfo;
+use Symfony\Component\Console\{Input\InputInterface, Output\OutputInterface};
+use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\Validator\Constraint;
 
 /**
  * ExportNetbeansAnnotationProperties
@@ -45,7 +47,7 @@ EOF;
         'ORM' => [
             'namespace' => 'Doctrine\ORM\Mapping',
             'root'      => 'doctrine\orm\lib',
-            'instance'  => \Doctrine\ORM\Mapping\Annotation::class,
+            'instance'  => Annotation::class,
             'short'     => 'ORM',
         ],
         'Gedmo' => [
@@ -57,7 +59,7 @@ EOF;
         'Assert' => [
             'namespace' => 'Symfony\Component\Validator\Constraints',
             'root'      => 'symfony\validator\Constraints',
-            'instance'  => \Symfony\Component\Validator\Constraint::class,
+            'instance'  => Constraint::class,
             'short'     => 'Assert',
         ],
     ];
@@ -138,12 +140,12 @@ EOF;
     /**
      * process
      *
-     * @param \Symfony\Component\Console\Input\InputInterface $input
-     * @param \Symfony\Component\Console\Output\OutputInterface $output
+     * @param InputInterface $input
+     * @param OutputInterface $output
      *
      * @return void
      */
-    public function process(InputInterface $input, OutputInterface $output)
+    public function process(InputInterface $input, OutputInterface $output): void
     {
         $docParser   = new DocParser();
         $docParser->setImports(static::$globalImports);
@@ -173,10 +175,10 @@ EOF;
      * @param OutputInterface $output
      * @param array           $messages
      */
-    protected function output(InputInterface $input, OutputInterface $output, $messages)
+    protected function output(InputInterface $input, OutputInterface $output, $messages): void
     {
         $file       = $input->getArgument('file');
-        $fileSystem = new \Symfony\Component\Filesystem\Filesystem();
+        $fileSystem = new Filesystem();
         $content    = implode("\r\n", $messages);
         $fileSystem->dumpFile($file, $content);
     }
@@ -185,23 +187,24 @@ EOF;
     /**
      * parse
      *
-     * @param DocParser       $docParser
-     * @param InputInterface  $input
+     * @param DocParser $docParser
+     * @param InputInterface $input
      * @param OutputInterface $output
-     * @param \SplFileInfo    $fileInfo
-     * @param array           $item
+     * @param SplFileInfo $fileInfo
+     * @param array $item
+     * @return string|null
      */
-    protected function parse(DocParser $docParser, InputInterface $input, OutputInterface $output, \SplFileInfo $fileInfo, $item)
+    protected function parse(DocParser $docParser, InputInterface $input, OutputInterface $output, SplFileInfo $fileInfo, $item): ?string
     {
         $className = '\\' . $item['namespace'] . '\\' . $fileInfo->getBaseName('.php');
-        $annotationName = $input->getOption("short") ? $item['short'] .'\\\\'.$fileInfo->getBaseName('.php') : str_replace('\\', '\\\\', ltrim($className, '\\'));
+        $annotationName = $input->getOption('short') ? $item['short'] .'\\\\'.$fileInfo->getBaseName('.php') : str_replace('\\', '\\\\', ltrim($className, '\\'));
         try {
             $refClass = new \ReflectionClass($className);
             if (!$refClass->isInterface() && !$refClass->isAbstract()) {
                 $annotations = $docParser->parse($refClass->getDocComment());
                 if ($annotations) {
                     foreach ($annotations as $annotation) {
-                        if ($annotation instanceof \Doctrine\Common\Annotations\Annotation\Target) {
+                        if ($annotation instanceof Target) {
                             $targets        = $this->parseTarget($annotation->value);
                             $properties     = $refClass->getProperties();
                             return $this->build($annotationName, $targets, $this->parseProperties($properties));
@@ -224,7 +227,7 @@ EOF;
      *
      * @return string
      */
-    protected function parseTarget($targets)
+    protected function parseTarget($targets): string
     {
         $targets = array_map(function($item) {
             return $this->targetMap[$item];
@@ -241,10 +244,10 @@ EOF;
      *
      * @return string
      */
-    protected function parseProperties($properties)
+    protected function parseProperties($properties): string
     {
         $initial = '';
-        $content = array_reduce($properties, function($carry, \ReflectionProperty $property) {
+        $content = array_reduce($properties, static function($carry, \ReflectionProperty $property) {
             if ($property->isPublic()) {
                 return $carry . ', ' . $property->getName() . '="${' . $property->getName() . '}"';
             }
@@ -263,7 +266,7 @@ EOF;
      *
      * @return string
      */
-    protected function build($annotation, $types, $params)
+    protected function build($annotation, $types, $params): string
     {
         $content = str_replace(['{index}', '{annotation}', '{types}', '{params}'], [$this->index, $annotation, $types, $params], $this->template);
         $this->index++;

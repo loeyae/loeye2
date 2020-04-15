@@ -13,12 +13,11 @@
 namespace loeye\commands\helper;
 
 use Doctrine\ORM\Tools\Console\MetadataFilter;
-use Symfony\Component\Console\{Input\InputInterface, Output\OutputInterface, Style\SymfonyStyle};
 use InvalidArgumentException;
 use loeye\base\DB;
-use loeye\base\Exception;
-use RuntimeException;
+use Symfony\Component\Console\{Input\InputInterface, Output\OutputInterface, Style\SymfonyStyle};
 use Symfony\Component\Filesystem\Filesystem;
+use Throwable;
 
 /**
  * EntityGeneratorTrait
@@ -27,20 +26,6 @@ use Symfony\Component\Filesystem\Filesystem;
  */
 trait EntityGeneratorTrait {
 
-
-    /**
-     * getNamespace
-     * 
-     * @param string $destDir
-     * @return string
-     */
-    protected function getNamespace($destDir): string
-    {
-        $dir = substr($destDir, strlen(PROJECT_DIR) + 1);
-        return PROJECT_NAMESPACE . '\\' . $dir;
-    }
-
-
     /**
      * process
      *
@@ -48,7 +33,8 @@ trait EntityGeneratorTrait {
      * @param OutputInterface $output
      *
      * @return mixed
-     * @throws Exception
+     * @throws \Psr\Cache\InvalidArgumentException
+     * @throws Throwable
      */
     public function process(InputInterface $input, OutputInterface $output)
     {
@@ -82,7 +68,7 @@ trait EntityGeneratorTrait {
             $ui->success('No Metadata Classes to process.');
             return 0;
         }
-        $namespace = $this->getNamespace($destPath);
+        $namespace = GeneratorUtils::getNamespace($destPath);
 
         $numFiles = 0;
 
@@ -105,57 +91,5 @@ trait EntityGeneratorTrait {
         return 0;
     }
 
-
-    /**
-     * writeFile
-     * 
-     * @param string $outputDirectory
-     * @param string $className
-     * @param string $code
-     * @param string $force
-     */
-    protected function writeFile($outputDirectory, $className, $code, $force): void
-    {
-        $path = $outputDirectory . D_S
-                . str_replace('\\', D_S, $className) . '.php';
-        $dir  = dirname($path);
-
-        if (!file_exists($dir) && !mkdir($dir, 0775, true) && !is_dir($dir)) {
-            throw new RuntimeException(sprintf('Directory "%s" was not created', $dir));
-        }
-
-        if ($force || !file_exists($path)) {
-            file_put_contents($path, $code);
-            chmod($path, 0664);
-        }
-    }
-
-    /**
-     * generateTemplate
-     *
-     * @param array $variables
-     * @param string $template
-     *
-     * @return string
-     */
-    protected static function generateTemplate(array $variables, string $template): string
-    {
-        return str_replace(array_keys($variables), array_values($variables), $template);
-    }
-
-    /**
-     * getClassName
-     *
-     * @param string $fullClassName
-     * @return bool|string
-     */
-    protected static function getClassName(string $fullClassName)
-    {
-        $pos = strrpos($fullClassName, '\\');
-        if ($pos === false) {
-            return $fullClassName;
-        }
-        return substr( $fullClassName,$pos + 1);
-    }
 
 }

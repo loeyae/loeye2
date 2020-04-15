@@ -18,6 +18,7 @@
 namespace loeye\commands;
 
 use Doctrine\Persistence\Mapping\ClassMetadata;
+use loeye\commands\helper\GeneratorUtils;
 use loeye\console\Command;
 use loeye\commands\helper\EntityGeneratorTrait;
 use ReflectionClass;
@@ -357,7 +358,7 @@ EOF;
         $classBody = $this->generateClientBody($serverClass, $this->property, $entityName);
         $code = $this->generateClientFile($clientName, $namespace, $this->property, $classBody);
 
-        $this->writeFile($this->clientDir, $clientName, $code, $force);
+        GeneratorUtils::writeFile($this->clientDir, $clientName, $code, $force);
     }
 
     /**
@@ -380,7 +381,7 @@ EOF;
             '<classBody>' => $classBody,
         ];
 
-        return self::generateTemplate($variables, $this->clientTemplate);
+        return GeneratorUtils::generateTemplate($variables, $this->clientTemplate);
     }
 
     /**
@@ -411,7 +412,7 @@ EOF;
                 '<method>' => $type,
                 '<requestBody>' => $requestBody,
             ];
-            $body[] = self::generateTemplate($variables, $this->clientMethodTemplate);
+            $body[] = GeneratorUtils::generateTemplate($variables, $this->clientMethodTemplate);
         }
         return implode("\r\n", $body);
     }
@@ -455,7 +456,7 @@ EOF;
                     return '\'' . $item . '\' => $' . $item;
                 }, $paramsArray);
                 $p = ['<parameter>' => '[' . implode(',', $m) . ']'];
-                $requestBody = self::generateTemplate($p, $this->requestBodyTemplate);
+                $requestBody = GeneratorUtils::generateTemplate($p, $this->requestBodyTemplate);
             }
         } else {
             $path .= '\'';
@@ -483,10 +484,10 @@ EOF;
             '<namespace>' => $namespace,
             '<datetime>' => date('Y-m-d H:i:s'),
             '<fullServerClass>' => $serverClass,
-            '<serverClass>' => self::getClassName($serverClass),
+            '<serverClass>' => GeneratorUtils::getClassName($serverClass),
         ];
-        $code = self::generateTemplate($variable, $this->abstractHandlerTemplate);
-        $this->writeFile($destPath, $abstractClassName, $code, $force);
+        $code = GeneratorUtils::generateTemplate($variable, $this->abstractHandlerTemplate);
+        GeneratorUtils::writeFile($destPath, $abstractClassName, $code, $force);
     }
 
     /**
@@ -503,7 +504,7 @@ EOF;
     protected function writeHandler(SymfonyStyle $ui, $namespace, $className, $serverClass, $destPath, $force): void
     {
         $refClass = new ReflectionClass($serverClass);
-        $entityName = self::getClassName($className);
+        $entityName = GeneratorUtils::getClassName($className);
         $methods = $refClass->getMethods();
         foreach ($methods as $method) {
             if ($method->isConstructor() || $method->isFinal() || $method->isPrivate()) {
@@ -552,11 +553,11 @@ EOF;
                 '<parameter>' => $parameter,
             ];
             if ($methodName === 'page') {
-                $code = self::generateTemplate($variable, $this->pageHandlerTemplate);
+                $code = GeneratorUtils::generateTemplate($variable, $this->pageHandlerTemplate);
             } else {
-                $code = self::generateTemplate($variable, $this->handlerTemplate);
+                $code = GeneratorUtils::generateTemplate($variable, $this->handlerTemplate);
             }
-            $this->writeFile($destPath, $nClassName, $code, $force);
+            GeneratorUtils::writeFile($destPath, $nClassName, $code, $force);
         }
     }
 
@@ -576,7 +577,7 @@ EOF;
         $offset = $req['offset'] ?? null;
 EOF;
         $parameter = '$validateData, $orderBy, $start, $offset';
-        return [self::generateTemplate(['<entityName>' => $entityName], $parameterStatement), $parameter];
+        return [GeneratorUtils::generateTemplate(['<entityName>' => $entityName], $parameterStatement), $parameter];
     }
 
     /**
@@ -592,7 +593,7 @@ EOF;
         $validatedData = $this->validate(['id' => $id], <entityName>::class, $this->group);
 EOF;
         $parameter = '$validatedData[\'id\']';
-        return [self::generateTemplate(['<entityName>' => $entityName], $parameterStatement), $parameter];
+        return [GeneratorUtils::generateTemplate(['<entityName>' => $entityName], $parameterStatement), $parameter];
     }
 
     /**
@@ -608,7 +609,7 @@ EOF;
         $validatedData = $this->validate($data, <entityName>::class, $this->group);
 EOF;
         $parameter = '$validatedData';
-        return [self::generateTemplate(['<entityName>' => $entityName], $parameterStatement), $parameter];
+        return [GeneratorUtils::generateTemplate(['<entityName>' => $entityName], $parameterStatement), $parameter];
     }
 
     /**
@@ -625,7 +626,7 @@ EOF;
         $orderBy = $this->getOrderBy($req);
 EOF;
         $parameter = '$validatedData, $orderBy';
-        return [self::generateTemplate(['<entityName>' => $entityName], $parameterStatement), $parameter];
+        return [GeneratorUtils::generateTemplate(['<entityName>' => $entityName], $parameterStatement), $parameter];
     }
 
     /**
@@ -649,7 +650,7 @@ EOF;
         $having = $req['having'] ?? null;
 EOF;
         $parameter = '$criteria, $start, $offset, $orderBy, $groupBy, $having';
-        return [self::generateTemplate(['<entityName>' => $entityName], $parameterStatement), $parameter];
+        return [GeneratorUtils::generateTemplate(['<entityName>' => $entityName], $parameterStatement), $parameter];
     }
 
     /**
@@ -668,7 +669,7 @@ EOF;
         unset($validatedData['id']);
 EOF;
         $parameter = '$id, $validatedData';
-        return [self::generateTemplate(['<entityName>' => $entityName], $parameterStatement), $parameter];
+        return [GeneratorUtils::generateTemplate(['<entityName>' => $entityName], $parameterStatement), $parameter];
     }
 
     /**
@@ -682,7 +683,7 @@ EOF;
         $codes = [];
         $parameterList = [];
         foreach ($parameters as $parameter) {
-            $codes[] = self::generateTemplate(['<parameter>' => $parameter->getName()],
+            $codes[] = GeneratorUtils::generateTemplate(['<parameter>' => $parameter->getName()],
                 $this->getHandlerParameterStatementTemplate);
             $codes[] =
             $parameterList[] = '$' . $parameter->getName();
@@ -701,7 +702,7 @@ EOF;
         $codes = [];
         $parameterList = [];
         foreach ($parameters as $parameter) {
-            $code = self::generateTemplate(['<parameter>' => $parameter->getName()],
+            $code = GeneratorUtils::generateTemplate(['<parameter>' => $parameter->getName()],
                 $this->postHandlerParameterStatementTemplate);
             try {
                 $default = $parameter->getDefaultValue();

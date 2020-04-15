@@ -13,6 +13,7 @@
 namespace loeye\commands;
 
 use Doctrine\Persistence\Mapping\ClassMetadata;
+use loeye\commands\helper\GeneratorUtils;
 use loeye\console\Command;
 use loeye\commands\helper\EntityGeneratorTrait;
 use ReflectionClass;
@@ -216,7 +217,7 @@ EOF;
             '<className>' => $className,
         ];
 
-        return self::generateTemplate($variables, self::$_template);
+        return GeneratorUtils::generateTemplate($variables, self::$_template);
     }
 
     /**
@@ -245,7 +246,7 @@ EOF;
             '<returnType>' => $returnType,
         ];
 
-        return self::generateTemplate($variables, self::$_pluginTemplate);
+        return GeneratorUtils::generateTemplate($variables, self::$_pluginTemplate);
     }
 
     /**
@@ -263,7 +264,7 @@ EOF;
         $ui->text(sprintf('Processing AbstractPlugin "<info>%s</info>"', $fullAbstractClassName));
         $code = $this->generateAbstractPluginClass($namespace, $className);
 
-        $this->writeFile($outputDirectory, $className, $code, $force);
+        GeneratorUtils::writeFile($outputDirectory, $className, $code, $force);
     }
 
     /**
@@ -299,7 +300,7 @@ EOF;
             $params = $this->generateParams($method);
             $code = $this->generatePluginClass($namespace, $nClassName, $abstractClassName, $serverClass, $methodName, $paramsStatement, $params, $returnType);
 
-            $this->writeFile($outputDirectory, $nClassName, $code, $force);
+            GeneratorUtils::writeFile($outputDirectory, $nClassName, $code, $force);
         }
     }
 
@@ -338,7 +339,7 @@ EOF;
             '<className>' => $className,
         ];
 
-        return self::generateTemplate($variables, self::$_statement);
+        return GeneratorUtils::generateTemplate($variables, self::$_statement);
     }
 
     /**
