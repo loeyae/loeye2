@@ -13,8 +13,8 @@
 namespace loeye\commands;
 
 use loeye\console\Command;
-use Symfony\Component\Console\{Input\InputInterface, Output\OutputInterface, Style\SymfonyStyle};
 use RuntimeException;
+use Symfony\Component\Console\{Input\InputInterface, Output\OutputInterface, Style\SymfonyStyle};
 use Symfony\Component\Filesystem\Filesystem;
 
 /**
