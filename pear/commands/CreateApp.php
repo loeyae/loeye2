@@ -78,6 +78,7 @@ class CreateApp extends Command
      * @param OutputInterface $output
      *
      * @return void
+     * @throws SmartyException
      */
     public function process(InputInterface $input, OutputInterface $output): void
     {
@@ -149,22 +150,22 @@ class CreateApp extends Command
         $routerConfig = $this->buildConfigFile($base, 'router');
         $fileSystem->dumpFile($routerConfig, $this->replaceProperty('app/RouteConfig'));
         $ui->block(sprintf('create file: %1s', $routerConfig));
-        $generalErrorFile = $this->buildPath($base, 'app', 'errors', 'GeneralError.php');
+        $generalErrorFile = GeneratorUtils::buildPath($base, 'app', 'errors', 'GeneralError.php');
         $fileSystem->dumpFile($generalErrorFile, $this->replaceProperty('app/GeneralError'));
         $ui->block(sprintf('create file: %1s', $generalErrorFile));
-        $layout = $this->buildPath($base, 'app', 'views', 'layout.tpl');
+        $layout = GeneratorUtils::buildPath($base, 'app', 'views', 'layout.tpl');
         $fileSystem->dumpFile($layout, $this->replaceProperty('app/Layout'));
         $ui->block(sprintf('create file: %1s', $layout));
-        $home = $this->buildPath($base, 'app', 'views', $this->property, 'home.tpl');
+        $home = GeneratorUtils::buildPath($base, 'app', 'views', $this->property, 'home.tpl');
         $fileSystem->dumpFile($home, $this->replaceProperty('app/Home'));
         $ui->block(sprintf('create file: %1s', $home));
-        $css = $this->buildPath($base, 'app', 'htdocs', 'static', 'css', 'bootstrap.css');
+        $css = GeneratorUtils::buildPath($base, 'app', 'htdocs', 'static', 'css', 'bootstrap.css');
         $fileSystem->dumpFile($css, $this->replaceProperty('app/BootstrapCSS'));
         $ui->block(sprintf('create file: %1s', $css));
-        $htaccss = $this->buildPath($base, 'app', 'htdocs', '.htaccess');
+        $htaccss = GeneratorUtils::buildPath($base, 'app', 'htdocs', '.htaccess');
         $fileSystem->dumpFile($htaccss, $this->replaceProperty('app/Htaccess'));
         $ui->block(sprintf('create file: %1s', $htaccss));
-        $dispatcher = $this->buildPath($base, 'app', 'htdocs', 'Dispatcher.php');
+        $dispatcher = GeneratorUtils::buildPath($base, 'app', 'htdocs', 'Dispatcher.php');
         $fileSystem->dumpFile($dispatcher, $this->replaceProperty('app/Dispatcher'));
         $ui->block(sprintf('create file: %1s', $dispatcher));
     }
@@ -180,7 +181,7 @@ class CreateApp extends Command
      */
     protected function buildAppConfigFile(string $base, string $type): string
     {
-        return $this->buildPath($base, 'app', 'conf', $this->property, $type, 'master.yml');
+        return GeneratorUtils::buildPath($base, 'app', 'conf', $this->property, $type, 'master.yml');
     }
 
 
@@ -194,22 +195,8 @@ class CreateApp extends Command
      */
     protected function buildConfigFile(string $base, string $type): string
     {
-        return $this->buildPath($base, 'app', 'conf', $type, $this->property, 'master.yml');
+        return GeneratorUtils::buildPath($base, 'app', 'conf', $type, $this->property, 'master.yml');
     }
-
-
-    /**
-     * buildPath
-     *
-     * @param string ...$path
-     *
-     * @return string
-     */
-    protected function buildPath(string ...$path): string
-    {
-        return implode(D_S, $path);
-    }
-
 
     /**
      * replaceProperty

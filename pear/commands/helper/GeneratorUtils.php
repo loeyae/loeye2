@@ -35,7 +35,7 @@ class GeneratorUtils
      *
      * @return string
      */
-    public function buildPath(string ...$path): string
+    public static function buildPath(string ...$path): string
     {
         return implode(D_S, $path);
     }
