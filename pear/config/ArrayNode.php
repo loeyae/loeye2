@@ -18,8 +18,8 @@
 namespace loeye\config;
 
 use RuntimeException;
-use \Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
-use \Symfony\Component\Config\Definition\Exception\UnsetKeyException;
+use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
+use Symfony\Component\Config\Definition\Exception\UnsetKeyException;
 
 /**
  * ArrayNode

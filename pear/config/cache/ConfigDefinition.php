@@ -18,7 +18,7 @@
 namespace loeye\config\cache;
 
 use loeye\base\Cache;
-use \loeye\config\TreeBuilder;
+use loeye\config\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 
 /**

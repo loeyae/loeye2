@@ -19,8 +19,8 @@ namespace loeye\config;
 
 use Exception;
 use InvalidArgumentException;
-use \Symfony\Component\Config\Definition\ConfigurationInterface;
-use \Symfony\Component\Config\Definition\NodeInterface;
+use Symfony\Component\Config\Definition\ConfigurationInterface;
+use Symfony\Component\Config\Definition\NodeInterface;
 
 /**
  * Processor

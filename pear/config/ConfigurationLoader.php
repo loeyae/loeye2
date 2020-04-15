@@ -19,7 +19,7 @@ namespace loeye\config;
 
 use Psr\Cache\InvalidArgumentException;
 use Symfony\Component\Cache\Exception\CacheException;
-use \Symfony\Component\Config\Definition\ConfigurationInterface;
+use Symfony\Component\Config\Definition\ConfigurationInterface;
 use Symfony\Component\Config\Exception\FileLoaderImportCircularReferenceException;
 use Symfony\Component\Config\Exception\LoaderLoadException;
 

@@ -17,7 +17,7 @@
 
 namespace loeye\config;
 use InvalidArgumentException;
-use \Symfony\Component\Config\Definition\NodeInterface;
+use Symfony\Component\Config\Definition\NodeInterface;
 use Symfony\Component\Config\Definition\ScalarNode;
 
 /**

@@ -16,8 +16,7 @@
  */
 
 namespace loeye\config;
-use RuntimeException;
-use \Symfony\Component\Config\Definition\Builder\NodeBuilder as BaseNodeBuilder;
+use Symfony\Component\Config\Definition\Builder\NodeBuilder as BaseNodeBuilder;
 use Symfony\Component\Config\Definition\Builder\NodeDefinition;
 
 /**

@@ -26,9 +26,9 @@ use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use SplFileInfo;
 use Symfony\Component\Config\Resource\SelfCheckingResourceInterface;
-use Traversable;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\Glob;
+use Traversable;
 
 /**
  * ConfigResource

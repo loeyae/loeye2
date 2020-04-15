@@ -17,7 +17,7 @@
 
 namespace loeye\config\module;
 
-use \loeye\config\TreeBuilder;
+use loeye\config\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 
 /**
