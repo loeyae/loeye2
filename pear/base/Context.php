@@ -23,6 +23,7 @@ use loeye\std\Request;
 use loeye\std\Response;
 use loeye\web\Template;
 use Psr\Cache\InvalidArgumentException;
+use Throwable;
 
 /**
  * Context
@@ -419,7 +420,8 @@ class Context implements ArrayAccess
      * db
      *
      * @return DB
-     * @throws Exception
+     * @throws InvalidArgumentException
+     * @throws Throwable
      */
     public function db(): DB
     {

@@ -60,7 +60,7 @@ trait RepositoryTrait
      * @param array $criteria
      * @param mixed $orderBy
      *
-     * @return object|null
+     * @return Entity|null
      */
     public function one(array $criteria, $orderBy = null): ?Entity
     {

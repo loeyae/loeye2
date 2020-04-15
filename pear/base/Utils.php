@@ -21,15 +21,16 @@ use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use IntlDateFormatter;
 use loeye\client\Client;
+use loeye\error\{BusinessException, DataException, LogicException, ResourceException};
 use loeye\web\Dispatcher;
 use loeye\web\Template;
-use loeye\error\{LogicException, BusinessException, DataException, ResourceException};
 use Psr\Cache\InvalidArgumentException;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionMethod;
 use SmartyException;
 use Symfony\Component\Cache\Exception\CacheException;
+use Throwable;
 
 /**
  * Description of Utils
@@ -506,7 +507,7 @@ class Utils
      */
     public static function filterResult($result, &$data, &$error): void
     {
-        if ($result instanceof \Exception) {
+        if ($result instanceof Throwable) {
             $error = $result;
         } else {
             $data = $result;
@@ -835,7 +836,7 @@ class Utils
      *
      * @return void
      */
-    public static function log($message, $messageType = Logger::LOEYE_LOGGER_TYPE_NOTICE, $trace = [])
+    public static function log($message, $messageType = Logger::LOEYE_LOGGER_TYPE_NOTICE, $trace = []): void
     {
         $name = defined('PROJECT_PROPERTY') ? PROJECT_PROPERTY : PROJECT_NAMESPACE;
         if ($messageType === Logger::LOEYE_LOGGER_TYPE_CONTEXT_TRACE) {
@@ -876,11 +877,11 @@ class Utils
     /**
      * errorLog
      *
-     * @param \Exception $exc exception
+     * @param Throwable $exc exception
      *
      * @return void
      */
-    public static function errorLog(\Exception $exc): void
+    public static function errorLog(Throwable $exc): void
     {
         $file = $exc->getFile();
         if ($file === __FILE__) {

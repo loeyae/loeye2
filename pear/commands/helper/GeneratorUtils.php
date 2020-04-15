@@ -77,7 +77,7 @@ class GeneratorUtils
     {
         $keys = array_keys($variables);
         $padKeys = array_map(static function($item) {
-            return '<{$'.$item.'}}';
+            return '<{$'.$item.'}>';
         }, $keys);
         return str_replace($padKeys, array_values($variables), $template);
     }

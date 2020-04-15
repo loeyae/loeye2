@@ -9,12 +9,15 @@
 */
 namespace <{$namespace}>;
 
+use loeye\database\Server;
+use <{$fullEntityClass}>;
+
 /**
  * <{$className}>
  *
  * @package <{$namespace}>
  */
-class <{$className}> extends <{$serverName}>
+class <{$className}> extends Server
 {
-    protected $entityClass = <{$entityClass}>;
+    protected $entityClass = <{$entityClass}>::class;
 }

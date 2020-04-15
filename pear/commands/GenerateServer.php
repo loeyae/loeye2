@@ -16,9 +16,8 @@ use Doctrine\Persistence\Mapping\ClassMetadata;
 use loeye\commands\helper\EntityGeneratorTrait;
 use loeye\commands\helper\GeneratorUtils;
 use loeye\console\Command;
-use loeye\database\Server;
-use Symfony\Component\Console\{Input\InputInterface, Style\SymfonyStyle};
 use SmartyException;
+use Symfony\Component\Console\{Input\InputInterface, Style\SymfonyStyle};
 
 /**
  * GenerateServer
@@ -50,14 +49,14 @@ class GenerateServer extends Command
      * @param string $namespace
      * @param string $destPath
      * @param boolean $force
+     * @throws SmartyException
      */
     protected function generateFile(SymfonyStyle $ui, ClassMetadata $metadata, $namespace, $destPath, $force): void
     {
         $className = $this->getClassName($metadata->reflClass->name);
-        $entityClass = GeneratorUtils::getClassName($metadata->reflClass->name);
         $fullClassName = GeneratorUtils::generateClassName($namespace, $className);
         $ui->text(sprintf('Processing Server "<info>%s</info>"', $fullClassName));
-        $this->writeServerClass($namespace, $className, $entityClass, $destPath, $force);
+        $this->writeServerClass($namespace, $className, $metadata->reflClass->name, $destPath, $force);
     }
 
 
@@ -98,9 +97,9 @@ class GenerateServer extends Command
     {
         $variables = [
             'namespace' => $namespace,
-            'serverName' => Server::class,
             'className' => $className,
-            'entityClass' => $entityClass,
+            'fullEntityClass' => $entityClass,
+            'entityClass' => GeneratorUtils::getClassName($entityClass),
         ];
 
         return GeneratorUtils::getCodeFromTemplate('server/Server', $variables);
@@ -115,6 +114,7 @@ class GenerateServer extends Command
      * @param string $entityClass
      * @param string $outputDirectory
      * @param boolean $force
+     * @throws SmartyException
      */
     public function writeServerClass($namespace, $className, $entityClass, $outputDirectory, $force = false): void
     {

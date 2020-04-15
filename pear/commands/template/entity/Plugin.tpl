@@ -37,8 +37,8 @@ class <{$className}> extends <{$abstractClassName}>
      */
     protected function execute(Context $context, array $inputs, $type)
     {
-<paramsStatement>
-        return $this->server-><method>(<params>);
+<{$paramsStatement}>
+        return $this->server-><{$method}>(<{$params}>);
     }
 
 }

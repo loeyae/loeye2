@@ -91,7 +91,7 @@ EOF;
     {
         $entityName = GeneratorUtils::getClassName($metadata->reflClass->name);
         $namespace .= '\\' . $entityName;
-        $destPath .= D_S . $entityName;
+        $destPath .= D_S . lcfirst($entityName);
         $serverClass = $this->getServerClass($metadata->reflClass->name);
         $this->writeClient($ui, $entityName, $serverClass, $force);
         $this->writeAbstractHandler($ui, $namespace, $entityName, $serverClass, $destPath, $force);
@@ -108,7 +108,7 @@ EOF;
      * @throws ReflectionException
      * @throws SmartyException
      */
-    protected function writeClient(SymfonyStyle $ui, $entityName, $serverClass, $force = false): void
+    protected function writeClient(SymfonyStyle $ui, $entityName, $serverClass, $force): void
     {
 
         $clientName = ucfirst($entityName) . 'Client';
@@ -191,7 +191,7 @@ EOF;
         $paramsStatementArray = [];
         $paramsArray = [];
         $parameters = $method->getParameters();
-        $path = '\'/' . $property . '/' . $entityName . '/' . $method->getName();
+        $path = '\'/' . $property . '/' . strtolower($entityName) . '/' . $method->getName();
         $type = $method->getName() === 'get' ? 'GET' : 'POST';
         foreach ($parameters as $parameter) {
             $pType = $parameter->getType();
@@ -292,15 +292,16 @@ EOF;
                 } else {
                     [$parameterStatement, $parameter] = $this->generatePostHandlerParameter($parameters);
                 }
-                $useStatement = 'use ' . $className .';';
+                $useStatement = 'use ' . $className . ';';
                 $useStatement .= "\r\nuse loeye\\error\\ValidateError;";
-                $methodDoc .= "\r\n     * @throws ValidateError";
-                $propertyStatement = "    protected \$group = '" . $methodName . "';\r\n";
-                if ($methodName === 'page') {
-                    $useStatement .= "\r\nuse Psr\Cache\InvalidArgumentException;";
-                    $methodDoc .= "\r\n     * @throws Throwable";
-                    $methodDoc .= "\r\n     * @throws InvalidArgumentException";
+                $useStatement .= "\r\nuse Psr\Cache\InvalidArgumentException;";
+                if ($methodName !== 'page') {
+                    $useStatement .= "\r\nuse Throwable;";
                 }
+                $methodDoc .= "\r\n     * @throws ValidateError";
+                $methodDoc .= "\r\n     * @throws InvalidArgumentException";
+                $methodDoc .= "\r\n     * @throws Throwable";
+                $propertyStatement = "    protected \$group = '" . $methodName . "';\r\n";
             }
             $variable = [
                 'className' => $nClassName,
@@ -399,11 +400,16 @@ EOF;
     protected function generatePageHandlerParameter($entityName): array
     {
         $parameterStatement = <<<'EOF'
-        $query = $req['query'];
+        $query = $req['query'] ?? [];
         $expression = $this->getExpression($query);
-        $validatedData = $this->validate($this->expressionToArray($expression), <{$entityName}>::class, $this->group);
-        $filteredCompositeExpression = $this->filterCompositeExpression($expression, $validatedData);
-        $criteria = $this->expressionToCriteria($filteredCompositeExpression);
+        if ($expression) {
+            $validatedData = $this->validate($this->expressionToArray($expression), <{$entityName}>::class, 
+           $this->group);
+            $filteredCompositeExpression = $this->filterCompositeExpression($expression, $validatedData);
+            $criteria = $this->expressionToCriteria($filteredCompositeExpression);
+        } else {
+            $criteria = null;
+        }
         $start = $req['start'] ?? 0;
         $offset = $req['offset'] ?? 10;
         $orderBy = $this->getOrderBy($req);
@@ -446,7 +452,6 @@ EOF;
         foreach ($parameters as $parameter) {
             $codes[] = GeneratorUtils::generateCodeByTemplate(['parameter' => $parameter->getName()],
                 $this->getHandlerParameterStatementTemplate);
-            $codes[] =
             $parameterList[] = '$' . $parameter->getName();
         }
         return [implode("\r\n", $codes), implode(', ', $parameterList)];

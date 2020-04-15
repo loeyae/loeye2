@@ -280,16 +280,16 @@ abstract class Handler extends Resource
 
     /**
      * @param $query
-     * @return CompositeExpression
+     * @return CompositeExpression|null
      * @throws DAOException
      */
-    protected function getExpression($query): CompositeExpression
+    protected function getExpression($query): ?CompositeExpression
     {
         $expression = ExpressionFactory::createExpr($query);
         if ($expression instanceof CompositeExpression) {
             return $expression;
         }
-        return new CompositeExpression(CompositeExpression::TYPE_AND, [$expression]);
+        return $expression ? new CompositeExpression(CompositeExpression::TYPE_AND, [$expression]) : null;
     }
 
     /**

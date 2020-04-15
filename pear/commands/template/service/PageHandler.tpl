@@ -29,7 +29,7 @@ class <{$className}> extends <{$abstractClassName}>
     {
 <{$parameterStatement}>
         try {
-            return $this->server-><method>(<{$parameter}>);
+            return $this->server-><{$method}>(<{$parameter}>);
         } catch (Throwable $e) {
             Logger::exception($e);
         }
