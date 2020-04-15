@@ -18,8 +18,8 @@
 namespace loeye\client;
 
 use GuzzleHttp\Cookie\CookieJar;
-use GuzzleHttp\Psr7\Uri;
 use GuzzleHttp\Promise\PromiseInterface;
+use GuzzleHttp\Psr7\Uri;
 use Psr\Http\Message\ResponseInterface;
 use function GuzzleHttp\Psr7\uri_for;
 
