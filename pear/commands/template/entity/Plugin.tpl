@@ -11,6 +11,7 @@ namespace <{$namespace}>;
 
 use loeye\base\Context;
 use loeye\base\Utils;
+<{$useStatement}>
 
 /**
  * <{$className}>
@@ -30,12 +31,11 @@ class <{$className}> extends <{$abstractClassName}>
      *
      * @param Context $context context
      * @param array $inputs inputs
-     * @param string $type db setting id
      *
      * @return <{$returnType}>
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
-    protected function execute(Context $context, array $inputs, $type)
+    protected function execute(Context $context, array $inputs)
     {
 <{$paramsStatement}>
         return $this->server-><{$method}>(<{$params}>);

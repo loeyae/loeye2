@@ -125,18 +125,21 @@ EOF;
      * @param string $className
      * @param $abstractClassName
      * @param $method
+     * @param $useStatement
      * @param $paramsStatement
      * @param $params
      * @param $returnType
      * @return string
      * @throws SmartyException
      */
-    protected function generatePluginClass($namespace, $className, $abstractClassName, $method, $paramsStatement, $params, $returnType): string
+    protected function generatePluginClass($namespace, $className, $abstractClassName, $method, $useStatement,
+                                           $paramsStatement, $params, $returnType): string
     {
         $variables = [
             'namespace' => $namespace,
             'className' => $className,
             'abstractClassName' => $abstractClassName,
+            'useStatement' => $useStatement,
             'method' => $method,
             'paramsStatement' => $paramsStatement,
             'params' => $params,
@@ -190,8 +193,15 @@ EOF;
             }
             $methodName = $method->getName();
             $returnType = $method->getReturnType();
+            $useStatement = '';
             if ($returnType == 'loeye\database\Entity') {
-                $returnType = str_replace('server', 'entity', substr($serverClass, 0, -6));
+                $entityName = str_replace('server', 'entity', substr($serverClass, 0, -6));
+                $useStatement = 'use ' . $entityName . ';';
+                $returnType = GeneratorUtils::getClassName($entityName);
+            }
+            if ($methodName === 'page') {
+                $useStatement ? $useStatement .= "\r\nuse Throwable;" : $useStatement = 'use Throwable;';
+                $returnType .= "\r\n     * @throws Throwable";
             }
             $nClassName = ucfirst($className) . ucfirst($methodName) . 'Plugin';
 
@@ -199,7 +209,8 @@ EOF;
             $ui->text(sprintf('Processing Plugin "<info>%s</info>"', $fullClassName));
             $paramsStatement = $this->generateParamsStatement($method, $nClassName);
             $params = $this->generateParams($method);
-            $code = $this->generatePluginClass($namespace, $nClassName, $abstractClassName, $methodName, $paramsStatement, $params, $returnType);
+            $code = $this->generatePluginClass($namespace, $nClassName, $abstractClassName, $methodName, $useStatement,
+                $paramsStatement, $params, $returnType);
 
             GeneratorUtils::writeFile($outputDirectory, $nClassName, $code, $force);
         }

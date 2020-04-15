@@ -48,7 +48,7 @@ abstract class <{$className}> implements Plugin
     {
         $type = Utils::getContextData($context, $inputs, $this->dbId);
         $this->server = new <{$serverClass}>($context->getAppConfig(), $type);
-        $result = $this->execute($context, $inputs, $type);
+        $result = $this->execute($context, $inputs);
         Utils::filterResult($result, $data, $error);
         Utils::setContextData($data, $context, $inputs, $this->outDataKey);
         if ($error) {
@@ -56,6 +56,6 @@ abstract class <{$className}> implements Plugin
         }
     }
 
-    abstract protected function execute(Context $context, array $inputs, $type);
+    abstract protected function execute(Context $context, array $inputs);
 
 }
