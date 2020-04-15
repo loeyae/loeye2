@@ -17,12 +17,12 @@
 
 namespace loeye\plugin;
 
+use loeye\base\{Context, Exception, Factory, Utils};
 use loeye\database\Entity;
 use loeye\error\BusinessException;
 use loeye\lib\ModuleParse;
 use loeye\std\Plugin;
 use ReflectionException;
-use loeye\base\{Exception, Utils, Context, Factory};
 use const loeye\base\RENDER_TYPE_SEGMENT;
 
 /**

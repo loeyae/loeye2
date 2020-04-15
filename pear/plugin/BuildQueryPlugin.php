@@ -13,7 +13,6 @@
 namespace loeye\plugin;
 
 use loeye\{base\Context, base\Factory, base\Utils, std\Plugin};
-use function GuzzleHttp\Psr7\str;
 use const loeye\base\PROJECT_SUCCESS;
 
 /**
