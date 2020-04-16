@@ -16,6 +16,7 @@
  */
 
 namespace loeye\base;
+
 use ArrayAccess;
 use loeye\config\router\ConfigDefinition;
 use loeye\error\BusinessException;
@@ -74,7 +75,7 @@ class Router extends \loeye\std\Router
     public function getRouterKey($url): ?string
     {
         $routerKey = null;
-        $path      = parse_url($url, PHP_URL_PATH);
+        $path = parse_url($url, PHP_URL_PATH);
         foreach ($this->_router as $key => $setting) {
             if (empty($setting['module_id'])) {
                 continue;
@@ -97,6 +98,7 @@ class Router extends \loeye\std\Router
      */
     public function match($url): ?string
     {
+        $this->reset();
         $moduleId = null;
         $basePath = '';
         if (defined('BASE_SERVER_URL')) {
@@ -120,35 +122,49 @@ class Router extends \loeye\std\Router
                 $this->setMatchedRule($setting['_path']);
                 $this->setMatchedData($matches);
                 $moduleId = $setting['module_id'];
-                if (isset($setting['params'])) {
+                if (!empty($setting['params'])) {
                     foreach ($setting['params'] as $key => $value) {
-                        $this->addPathVariable($key, $value);
+                        $_REQUEST[$key] = $value;
+                    }
+                }
+                $searchKey = [];
+                $replaceKey = [];
+                if (preg_match_all('({[\w\-_]+})', $moduleId, $iMatches)) {
+                    foreach ($iMatches[0] as $match) {
+                        $key = mb_substr($match, 1, -1, '7bit');
+                        $searchKey[$key] = $match;
+                        $replaceKey[$key] = $key;
                     }
                 }
                 if (isset($setting['format'])) {
-                    $search  = array();
+                    $search = array();
                     $replace = array();
                     foreach ($setting['format'] as $key) {
-                        if (isset($matches[$key])) {
-                            $value     = filter_var($matches[$key], FILTER_SANITIZE_STRING);
-                            $search[]  = '{' . $key . '}';
+                        $value = filter_var($matches[$key], FILTER_SANITIZE_STRING);
+                        if (isset($replaceKey[$key])) {
+                            $search[] = $searchKey[$key];
                             $replace[] = $value;
+                            unset($replaceKey[$key]);
                             $this->addSetting($key, $value);
+                        } else {
+                            $this->addPathVariable($key, $value);
+                            $_REQUEST[$key] = $value;
                         }
                     }
                     $moduleId = str_replace($search, $replace, $moduleId);
                 }
                 if (isset($setting['get'])) {
-                    $search  = array();
+                    $search = array();
                     $replace = array();
                     foreach ($setting['get'] as $key => $pattern) {
-                        if (filter_has_var(INPUT_GET, $key)) {
+                        if (isset($replaceKey[$key]) && filter_has_var(INPUT_GET, $key)) {
                             $pattern = str_replace('#', '\#', $pattern);
                             preg_match('#(?<' . $key . '>' . $pattern . ')#', filter_input(INPUT_GET, $key), $match);
                             if (!empty($match)) {
-                                $search[]  = '{' . $key . '}';
+                                $search[] = $searchKey[$key];
                                 $replace[] = $match[$key];
                             }
+                            unset($replaceKey[$key]);
                         }
                     }
                     $moduleId = str_replace($search, $replace, $moduleId);
@@ -163,7 +179,7 @@ class Router extends \loeye\std\Router
      * generate
      *
      * @param string $routerName router name
-     * @param array  $params     params
+     * @param array $params params
      *
      * @return string
      * @throws Exception
@@ -172,12 +188,12 @@ class Router extends \loeye\std\Router
     {
         if (!isset($this->_router[$routerName])) {
             throw new BusinessException(BusinessException::INVALID_CONFIG_SET_MSG,
-                    BusinessException::INVALID_CONFIG_SET_CODE, ['setting' => 'router: '. $routerName]
+                BusinessException::INVALID_CONFIG_SET_CODE, ['setting' => 'router: ' . $routerName]
             );
         }
-        $query   = $params;
-        $router  = $this->_router[$routerName];
-        $search  = array(
+        $query = $params;
+        $router = $this->_router[$routerName];
+        $search = array(
             '^',
             '$',
             '?',
@@ -195,7 +211,7 @@ class Router extends \loeye\std\Router
                         BusinessException::INVALID_PARAMETER_CODE
                     );
                 }
-                $search[]  = '{' . $key . '}';
+                $search[] = '{' . $key . '}';
                 $replace[] = urlencode($params[$key]);
                 unset($query[$key]);
             }
@@ -232,7 +248,7 @@ class Router extends \loeye\std\Router
      */
     private function _initRouter(): void
     {
-        $config        = $this->config->get('routes');
+        $config = $this->config->get('routes');
         $this->_router = array();
         if (!empty($config)) {
             foreach ($config as $name => $value) {
@@ -240,9 +256,9 @@ class Router extends \loeye\std\Router
                     throw new BusinessException(
                         BusinessException::INVALID_CONFIG_SET_MSG, BusinessException::INVALID_CONFIG_SET_CODE, ['setting' => 'route path']);
                 }
-                $search  = array('#');
+                $search = array('#');
                 $replace = array('\#');
-                $params  = array();
+                $params = array();
                 if (isset($value['regex'])) {
                     $matches = array();
                     if (preg_match_all('({[\w\-_]+})', $value['path'], $matches)) {
@@ -252,7 +268,7 @@ class Router extends \loeye\std\Router
                                 $params[] = $param;
                                 $search[] = $match;
                                 if (strpos($value['regex'][$param], '#') !== false) {
-                                    $regex     = str_replace('#', '\#', $value['regex'][$param]);
+                                    $regex = str_replace('#', '\#', $value['regex'][$param]);
                                     $replace[] = '(?<' . $param . '>' . $regex . ')';
                                 } else {
                                     $replace[] = '(?<' . $param . '>' . $value['regex'][$param] . ')';
@@ -261,8 +277,8 @@ class Router extends \loeye\std\Router
                         }
                     }
                 }
-                $value['_path']       = '#' . str_replace($search, $replace, $value['path']) . '#';
-                $value['format']      = $params;
+                $value['_path'] = '#' . str_replace($search, $replace, $value['path']) . '#';
+                $value['format'] = $params;
                 $this->_router[$name] = $value;
             }
         }

@@ -157,6 +157,17 @@ abstract class Router
     }
 
     /**
+     * reset
+     */
+    protected function reset(): void
+    {
+        $this->settings = [];
+        $this->matchedData = [];
+        $this->matchedRule = null;
+        $this->pathVariable = [];
+    }
+
+    /**
      * match
      *
      * @param string $url url
