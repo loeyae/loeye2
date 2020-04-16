@@ -303,10 +303,7 @@ class Configuration
             if (filter_has_var(INPUT_SERVER, $key)) {
                 return filter_input(INPUT_SERVER, $key);
             }
-            if (filter_has_var(INPUT_ENV, $key)) {
-                return filter_input(INPUT_ENV, $key);
-            }
-            return $default;
+            return $_ENV[$key] ?? $default;
         }
         return $var;
     }
