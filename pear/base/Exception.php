@@ -127,7 +127,7 @@ class Exception extends \Exception
         $translator = defined('PROJECT_PROPERTY') ? Factory::translator() : new Translator();
         $parameters = [];
         foreach ($parameter as $key => $value) {
-            $$parameters['%' . $key . '%'] = $value;
+            $parameters['%' . $key . '%'] = $value;
         }
         $errorMessage = $translator->getString($errorMessage, $parameters, 'error');
         parent::__construct($errorMessage, $errorCode);
