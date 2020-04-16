@@ -163,6 +163,7 @@ class Router extends \loeye\std\Router
                             if (!empty($match)) {
                                 $search[] = $searchKey[$key];
                                 $replace[] = $match[$key];
+                                $this->addSetting($key, $match[$key]);
                             }
                             unset($replaceKey[$key]);
                         }

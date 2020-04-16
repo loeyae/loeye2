@@ -2,6 +2,7 @@
 
 namespace loeye\unit\base;
 
+use loeye\base\Exception;
 use loeye\base\Router;
 use loeye\error\BusinessException;
 use loeye\unit\TestCase;
@@ -38,63 +39,15 @@ class RouterTest extends TestCase
     }
 
     /**
-     * @covers Router::offsetExists
-     * @todo   Implement testOffsetExists().
-     */
-    public function testOffsetExists()
-    {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-                'This test has not been implemented yet.'
-        );
-    }
-
-    /**
-     * @covers Router::offsetGet
-     * @todo   Implement testOffsetGet().
-     */
-    public function testOffsetGet()
-    {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-                'This test has not been implemented yet.'
-        );
-    }
-
-    /**
-     * @covers Router::offsetSet
-     * @todo   Implement testOffsetSet().
-     */
-    public function testOffsetSet()
-    {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-                'This test has not been implemented yet.'
-        );
-    }
-
-    /**
-     * @covers Router::offsetUnset
-     * @todo   Implement testOffsetUnset().
-     */
-    public function testOffsetUnset()
-    {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-                'This test has not been implemented yet.'
-        );
-    }
-
-    /**
      * @covers Router::getRouter
      * @todo   Implement testGetRouter().
      */
     public function testGetRouter()
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-                'This test has not been implemented yet.'
-        );
+        $this->assertNotNull($this->object->getRouter('home'));
+        $this->assertNotNull($this->object->getRouter('admin_home'));
+        $this->assertNotNull($this->object->getRouter('admin'));
+        $this->assertNull($this->object->getRouter('test'));
     }
 
     /**
@@ -103,10 +56,10 @@ class RouterTest extends TestCase
      */
     public function testGetRouterKey()
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-                'This test has not been implemented yet.'
-        );
+        $this->assertNotNull($this->object->getRouterKey('http://localhost/admin/user/add.html'));
+        $this->assertEquals('admin', $this->object->getRouterKey('http://localhost/admin/user/add.html'));
+        $this->assertEquals('admin_home', $this->object->getRouterKey('http://localhost/admin/'));
+        $this->assertNull($this->object->getRouterKey('http://localhost/user/add'));
     }
 
     /**
@@ -115,10 +68,23 @@ class RouterTest extends TestCase
      */
     public function testMatch()
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-                'This test has not been implemented yet.'
-        );
+        $this->assertNotNull($this->object->match('http://localhost/admin/user/add.html'));
+        $this->assertEquals('loeyae.admin.user.add', $this->object->match('http://localhost/admin/user/add.html'));
+        $this->assertEquals('loeyae.admin.homepage', $this->object->match('http://localhost/admin/'));
+        $this->assertEquals('loeyae.frontend.user', $this->object->match('http://localhost/user/'));
+        $this->assertEquals('user.add', $this->object->match('http://localhost/user/add.html'));
+        $this->assertNotEmpty($this->object->getMatchedData());
+        $this->assertNotEmpty($this->object->getSettings());
+        $this->assertArrayHasKey('module', $this->object->getSettings());
+        $this->assertArrayHasKey('prop', $this->object->getSettings());
+        $this->assertEquals('#^/(?<module>\w+)/(?<prop>\w+).html$#', $this->object->getMatchedRule());
+        $this->assertEmpty($this->getProvidedData());
+        $this->assertEquals('loeyae.user.get', $this->object->match('http://localhost/loeyae/user/get/1.html'));
+        $this->assertNotEmpty($this->object->getMatchedData());
+        $this->assertNotEmpty($this->object->getSettings());
+        $this->assertNotEmpty($this->object->getPathVariable());
+        $this->assertArrayHasKey('id', $this->object->getPathVariable());
+        $this->assertNull($this->object->match('http://localhost/user/add'));
     }
 
     /**
@@ -127,10 +93,24 @@ class RouterTest extends TestCase
      */
     public function testGenerate()
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-                'This test has not been implemented yet.'
-        );
+        $e = null;
+        try {
+            $this->assertNotNull($this->object->generate('index', ['prop' => 'user']));
+        } catch (Exception $exc) {
+            $e = $exc;
+        }
+        $this->assertNull($e);
+        $this->assertEquals('/user/', $this->object->generate('index', ['prop' => 'user']));
+        define('BASE_SERVER_URL', 'http://localhost');
+        $this->assertEquals('http://localhost/user/', $this->object->generate('index', ['prop' => 'user']));
+        $e = null;
+        try {
+            $this->object->generate('test');
+        } catch (Exception $exc) {
+            $e = $exc;
+        }
+        $this->assertNotNull($e);
+        $this->assertInstanceOf(BusinessException::class, $e);
     }
 
 }

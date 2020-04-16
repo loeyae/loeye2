@@ -66,12 +66,13 @@
           regex:
               prop: \w+
       rewrite:
-          module_id: '{module}.{prop}.{idx}'
-          path: ^/{module}/{prop}/{idx}.html$
+          module_id: '{module}.{prop}.{action}'
+          path: ^/{module}/{prop}/{action}/{id}.html$
           regex:
               module: \w+
               prop: \w+
-              idx: \w+
+              action: \w+
+              id: \d+
       sample:
           module_id: '{module}.{prop}'
           path: ^/{module}/{prop}.html$
