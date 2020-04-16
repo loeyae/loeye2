@@ -38,7 +38,7 @@ class DeltaDefinitionTest extends TestCase
     }
 
     /**
-     * @covers DeltaDefinition::getConfigTreeBuilder
+     * @cover DeltaDefinition::getConfigTreeBuilder
      * @todo   Implement testGetConfigTreeBuilder().
      */
     public function testGetConfigTreeBuilder()

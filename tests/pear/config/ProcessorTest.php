@@ -39,7 +39,7 @@ class ProcessorTest extends TestCase {
 
 
     /**
-     * @covers Processor::process
+     * @cover Processor::process
      * @todo   Implement testProcess().
      */
     public function testProcess()
@@ -54,7 +54,7 @@ class ProcessorTest extends TestCase {
 
 
     /**
-     * @covers Processor::processConfiguration
+     * @cover Processor::processConfiguration
      * @todo   Implement testProcessConfiguration().
      */
     public function testProcessConfiguration()
@@ -72,7 +72,7 @@ class ProcessorTest extends TestCase {
 
 
     /**
-     * @covers Processor::processConfigurations
+     * @cover Processor::processConfigurations
      * @todo   Implement testProcessConfigurations().
      */
     public function testProcessConfigurations()

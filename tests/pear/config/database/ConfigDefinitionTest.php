@@ -40,7 +40,7 @@ class ConfigDefinitionTest extends TestCase {
 
 
     /**
-     * @covers ConfigDefinition::getConfigTreeBuilder
+     * @cover ConfigDefinition::getConfigTreeBuilder
      * @todo   Implement testGetConfigTreeBuilder().
      */
     public function testGetConfigTreeBuilder()

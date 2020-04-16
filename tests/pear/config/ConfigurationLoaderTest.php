@@ -45,7 +45,7 @@ class ConfigurationLoaderTest extends TestCase {
 
 
     /**
-     * @covers ConfigurationLoader::getDirectory
+     * @cover ConfigurationLoader::getDirectory
      * @todo   Implement testGetDirectory().
      */
     public function testGetDirectory()
@@ -57,7 +57,7 @@ class ConfigurationLoaderTest extends TestCase {
 
 
     /**
-     * @covers ConfigurationLoader::load
+     * @cover ConfigurationLoader::load
      * @todo   Implement testLoad().
      */
     public function testLoad()
@@ -70,7 +70,7 @@ class ConfigurationLoaderTest extends TestCase {
 
 
     /**
-     * @covers ConfigurationLoader::getCache
+     * @cover ConfigurationLoader::getCache
      * @throws InvalidArgumentException
      * @todo   Implement testGetCache().
      */

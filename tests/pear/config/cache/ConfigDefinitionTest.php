@@ -38,7 +38,7 @@ class ConfigDefinitionTest extends TestCase
     }
 
     /**
-     * @covers ConfigDefinition::getConfigTreeBuilder
+     * @cover ConfigDefinition::getConfigTreeBuilder
      * @todo   Implement testGetConfigTreeBuilder().
      */
     public function testGetConfigTreeBuilderBase()
@@ -53,7 +53,7 @@ class ConfigDefinitionTest extends TestCase
     }
 
     /**
-     * @covers ConfigDefinition::getConfigTreeBuilder
+     * @cover ConfigDefinition::getConfigTreeBuilder
      * @todo   Implement testGetConfigTreeBuilder().
      */
     public function testGetConfigTreeBuilderApc()
@@ -68,7 +68,7 @@ class ConfigDefinitionTest extends TestCase
     }
 
     /**
-     * @covers ConfigDefinition::getConfigTreeBuilder
+     * @cover ConfigDefinition::getConfigTreeBuilder
      * @todo   Implement testGetConfigTreeBuilder().
      */
     public function testGetConfigTreeBuilderMecached()
@@ -83,7 +83,7 @@ class ConfigDefinitionTest extends TestCase
     }
 
     /**
-     * @covers ConfigDefinition::getConfigTreeBuilder
+     * @cover ConfigDefinition::getConfigTreeBuilder
      * @todo   Implement testGetConfigTreeBuilder().
      */
     public function testGetConfigTreeBuilderRedis()
@@ -98,7 +98,7 @@ class ConfigDefinitionTest extends TestCase
     }
 
     /**
-     * @covers ConfigDefinition::getConfigTreeBuilder
+     * @cover ConfigDefinition::getConfigTreeBuilder
      * @todo   Implement testGetConfigTreeBuilder().
      */
     public function testGetConfigTreeBuilderPfile()
@@ -113,7 +113,7 @@ class ConfigDefinitionTest extends TestCase
     }
 
     /**
-     * @covers ConfigDefinition::getConfigTreeBuilder
+     * @cover ConfigDefinition::getConfigTreeBuilder
      * @todo   Implement testGetConfigTreeBuilder().
      */
     public function testGetConfigTreeBuilderFile()

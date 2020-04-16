@@ -33,7 +33,7 @@ class FileLocatorTest extends TestCase {
     }
 
     /**
-     * @covers FileLocator::locate
+     * @cover FileLocator::locate
      * @todo   Implement testLocate().
      */
     public function testLocate() {

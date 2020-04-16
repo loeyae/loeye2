@@ -41,7 +41,7 @@ class YamlFileLoaderTest extends TestCase {
     }
 
     /**
-     * @covers YamlFileLoader::load
+     * @cover YamlFileLoader::load
      * @todo   Implement testLoad().
      */
     public function testLoad() {
@@ -52,7 +52,7 @@ class YamlFileLoaderTest extends TestCase {
     }
 
     /**
-     * @covers YamlFileLoader::import
+     * @cover YamlFileLoader::import
      * @todo   Implement testLoad().
      */
     public function testImport() {
@@ -62,7 +62,7 @@ class YamlFileLoaderTest extends TestCase {
     }
 
     /**
-     * @covers YamlFileLoader::supports
+     * @cover YamlFileLoader::supports
      * @todo   Implement testSupports().
      */
     public function testSupports() {

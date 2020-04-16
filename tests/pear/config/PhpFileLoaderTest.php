@@ -35,7 +35,7 @@ class PhpFileLoaderTest extends TestCase {
     }
 
     /**
-     * @covers PhpFileLoader::load
+     * @cover PhpFileLoader::load
      * @todo   Implement testLoad().
      */
     public function testLoad() {
@@ -45,7 +45,7 @@ class PhpFileLoaderTest extends TestCase {
     }
 
     /**
-     * @covers PhpFileLoader::supports
+     * @cover PhpFileLoader::supports
      * @todo   Implement testSupports().
      */
     public function testSupports() {

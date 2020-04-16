@@ -62,7 +62,7 @@ class ConfigCacheTest extends TestCase {
 
 
     /**
-     * @covers ConfigCache::nsToPattern
+     * @cover ConfigCache::nsToPattern
      * @todo   Implement testNsToPattern().
      */
     public function testNsToPattern()
@@ -72,7 +72,7 @@ class ConfigCacheTest extends TestCase {
 
 
     /**
-     * @covers ConfigCache::getMetaFile
+     * @cover ConfigCache::getMetaFile
      * @todo   Implement testGetMetaFile().
      */
     public function testGetMetaFile()
@@ -85,7 +85,7 @@ class ConfigCacheTest extends TestCase {
 
 
     /**
-     * @covers ConfigCache::getResourceByMetaFile
+     * @cover ConfigCache::getResourceByMetaFile
      * @todo   Implement testGetResourceByMetaFile().
      */
     public function testGetResourceByMetaFile()
@@ -95,7 +95,7 @@ class ConfigCacheTest extends TestCase {
 
 
     /**
-     * @covers ConfigCache::isFresh
+     * @cover ConfigCache::isFresh
      * @todo   Implement testIsFresh().
      */
     public function testIsFresh()
@@ -105,7 +105,7 @@ class ConfigCacheTest extends TestCase {
 
 
     /**
-     * @covers ConfigCache::cacheAdapter
+     * @cover ConfigCache::cacheAdapter
      * @todo   Implement testCacheAdapter().
      */
     public function testCacheAdapter()
@@ -115,7 +115,7 @@ class ConfigCacheTest extends TestCase {
 
 
     /**
-     * @covers ConfigCache::write
+     * @cover ConfigCache::write
      * @throws InvalidArgumentException
      * @todo   Implement testWrite().
      */

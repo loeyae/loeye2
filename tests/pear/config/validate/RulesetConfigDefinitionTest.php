@@ -38,7 +38,7 @@ class RulesetConfigDefinitionTest extends TestCase
     }
 
     /**
-     * @covers RulesetConfigDefinition::getConfigTreeBuilder
+     * @cover RulesetConfigDefinition::getConfigTreeBuilder
      * @todo   Implement testGetConfigTreeBuilder().
      */
     public function testGetConfigTreeBuilder()
