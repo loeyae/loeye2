@@ -162,8 +162,8 @@ class Translator
     public function getFormatString($key, $args): string
     {
         $pattern = $this->getString($key, [], $this->_domain, $this->_locale);
-        $fmt = new MessageFormatter($this->_locale, $pattern);
-        $result  = msgfmt_format_message($fmt, $this->_locale, $pattern, $args);
+        msgfmt_create($this->_locale, $pattern);
+        $result  = msgfmt_format_message($this->_locale, $pattern, $args);
         if ($result === false) {
             return $pattern;
         }

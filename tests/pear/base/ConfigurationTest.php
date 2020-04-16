@@ -42,7 +42,7 @@ class ConfigurationTest extends TestCase {
 
 
     /**
-     * @covers Configuration::getBaseDir
+     * @cover Configuration::getBaseDir
      * @todo   Implement testGetBaseDir().
      */
     public function testGetBaseDir()
@@ -54,7 +54,7 @@ class ConfigurationTest extends TestCase {
 
 
     /**
-     * @covers Configuration::getBundle
+     * @cover Configuration::getBundle
      * @todo   Implement testGetBundle().
      */
     public function testGetBundle()
@@ -66,7 +66,7 @@ class ConfigurationTest extends TestCase {
 
 
     /**
-     * @covers Configuration::getContext
+     * @cover Configuration::getContext
      * @todo   Implement testGetContext().
      */
     public function testGetContext()
@@ -78,7 +78,7 @@ class ConfigurationTest extends TestCase {
 
 
     /**
-     * @covers Configuration::setDefinition
+     * @cover Configuration::setDefinition
      * @todo   Implement testSetDefinition().
      */
     public function testSetDefinition()
@@ -88,7 +88,7 @@ class ConfigurationTest extends TestCase {
 
 
     /**
-     * @covers Configuration::getDefinition
+     * @cover Configuration::getDefinition
      * @todo   Implement testGetDefinition().
      */
     public function testGetDefinition()
@@ -98,7 +98,7 @@ class ConfigurationTest extends TestCase {
 
 
     /**
-     * @covers Configuration::bundle
+     * @cover Configuration::bundle
      * @todo   Implement testBundle().
      */
     public function testBundle()
@@ -108,7 +108,7 @@ class ConfigurationTest extends TestCase {
 
 
     /**
-     * @covers Configuration::context
+     * @cover Configuration::context
      * @todo   Implement testContext().
      */
     public function testContext()
@@ -118,7 +118,7 @@ class ConfigurationTest extends TestCase {
 
 
     /**
-     * @covers Configuration::get
+     * @cover Configuration::get
      * @todo   Implement testGet().
      */
     public function testGet()
@@ -130,7 +130,7 @@ class ConfigurationTest extends TestCase {
 
 
     /**
-     * @covers Configuration::getConfig
+     * @cover Configuration::getConfig
      * @todo   Implement testGetConfig().
      */
     public function testGetConfig()
@@ -141,7 +141,7 @@ class ConfigurationTest extends TestCase {
 
 
     /**
-     * @covers Configuration::getSettings
+     * @cover Configuration::getSettings
      * @todo   Implement testGetSettings().
      */
     public function testGetSettings()

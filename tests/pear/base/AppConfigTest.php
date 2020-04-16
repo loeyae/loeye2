@@ -36,7 +36,7 @@ class AppConfigTest extends TestCase
     }
 
     /**
-     * @covers AppConfig::offsetExists
+     * @cover AppConfig::offsetExists
      */
     public function testOffsetExists(): void
     {
@@ -44,7 +44,7 @@ class AppConfigTest extends TestCase
     }
 
     /**
-     * @covers AppConfig::offsetGet
+     * @cover AppConfig::offsetGet
      */
     public function testOffsetGet(): void
     {
@@ -55,7 +55,7 @@ class AppConfigTest extends TestCase
     }
 
     /**
-     * @covers AppConfig::offsetSet
+     * @cover AppConfig::offsetSet
      */
     public function testOffsetSet()
     {
@@ -67,7 +67,7 @@ class AppConfigTest extends TestCase
     }
 
     /**
-     * @covers AppConfig::offsetUnset
+     * @cover AppConfig::offsetUnset
      */
     public function testOffsetUnset()
     {
@@ -78,7 +78,7 @@ class AppConfigTest extends TestCase
     }
 
     /**
-     * @covers AppConfig::getSetting
+     * @cover AppConfig::getSetting
      */
     public function testGetSetting()
     {
@@ -88,7 +88,7 @@ class AppConfigTest extends TestCase
     }
 
     /**
-     * @covers AppConfig::setPropertyName
+     * @cover AppConfig::setPropertyName
      */
     public function testSetPropertyName()
     {
@@ -99,7 +99,7 @@ class AppConfigTest extends TestCase
     }
 
     /**
-     * @covers AppConfig::getPropertyName
+     * @cover AppConfig::getPropertyName
      */
     public function testGetPropertyName()
     {
@@ -109,7 +109,7 @@ class AppConfigTest extends TestCase
     }
 
     /**
-     * @covers AppConfig::setTimezone
+     * @cover AppConfig::setTimezone
      */
     public function testSetTimezone()
     {
@@ -120,7 +120,7 @@ class AppConfigTest extends TestCase
     }
 
     /**
-     * @covers AppConfig::getTimezone
+     * @cover AppConfig::getTimezone
      */
     public function testGetTimezone()
     {
@@ -130,7 +130,7 @@ class AppConfigTest extends TestCase
     }
 
     /**
-     * @covers AppConfig::setLocale
+     * @cover AppConfig::setLocale
      */
     public function testSetLocale()
     {
@@ -141,7 +141,7 @@ class AppConfigTest extends TestCase
     }
 
     /**
-     * @covers AppConfig::getLocale
+     * @cover AppConfig::getLocale
      */
     public function testGetLocale()
     {

@@ -37,7 +37,7 @@ class TranslatorTest extends TestCase
     }
 
     /**
-     * @covers Translator::getLocale
+     * @cover Translator::getLocale
      * @todo   Implement testGetLocale().
      */
     public function testGetLocale()
@@ -48,7 +48,7 @@ class TranslatorTest extends TestCase
     }
 
     /**
-     * @covers Translator::getString
+     * @cover Translator::getString
      * @todo   Implement testGetString().
      */
     public function testGetString()
@@ -71,7 +71,7 @@ class TranslatorTest extends TestCase
     }
 
     /**
-     * @covers Translator::getReplacedString
+     * @cover Translator::getReplacedString
      * @todo   Implement testGetReplacedString().
      */
     public function testGetReplacedString()
@@ -82,7 +82,7 @@ class TranslatorTest extends TestCase
     }
 
     /**
-     * @covers Translator::getFormatString
+     * @cover Translator::getFormatString
      * @todo   Implement testGetFormatString().
      */
     public function testGetFormatString()

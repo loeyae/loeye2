@@ -39,7 +39,7 @@ class RouterTest extends TestCase
     }
 
     /**
-     * @covers Router::getRouter
+     * @cover Router::getRouter
      * @todo   Implement testGetRouter().
      */
     public function testGetRouter()
@@ -51,7 +51,7 @@ class RouterTest extends TestCase
     }
 
     /**
-     * @covers Router::getRouterKey
+     * @cover Router::getRouterKey
      * @todo   Implement testGetRouterKey().
      */
     public function testGetRouterKey()
@@ -63,7 +63,7 @@ class RouterTest extends TestCase
     }
 
     /**
-     * @covers Router::match
+     * @cover Router::match
      * @todo   Implement testMatch().
      */
     public function testMatch()
@@ -88,7 +88,7 @@ class RouterTest extends TestCase
     }
 
     /**
-     * @covers Router::generate
+     * @cover Router::generate
      * @todo   Implement testGenerate().
      */
     public function testGenerate()

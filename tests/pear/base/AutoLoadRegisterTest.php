@@ -23,8 +23,8 @@ class AutoLoadRegisterTest extends TestCase
 {
 
     /**
-     * @covers AutoLoadRegister::addAlias
-     * @covers AutoLoadRegister::realAliasFile
+     * @cover AutoLoadRegister::addAlias
+     * @cover AutoLoadRegister::realAliasFile
      */
     public function testAddAlias()
     {
@@ -35,8 +35,8 @@ class AutoLoadRegisterTest extends TestCase
     }
 
     /**
-     * @covers AutoLoadRegister::initApp
-     * @covers AutoLoadRegister::realAliasFile
+     * @cover AutoLoadRegister::initApp
+     * @cover AutoLoadRegister::realAliasFile
      */
     public function testInitApp()
     {
@@ -48,8 +48,8 @@ class AutoLoadRegisterTest extends TestCase
     }
 
     /**
-     * @covers AutoLoadRegister::addNamespace
-     * @covers AutoLoadRegister::load
+     * @cover AutoLoadRegister::addNamespace
+     * @cover AutoLoadRegister::load
      */
     public function testAddNamespace()
     {
@@ -62,8 +62,8 @@ class AutoLoadRegisterTest extends TestCase
     }
 
     /**
-     * @covers AutoLoadRegister::addDir
-     * @covers AutoLoadRegister::load
+     * @cover AutoLoadRegister::addDir
+     * @cover AutoLoadRegister::load
      */
     public function testAddDir()
     {
@@ -76,7 +76,7 @@ class AutoLoadRegisterTest extends TestCase
     }
 
     /**
-     * @covers AutoLoadRegister::loadFile
+     * @cover AutoLoadRegister::loadFile
      */
     public function testLoadFile()
     {
@@ -86,8 +86,8 @@ class AutoLoadRegisterTest extends TestCase
     }
 
     /**
-     * @covers AutoLoadRegister::addFile
-     * @covers AutoLoadRegister::autoLoad
+     * @cover AutoLoadRegister::addFile
+     * @cover AutoLoadRegister::autoLoad
      */
     public function testAddFile()
     {
@@ -98,8 +98,8 @@ class AutoLoadRegisterTest extends TestCase
     }
 
     /**
-     * @covers AutoLoadRegister::addSingle
-     * @covers AutoLoadRegister::load
+     * @cover AutoLoadRegister::addSingle
+     * @cover AutoLoadRegister::load
      */
     public function testAddSingle()
     {
