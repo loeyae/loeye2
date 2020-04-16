@@ -26,7 +26,7 @@ use loeye\std\ConfigTrait;
  *
  * @author   Zhang Yi <loeyae@gmail.com>
  */
-class Router extends \loeye\std\Router implements ArrayAccess
+class Router extends \loeye\std\Router
 {
 
     use ConfigTrait;
@@ -50,65 +50,6 @@ class Router extends \loeye\std\Router implements ArrayAccess
     }
 
     /**
-     * offsetExists
-     *
-     * @param mixed $offset offset
-     *
-     * @return boolean
-     */
-    public function offsetExists($offset): bool
-    {
-        $methodList = array(
-            'getRouter',
-            'getRouterKey',
-            'match',
-        );
-        return in_array($offset, $methodList, true);
-    }
-
-    /**
-     * offsetGet
-     *
-     * @param mixed $offset offset
-     *
-     * @return mixed
-     */
-    public function offsetGet($offset)
-    {
-        switch ($offset) {
-            case 'getRouter':
-            case 'getRouterKey':
-            case 'match':
-                return $this->$offset();
-            default :
-                return null;
-        }
-    }
-
-    /**
-     * offsetSet
-     *
-     * @param mixed $offset offset
-     * @param mixed $value  value
-     *
-     * @return void
-     */
-    public function offsetSet($offset, $value): void
-    {
-    }
-
-    /**
-     * offsetUnset
-     *
-     * @param mixed $offset offset
-     *
-     * @return void
-     */
-    public function offsetUnset($offset): void
-    {
-    }
-
-    /**
      * getRouter
      *
      * @param string $key key
@@ -128,9 +69,9 @@ class Router extends \loeye\std\Router implements ArrayAccess
      *
      * @param string $url url
      *
-     * @return string
+     * @return string|null
      */
-    public function getRouterKey($url): string
+    public function getRouterKey($url): ?string
     {
         $routerKey = null;
         $path      = parse_url($url, PHP_URL_PATH);
@@ -152,9 +93,9 @@ class Router extends \loeye\std\Router implements ArrayAccess
      *
      * @param string $url url
      *
-     * @return string
+     * @return string|null
      */
-    public function match($url): string
+    public function match($url): ?string
     {
         $moduleId = null;
         $basePath = '';
