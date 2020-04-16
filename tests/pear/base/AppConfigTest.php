@@ -111,7 +111,7 @@ class AppConfigTest extends TestCase
     public function testGetPropertyName()
     {
         $actual = $this->object->getPropertyName();
-        $expected = 'loeyae';
+        $expected = 'unit';
         $this->assertEquals($expected, $actual);
     }
 

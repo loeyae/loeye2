@@ -67,7 +67,7 @@ class ConfigCacheTest extends TestCase {
      */
     public function testNsToPattern()
     {
-        $this->assertEquals('unit/app', $this->object->nsToPattern());
+        $this->assertEquals(DIRECTORY_SEPARATOR.'unit/app', $this->object->nsToPattern());
     }
 
 
@@ -78,7 +78,8 @@ class ConfigCacheTest extends TestCase {
     public function testGetMetaFile()
     {
         $actual = $this->object->getMetaFile();
-        $expected = PROJECT_UNIT_RUNTIME_DIR .DIRECTORY_SEPARATOR .'cache'. DIRECTORY_SEPARATOR.$this->namespace.DIRECTORY_SEPARATOR. md5(serialize([$this->path, 'unit/app'])).'.meta';
+        $expected = PROJECT_UNIT_RUNTIME_DIR .DIRECTORY_SEPARATOR .'cache'. DIRECTORY_SEPARATOR.$this->namespace
+            .DIRECTORY_SEPARATOR. md5(serialize([$this->path, DIRECTORY_SEPARATOR.'unit/app'])).'.meta';
         $this->assertEquals($expected, $actual);
     }
 
