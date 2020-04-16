@@ -7,7 +7,7 @@
  * @version SVN: $Id: Zhang Yi $
  */
 
-require_once(realpath(dirname(__FILE__).DIRECTORY_SEPARATOR .'../vendor'. DIRECTORY_SEPARATOR .'autoload.php'));
+require_once(dirname(__DIR__) .DIRECTORY_SEPARATOR .'vendor'. DIRECTORY_SEPARATOR .'autoload.php');
 
-define('PROJECT_UNIT_DIR', dirname(__FILE__));
+define('PROJECT_UNIT_DIR', __DIR__);
 define('PROJECT_UNIT_RUNTIME_DIR', PROJECT_UNIT_DIR.DIRECTORY_SEPARATOR.'runtime');
