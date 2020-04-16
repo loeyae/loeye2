@@ -230,8 +230,9 @@ class AutoLoadRegister
     {
         $file = '';
         $className = trim($className, '\\');
-        if (in_array($className, static::$singleMap, true)) {
+        if (array_key_exists($className, static::$singleMap)) {
             $file = realpath(static::$singleMap[$className]);
+            return static::loadFile($file);
         }
         $arr = explode('\\', $className);
         $name = array_pop($arr);
