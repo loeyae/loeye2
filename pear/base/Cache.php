@@ -156,14 +156,6 @@ class Cache
     }
 
     /**
-     * __destruct
-     */
-    public function __destruct()
-    {
-        $this->instance->commit();
-    }
-
-    /**
      * @param string $key cache key
      * @param mixed $settings cache value
      * @param int|null $lifeTime expire time
@@ -177,6 +169,7 @@ class Cache
             $item->set($settings);
             $item->expiresAfter($lifeTime);
             $this->instance->saveDeferred($item);
+            $this->instance->commit();
         } catch (InvalidArgumentException $e) {
             Utils::errorLog($e);
         }
@@ -197,6 +190,7 @@ class Cache
             $values = $item->get();
             $item->set(array_merge_recursive((array)$values, (array)$settings));
             $this->instance->saveDeferred($item);
+            $this->instance->commit();
         } catch (InvalidArgumentException $e) {
             Utils::errorLog($e);
         }
