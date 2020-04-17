@@ -42,8 +42,7 @@ class ConfigurationTest extends TestCase {
 
 
     /**
-     * @cover Configuration::getBaseDir
-     * @todo   Implement testGetBaseDir().
+     * @covers \loeye\base\Configuration::getBaseDir
      */
     public function testGetBaseDir()
     {
@@ -54,8 +53,7 @@ class ConfigurationTest extends TestCase {
 
 
     /**
-     * @cover Configuration::getBundle
-     * @todo   Implement testGetBundle().
+     * @covers \loeye\base\Configuration::getBundle
      */
     public function testGetBundle()
     {
@@ -66,8 +64,7 @@ class ConfigurationTest extends TestCase {
 
 
     /**
-     * @cover Configuration::getContext
-     * @todo   Implement testGetContext().
+     * @covers \loeye\base\Configuration::getContext
      */
     public function testGetContext()
     {
@@ -78,8 +75,7 @@ class ConfigurationTest extends TestCase {
 
 
     /**
-     * @cover Configuration::setDefinition
-     * @todo   Implement testSetDefinition().
+     * @covers \loeye\base\Configuration::setDefinition
      */
     public function testSetDefinition()
     {
@@ -88,8 +84,7 @@ class ConfigurationTest extends TestCase {
 
 
     /**
-     * @cover Configuration::getDefinition
-     * @todo   Implement testGetDefinition().
+     * @covers \loeye\base\Configuration::getDefinition
      */
     public function testGetDefinition()
     {
@@ -98,8 +93,7 @@ class ConfigurationTest extends TestCase {
 
 
     /**
-     * @cover Configuration::bundle
-     * @todo   Implement testBundle().
+     * @covers \loeye\base\Configuration::bundle
      */
     public function testBundle()
     {
@@ -108,8 +102,7 @@ class ConfigurationTest extends TestCase {
 
 
     /**
-     * @cover Configuration::context
-     * @todo   Implement testContext().
+     * @covers \loeye\base\Configuration::context
      */
     public function testContext()
     {
@@ -118,8 +111,7 @@ class ConfigurationTest extends TestCase {
 
 
     /**
-     * @cover Configuration::get
-     * @todo   Implement testGet().
+     * @covers \loeye\base\Configuration::get
      */
     public function testGet()
     {
@@ -130,8 +122,7 @@ class ConfigurationTest extends TestCase {
 
 
     /**
-     * @cover Configuration::getConfig
-     * @todo   Implement testGetConfig().
+     * @covers \loeye\base\Configuration::getConfig
      */
     public function testGetConfig()
     {
@@ -141,8 +132,7 @@ class ConfigurationTest extends TestCase {
 
 
     /**
-     * @cover Configuration::getSettings
-     * @todo   Implement testGetSettings().
+     * @covers \loeye\base\Configuration::getSettings
      */
     public function testGetSettings()
     {

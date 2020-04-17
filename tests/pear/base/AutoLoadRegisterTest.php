@@ -17,14 +17,14 @@
 namespace loeye\unit\base;
 
 use loeye\base\AutoLoadRegister;
-use loeye\unit\TestCase;
+use PHPUnit\Framework\TestCase;
 
 class AutoLoadRegisterTest extends TestCase
 {
 
     /**
-     * @cover AutoLoadRegister::addAlias
-     * @cover AutoLoadRegister::realAliasFile
+     * @covers \loeye\base\AutoLoadRegister::addAlias
+     * @covers \loeye\base\AutoLoadRegister::realAliasFile
      */
     public function testAddAlias()
     {
@@ -35,8 +35,8 @@ class AutoLoadRegisterTest extends TestCase
     }
 
     /**
-     * @cover AutoLoadRegister::initApp
-     * @cover AutoLoadRegister::realAliasFile
+     * @covers \loeye\base\AutoLoadRegister::initApp
+     * @covers \loeye\base\AutoLoadRegister::realAliasFile
      */
     public function testInitApp()
     {
@@ -48,8 +48,8 @@ class AutoLoadRegisterTest extends TestCase
     }
 
     /**
-     * @cover AutoLoadRegister::addNamespace
-     * @cover AutoLoadRegister::load
+     * @covers \loeye\base\AutoLoadRegister::addNamespace
+     * @covers \loeye\base\AutoLoadRegister::load
      */
     public function testAddNamespace()
     {
@@ -62,8 +62,8 @@ class AutoLoadRegisterTest extends TestCase
     }
 
     /**
-     * @cover AutoLoadRegister::addDir
-     * @cover AutoLoadRegister::load
+     * @covers \loeye\base\AutoLoadRegister::addDir
+     * @covers \loeye\base\AutoLoadRegister::load
      */
     public function testAddDir()
     {
@@ -76,7 +76,7 @@ class AutoLoadRegisterTest extends TestCase
     }
 
     /**
-     * @cover AutoLoadRegister::loadFile
+     * @covers \loeye\base\AutoLoadRegister::loadFile
      */
     public function testLoadFile()
     {
@@ -86,8 +86,8 @@ class AutoLoadRegisterTest extends TestCase
     }
 
     /**
-     * @cover AutoLoadRegister::addFile
-     * @cover AutoLoadRegister::autoLoad
+     * @covers \loeye\base\AutoLoadRegister::addFile
+     * @covers \loeye\base\AutoLoadRegister::autoLoad
      */
     public function testAddFile()
     {
@@ -98,8 +98,8 @@ class AutoLoadRegisterTest extends TestCase
     }
 
     /**
-     * @cover AutoLoadRegister::addSingle
-     * @cover AutoLoadRegister::load
+     * @covers \loeye\base\AutoLoadRegister::addSingle
+     * @covers \loeye\base\AutoLoadRegister::load
      */
     public function testAddSingle()
     {

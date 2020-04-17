@@ -148,11 +148,11 @@ class Cache
      */
     public static function getInstance(AppConfig $appConfig, $type = null): self
     {
-        $type = $type ?? self::CACHE_TYPE_FILE;
-        if (!isset(self::$_instance[$type])) {
-            self::$_instance[$type] = new self($appConfig, $type);
+        $sType = $type ?? 'default';
+        if (!isset(self::$_instance[$sType])) {
+            self::$_instance[$sType] = new self($appConfig, $type);
         }
-        return self::$_instance[$type];
+        return self::$_instance[$sType];
     }
 
     /**
@@ -326,7 +326,7 @@ class Cache
      *
      * @return mixed
      */
-    public static function init(AppConfig $appConfig, $type = self::CACHE_TYPE_FILE)
+    public static function init(AppConfig $appConfig, $type = null)
     {
         try {
             return self::getInstance($appConfig, $type);

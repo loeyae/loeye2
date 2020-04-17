@@ -39,8 +39,7 @@ class ProcessorTest extends TestCase {
 
 
     /**
-     * @cover Processor::process
-     * @todo   Implement testProcess().
+     * @covers \loeye\config\Processor::process
      */
     public function testProcess()
     {
@@ -54,8 +53,7 @@ class ProcessorTest extends TestCase {
 
 
     /**
-     * @cover Processor::processConfiguration
-     * @todo   Implement testProcessConfiguration().
+     * @covers \loeye\config\Processor::processConfiguration
      */
     public function testProcessConfiguration()
     {
@@ -72,8 +70,7 @@ class ProcessorTest extends TestCase {
 
 
     /**
-     * @cover Processor::processConfigurations
-     * @todo   Implement testProcessConfigurations().
+     * @covers \loeye\config\Processor::processConfigurations
      */
     public function testProcessConfigurations()
     {

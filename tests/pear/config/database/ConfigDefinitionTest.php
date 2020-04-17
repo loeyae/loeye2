@@ -40,8 +40,7 @@ class ConfigDefinitionTest extends TestCase {
 
 
     /**
-     * @cover ConfigDefinition::getConfigTreeBuilder
-     * @todo   Implement testGetConfigTreeBuilder().
+     * @covers \loeye\config\database\ConfigDefinition::getConfigTreeBuilder
      */
     public function testGetConfigTreeBuilder()
     {

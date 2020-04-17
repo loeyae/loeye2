@@ -37,8 +37,7 @@ class TranslatorTest extends TestCase
     }
 
     /**
-     * @cover Translator::getLocale
-     * @todo   Implement testGetLocale().
+     * @covers \loeye\base\Translator::getLocale
      */
     public function testGetLocale()
     {
@@ -48,8 +47,7 @@ class TranslatorTest extends TestCase
     }
 
     /**
-     * @cover Translator::getString
-     * @todo   Implement testGetString().
+     * @covers \loeye\base\Translator::getString
      */
     public function testGetString()
     {
@@ -71,8 +69,7 @@ class TranslatorTest extends TestCase
     }
 
     /**
-     * @cover Translator::getReplacedString
-     * @todo   Implement testGetReplacedString().
+     * @covers \loeye\base\Translator::getReplacedString
      */
     public function testGetReplacedString()
     {
@@ -82,8 +79,7 @@ class TranslatorTest extends TestCase
     }
 
     /**
-     * @cover Translator::getFormatString
-     * @todo   Implement testGetFormatString().
+     * @covers \loeye\base\Translator::getFormatString
      */
     public function testGetFormatString()
     {

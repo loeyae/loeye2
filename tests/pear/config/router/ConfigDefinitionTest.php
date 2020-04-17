@@ -38,7 +38,7 @@ class ConfigDefinitionTest extends TestCase
     }
 
     /**
-     * @cover ConfigDefinition::getConfigTreeBuilder
+     * @covers \loeye\config\router\ConfigDefinition::getConfigTreeBuilder
      * @todo   Implement testGetConfigTreeBuilder().
      */
     public function testGetConfigTreeBuilder()

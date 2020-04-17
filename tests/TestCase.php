@@ -8,6 +8,7 @@
  */
 namespace loeye\unit;
 
+use loeye\base\AppConfig;
 use PHPUnit\Framework\TestCase as BaseTestCase;
 
 /**
@@ -17,21 +18,26 @@ use PHPUnit\Framework\TestCase as BaseTestCase;
  */
 class TestCase extends BaseTestCase 
 {
-    
+
+    /**
+     * @var AppConfig AppConfig
+     */
+    protected $appConfig;
+
     public static function setUpBeforeClass() {
-        echo "befor class";
+        ;
     }
     
     protected function setUp() {
-        echo "set up";
+        $this->appConfig = new AppConfig('unit');
     }
     
     public static function tearDownAfterClass() {
-        echo "after class";
+        ;
     }
     
     protected function tearDown() {
-        echo "tear down";
+        unset($this->appConfig);
     }
     
     

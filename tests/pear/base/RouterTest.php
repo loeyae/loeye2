@@ -39,7 +39,7 @@ class RouterTest extends TestCase
     }
 
     /**
-     * @cover Router::getRouter
+     * @covers \loeye\base\Router::getRouter
      * @todo   Implement testGetRouter().
      */
     public function testGetRouter()
@@ -51,7 +51,7 @@ class RouterTest extends TestCase
     }
 
     /**
-     * @cover Router::getRouterKey
+     * @covers \loeye\base\Router::getRouterKey
      * @todo   Implement testGetRouterKey().
      */
     public function testGetRouterKey()
@@ -63,7 +63,7 @@ class RouterTest extends TestCase
     }
 
     /**
-     * @cover Router::match
+     * @covers \loeye\base\Router::match
      * @todo   Implement testMatch().
      */
     public function testMatch()
@@ -88,7 +88,7 @@ class RouterTest extends TestCase
     }
 
     /**
-     * @cover Router::generate
+     * @covers \loeye\base\Router::generate
      * @todo   Implement testGenerate().
      */
     public function testGenerate()

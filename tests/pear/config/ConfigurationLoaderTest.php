@@ -45,8 +45,7 @@ class ConfigurationLoaderTest extends TestCase {
 
 
     /**
-     * @cover ConfigurationLoader::getDirectory
-     * @todo   Implement testGetDirectory().
+     * @covers \loeye\config\ConfigurationLoader::getDirectory
      */
     public function testGetDirectory()
     {
@@ -57,8 +56,7 @@ class ConfigurationLoaderTest extends TestCase {
 
 
     /**
-     * @cover ConfigurationLoader::load
-     * @todo   Implement testLoad().
+     * @covers \loeye\config\ConfigurationLoader::load
      */
     public function testLoad()
     {
@@ -70,9 +68,8 @@ class ConfigurationLoaderTest extends TestCase {
 
 
     /**
-     * @cover ConfigurationLoader::getCache
+     * @covers \loeye\config\ConfigurationLoader::getCache
      * @throws InvalidArgumentException
-     * @todo   Implement testGetCache().
      */
     public function testGetCache()
     {

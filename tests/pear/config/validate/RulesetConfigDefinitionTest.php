@@ -38,8 +38,7 @@ class RulesetConfigDefinitionTest extends TestCase
     }
 
     /**
-     * @cover RulesetConfigDefinition::getConfigTreeBuilder
-     * @todo   Implement testGetConfigTreeBuilder().
+     * @covers \loeye\config\validate\RulesetConfigDefinition::getConfigTreeBuilder
      */
     public function testGetConfigTreeBuilder()
     {

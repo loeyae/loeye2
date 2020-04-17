@@ -62,8 +62,7 @@ class ConfigCacheTest extends TestCase {
 
 
     /**
-     * @cover ConfigCache::nsToPattern
-     * @todo   Implement testNsToPattern().
+     * @covers \loeye\config\ConfigCache::nsToPattern
      */
     public function testNsToPattern()
     {
@@ -72,8 +71,7 @@ class ConfigCacheTest extends TestCase {
 
 
     /**
-     * @cover ConfigCache::getMetaFile
-     * @todo   Implement testGetMetaFile().
+     * @covers \loeye\config\ConfigCache::getMetaFile
      */
     public function testGetMetaFile()
     {
@@ -85,8 +83,7 @@ class ConfigCacheTest extends TestCase {
 
 
     /**
-     * @cover ConfigCache::getResourceByMetaFile
-     * @todo   Implement testGetResourceByMetaFile().
+     * @covers \loeye\config\ConfigCache::getResourceByMetaFile
      */
     public function testGetResourceByMetaFile()
     {
@@ -95,8 +92,7 @@ class ConfigCacheTest extends TestCase {
 
 
     /**
-     * @cover ConfigCache::isFresh
-     * @todo   Implement testIsFresh().
+     * @covers \loeye\config\ConfigCache::isFresh
      */
     public function testIsFresh()
     {
@@ -105,8 +101,7 @@ class ConfigCacheTest extends TestCase {
 
 
     /**
-     * @cover ConfigCache::cacheAdapter
-     * @todo   Implement testCacheAdapter().
+     * @covers \loeye\config\ConfigCache::cacheAdapter
      */
     public function testCacheAdapter()
     {
@@ -115,9 +110,8 @@ class ConfigCacheTest extends TestCase {
 
 
     /**
-     * @cover ConfigCache::write
+     * @covers \loeye\config\ConfigCache::write
      * @throws InvalidArgumentException
-     * @todo   Implement testWrite().
      */
     public function testWriteList()
     {

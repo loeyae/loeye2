@@ -38,8 +38,7 @@ class ConfigDefinitionTest extends TestCase
     }
 
     /**
-     * @cover ConfigDefinition::getConfigTreeBuilder
-     * @todo   Implement testGetConfigTreeBuilder().
+     * @covers \loeye\config\cache\ConfigDefinition::getConfigTreeBuilder
      */
     public function testGetConfigTreeBuilderBase()
     {
@@ -53,8 +52,7 @@ class ConfigDefinitionTest extends TestCase
     }
 
     /**
-     * @cover ConfigDefinition::getConfigTreeBuilder
-     * @todo   Implement testGetConfigTreeBuilder().
+     * @covers \loeye\config\cache\ConfigDefinition::getConfigTreeBuilder
      */
     public function testGetConfigTreeBuilderApc()
     {
@@ -68,8 +66,7 @@ class ConfigDefinitionTest extends TestCase
     }
 
     /**
-     * @cover ConfigDefinition::getConfigTreeBuilder
-     * @todo   Implement testGetConfigTreeBuilder().
+     * @covers \loeye\config\cache\ConfigDefinition::getConfigTreeBuilder
      */
     public function testGetConfigTreeBuilderMecached()
     {
@@ -83,8 +80,7 @@ class ConfigDefinitionTest extends TestCase
     }
 
     /**
-     * @cover ConfigDefinition::getConfigTreeBuilder
-     * @todo   Implement testGetConfigTreeBuilder().
+     * @covers \loeye\config\cache\ConfigDefinition::getConfigTreeBuilder
      */
     public function testGetConfigTreeBuilderRedis()
     {
@@ -98,8 +94,7 @@ class ConfigDefinitionTest extends TestCase
     }
 
     /**
-     * @cover ConfigDefinition::getConfigTreeBuilder
-     * @todo   Implement testGetConfigTreeBuilder().
+     * @covers \loeye\config\cache\ConfigDefinition::getConfigTreeBuilder
      */
     public function testGetConfigTreeBuilderPfile()
     {
@@ -113,8 +108,7 @@ class ConfigDefinitionTest extends TestCase
     }
 
     /**
-     * @cover ConfigDefinition::getConfigTreeBuilder
-     * @todo   Implement testGetConfigTreeBuilder().
+     * @covers \loeye\config\cache\ConfigDefinition::getConfigTreeBuilder
      */
     public function testGetConfigTreeBuilderFile()
     {

@@ -35,8 +35,7 @@ class PhpFileLoaderTest extends TestCase {
     }
 
     /**
-     * @cover PhpFileLoader::load
-     * @todo   Implement testLoad().
+     * @covers \loeye\config\PhpFileLoader::load
      */
     public function testLoad() {
         $resource = $this->object->load('unit/app/master.php');
@@ -45,8 +44,7 @@ class PhpFileLoaderTest extends TestCase {
     }
 
     /**
-     * @cover PhpFileLoader::supports
-     * @todo   Implement testSupports().
+     * @covers \loeye\config\PhpFileLoader::supports
      */
     public function testSupports() {
         $this->assertTrue($this->object->supports('master.php'));

@@ -38,8 +38,7 @@ class DeltaConfigDefinitionTest extends TestCase
     }
 
     /**
-     * @cover DeltaConfigDefinition::getConfigTreeBuilder
-     * @todo   Implement testGetConfigTreeBuilder().
+     * @covers \loeye\config\validate\DeltaConfigDefinition::getConfigTreeBuilder
      */
     public function testGetConfigTreeBuilder()
     {

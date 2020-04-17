@@ -39,6 +39,7 @@ class ConfigDefinitionTest extends TestCase {
     }
 
     /**
+     * @covers \loeye\config\app\ConfigDefinition::getConfigTreeBuilder
      */
     public function testGetConfigTreeBuilder()
     {
@@ -57,6 +58,9 @@ class ConfigDefinitionTest extends TestCase {
         $this->assertArrayHasKey('settings', $settings);
     }
 
+    /**
+     * @covers \loeye\config\app\ConfigDefinition::getConfigTreeBuilder
+     */
     public function testGetConfigTreeBuilderTest()
     {
         $processor = new Processor();
@@ -67,6 +71,9 @@ class ConfigDefinitionTest extends TestCase {
         $this->assertArrayHasKey('settings', $settings);
     }
 
+    /**
+     * @covers \loeye\config\app\ConfigDefinition::getConfigTreeBuilder
+     */
     public function testGetConfigTreeBuilderMulti()
     {
         $processor = new Processor();
