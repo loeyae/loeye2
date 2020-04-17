@@ -53,12 +53,12 @@ class AutoLoadRegisterTest extends TestCase
      */
     public function testAddNamespace()
     {
-        $this->assertFalse(class_exists('\mock\classes\Test'));
-        AutoLoadRegister::addNamespace('mock', PROJECT_DIR.D_S.'mock');
+        $this->assertFalse(class_exists('\mock\lib\Test'));
+        AutoLoadRegister::addNamespace('mock\lib', PROJECT_DIR.D_S.'mock\lib');
         spl_autoload_register(static function($className) {
             AutoLoadRegister::load($className);
         });
-        $this->assertTrue(class_exists('\mock\classes\Test'));
+        $this->assertTrue(class_exists('\mock\lib\Test'));
     }
 
     /**
@@ -67,12 +67,12 @@ class AutoLoadRegisterTest extends TestCase
      */
     public function testAddDir()
     {
-        $this->assertFalse(class_exists('\mock\classes\Test'));
-        AutoLoadRegister::addDir(PROJECT_DIR);
+        $this->assertFalse(class_exists('\classes\Test'));
+        AutoLoadRegister::addDir(PROJECT_DIR . D_S .'mock' . D_S .'test');
         spl_autoload_register(static function($className) {
             AutoLoadRegister::load($className);
         });
-        $this->assertTrue(class_exists('\mock\classes\Test'));
+        $this->assertTrue(class_exists('\classes\Test'));
     }
 
     /**
@@ -91,10 +91,10 @@ class AutoLoadRegisterTest extends TestCase
      */
     public function testAddFile()
     {
-        $this->assertFalse(class_exists('\mock\classes\Test'));
-        AutoLoadRegister::addFile(PROJECT_DIR.D_S.'mock\classes\Test.php');
+        $this->assertFalse(class_exists('\mock\classes\Test1'));
+        AutoLoadRegister::addFile(PROJECT_DIR.D_S.'mock\classes\Test1.php');
         AutoLoadRegister::autoLoad();
-        $this->assertTrue(class_exists('\mock\classes\Test'));
+        $this->assertTrue(class_exists('\mock\classes\Test1'));
     }
 
     /**
@@ -103,11 +103,11 @@ class AutoLoadRegisterTest extends TestCase
      */
     public function testAddSingle()
     {
-        $this->assertFalse(class_exists('\mock\classes\Test'));
-        AutoLoadRegister::addSingle('\mock\classes\Test', PROJECT_DIR.D_S.'mock\classes\Test.php');
+        $this->assertFalse(class_exists('\mock\classes\Test2'));
+        AutoLoadRegister::addSingle('\mock\classes\Test2', PROJECT_DIR.D_S.'mock\classes\Test2.php');
         spl_autoload_register(static function($className) {
             AutoLoadRegister::load($className);
         });
-        $this->assertTrue(class_exists('\mock\classes\Test'));
+        $this->assertTrue(class_exists('\mock\classes\Test2'));
     }
 }
