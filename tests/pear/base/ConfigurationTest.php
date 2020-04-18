@@ -133,6 +133,8 @@ class ConfigurationTest extends TestCase {
         $_SERVER['LOEYE_APP_SECRET'] = '111111';
         $this->assertEquals('10001', $this->object->get('application.setting.appid'));
         $this->assertEquals('111111', $this->object->get('application.setting.appsecret'));
+        putenv('LOEYE_APP_ID=10002');
+        $this->assertEquals('10002', $this->object->get('application.setting.appid'));
     }
 
 
