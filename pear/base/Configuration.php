@@ -300,10 +300,7 @@ class Configuration
             if ($value = getenv($key)) {
                 return $value;
             }
-            if (filter_has_var(INPUT_SERVER, $key)) {
-                return filter_input(INPUT_SERVER, $key);
-            }
-            return $_ENV[$key] ?? $default;
+            return $_SERVER[$key] ?? $_ENV[$key] ?? $default;
         }
         return $var;
     }
