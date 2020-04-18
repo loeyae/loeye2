@@ -18,6 +18,8 @@
 namespace loeye\config;
 
 use loeye\base\Utils;
+use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
+use Symfony\Component\Config\Definition\Exception\InvalidTypeException;
 
 /**
  * RegexNode
@@ -56,6 +58,39 @@ class RegexNode extends ArrayNode {
             return $this->name;
         }
         return '#'. $this->name .'#';
+    }
+
+
+    /**
+     * Normalizes the value.
+     *
+     * @param mixed $value The value to normalize
+     *
+     * @return mixed The normalized value
+     *
+     * @throws InvalidConfigurationException
+     */
+    protected function normalizeValue($value)
+    {
+        if (false === $value) {
+            return $value;
+        }
+        if (is_array($value)) {
+            return parent::normalizeValue($value);
+        }
+        return $value;
+    }
+
+
+    /**
+     * Validates the type of the value.
+     *
+     * @param mixed $value
+     *
+     * @throws InvalidTypeException
+     */
+    protected function validateType($value)
+    {
     }
 
 }

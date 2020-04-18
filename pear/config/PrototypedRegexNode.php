@@ -17,6 +17,9 @@
 
 namespace loeye\config;
 
+use loeye\base\Utils;
+use Symfony\Component\Config\Definition\Exception\InvalidTypeException;
+
 /**
  * PrototypedRegexNode
  *
@@ -71,4 +74,57 @@ class PrototypedRegexNode extends PrototypedArrayNode {
 
         return $prototype;
     }
+
+    protected function normalizeValue($value)
+    {
+        if (is_array($value)) {
+            return parent::normalizeValue($value);
+        }
+        return $value;
+    }
+
+
+    /**
+     * match
+     *
+     * @param string $value
+     * @return bool
+     */
+    public function match($value): bool
+    {
+        return preg_match($this->getPattern(), $value);
+    }
+
+
+    /**
+     * getPattern
+     *
+     * @return string
+     */
+    protected function getPattern(): string
+    {
+        if ($this->name === '*') {
+            return '#.+#';
+        }
+        if (Utils::startWith($this->name, '/')) {
+            return $this->name;
+        }
+        if (Utils::startWith($this->name, '#')) {
+            return $this->name;
+        }
+        return '#'. $this->name .'#';
+    }
+
+
+    /**
+     * Validates the type of the value.
+     *
+     * @param mixed $value
+     *
+     * @throws InvalidTypeException
+     */
+    protected function validateType($value)
+    {
+    }
+
 }

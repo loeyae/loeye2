@@ -3,8 +3,8 @@
 namespace loeye\unit\base;
 
 use loeye\base\Configuration;
-use loeye\config\app\ConfigDefinition;
 use loeye\config\app\DeltaDefinition;
+use loeye\config\module\ConfigDefinition;
 use loeye\unit\TestCase;
 
 /**
@@ -18,31 +18,25 @@ class ConfigurationTest extends TestCase {
     protected $object;
 
 
-    /**
-     * Sets up the fixture, for example, opens a network connection.
-     * This method is called before a test is executed.
-     */
     protected function setUp()
     {
+        $_ENV['LOEYE_PROFILE_ACTIVE'] = 'dev';
         $baseDir = PROJECT_CONFIG_DIR;
         $cacheDir = RUNTIME_CACHE_DIR;
-        $definition = [new ConfigDefinition(), new DeltaDefinition()];
+        $definition = [new \loeye\config\app\ConfigDefinition(), new DeltaDefinition()];
         $this->object = new Configuration('unit', 'app', $definition, null, $baseDir, $cacheDir);
     }
 
 
-    /**
-     * Tears down the fixture, for example, closes a network connection.
-     * This method is called after a test is executed.
-     */
     protected function tearDown()
     {
-
+        unset($this->object);
     }
 
 
     /**
      * @covers \loeye\base\Configuration::getBaseDir
+     * @covers \loeye\base\Configuration::__construct
      */
     public function testGetBaseDir()
     {
@@ -54,6 +48,7 @@ class ConfigurationTest extends TestCase {
 
     /**
      * @covers \loeye\base\Configuration::getBundle
+     * @covers \loeye\base\Configuration::__construct
      */
     public function testGetBundle()
     {
@@ -65,6 +60,7 @@ class ConfigurationTest extends TestCase {
 
     /**
      * @covers \loeye\base\Configuration::getContext
+     * @covers \loeye\base\Configuration::__construct
      */
     public function testGetContext()
     {
@@ -76,68 +72,100 @@ class ConfigurationTest extends TestCase {
 
     /**
      * @covers \loeye\base\Configuration::setDefinition
+     * @covers \loeye\base\Configuration::__construct
+     * @covers \loeye\base\Configuration::_getConfig
+     * @covers \loeye\base\Configuration::_computeHash
+     * @covers \loeye\base\Configuration::_loadConfig
+     * @covers \loeye\base\Configuration::isFresh
+     * @covers \loeye\base\Configuration::getEnv
+     * @covers \loeye\base\Configuration::bundle()
      */
     public function testSetDefinition()
     {
-        $this->assertTrue(true);
+        $configuration = new Configuration('unit', 'app');
+        $configuration->setDefinition(new \loeye\config\app\ConfigDefinition());
+        $configuration->bundle('app/test');
+        $this->assertEquals('app/test', $configuration->getBundle());
+        $this->assertNull($configuration->getContext());
+        $this->assertEquals('aaa', $configuration->get('test'));
+        unset($configuration);
+        $configuration = new Configuration('modules', 'unit', new ConfigDefinition());
+        $config = $configuration->getConfig();
+        $this->assertArrayHasKey('loeyae.login', $config);
+        $this->assertArrayHasKey('loeyae.logout', $config);
     }
 
 
     /**
      * @covers \loeye\base\Configuration::getDefinition
+     * @covers \loeye\base\Configuration::__construct
      */
     public function testGetDefinition()
     {
         $this->assertIsArray($this->object->getDefinition());
     }
 
-
-    /**
-     * @covers \loeye\base\Configuration::bundle
-     */
-    public function testBundle()
-    {
-        $this->assertTrue(true);
-    }
-
-
     /**
      * @covers \loeye\base\Configuration::context
+     * @covers \loeye\base\Configuration::__construct
+     * @covers \loeye\base\Configuration::_loadConfig
      */
     public function testContext()
     {
-        $this->assertTrue(true);
+        $this->object->context('profile=dev');
+        $this->assertEquals('profile=dev', $this->object->getContext());
+        $this->assertEquals('http://localhost:8088', $this->object->get('constants.BASE_SERVER_URL'));
     }
 
 
     /**
      * @covers \loeye\base\Configuration::get
+     * @covers \loeye\base\Configuration::getEnv
+     * @covers \loeye\base\Configuration::_loadConfig
+     * @covers \loeye\base\Configuration::__construct
      */
     public function testGet()
     {
         $expected = 'http://localhost';
         $actual = $this->object->get('constants.BASE_SERVER_URL');
         $this->assertEquals($expected, $actual);
+        $this->assertEquals('dev', $this->object->get('profile'));
+        $_SERVER['LOEYE_APP_SECRET'] = '111111';
+        $this->assertEquals('10001', $this->object->get('application.setting.appid'));
+        $this->assertEquals('111111', $this->object->get('application.setting.appsecret'));
     }
 
 
     /**
      * @covers \loeye\base\Configuration::getConfig
+     * @covers \loeye\base\Configuration::__construct
      */
     public function testGetConfig()
     {
         $actual = $this->object->getConfig();
         $this->assertIsArray($actual);
+        $this->assertEquals('http://localhost', $actual['constants']['BASE_SERVER_URL']);
+        $actual = $this->object->getConfig(null, 'profile=dev');
+        $this->assertIsArray($actual);
+        $this->assertEquals('http://localhost:8088', $actual['constants']['BASE_SERVER_URL']);
+        $actual = $this->object->getConfig('app/test');
+        $this->assertIsArray($actual);
+        $this->assertEquals('aaa', $actual['test']);
     }
 
 
     /**
      * @covers \loeye\base\Configuration::getSettings
+     * @covers \loeye\base\Configuration::__construct
      */
     public function testGetSettings()
     {
         $actual = $this->object->getSettings();
         $this->assertIsArray($actual);
+        $this->assertEquals('http://localhost', $actual['constants']['BASE_SERVER_URL']);
+        $actual = $this->object->getSettings('app/test');
+        $this->assertIsArray($actual);
+        $this->assertEquals('aaa', $actual['test']);
     }
 
 }

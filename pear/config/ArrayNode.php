@@ -58,27 +58,13 @@ class ArrayNode extends \Symfony\Component\Config\Definition\ArrayNode {
                 unset($value[$name]);
             } else {
                 foreach ($regexNode as $node) {
-                    if (is_array($val) && $node instanceof PrototypedRegexNode) {
+                    if ($node->match($name)) {
                         try {
                             $normalized[$name] = $node->normalize($val);
                         } catch (UnsetKeyException $e) {
 
                         } catch (\Exception $e) {
                             continue;
-                        }
-                        unset($value[$name]);
-                        goto brk;
-                    } else if (($node instanceof RegexNode) && $node->match($name)) {
-                        if (is_array($val)) {
-                            try {
-                                $normalized[$name] = $node->normalize($val);
-                            } catch (UnsetKeyException $e) {
-
-                            } catch (\Exception $e) {
-                                continue;
-                            }
-                        } else {
-                            $normalized[$name] = $val;
                         }
                         unset($value[$name]);
                         goto brk;
@@ -90,7 +76,6 @@ class ArrayNode extends \Symfony\Component\Config\Definition\ArrayNode {
                 brk:
             }
         }
-
         // if extra fields are present, throw exception
         if (count($value) && !$this->ignoreExtraKeys) {
             $proposals = array_keys($this->children);

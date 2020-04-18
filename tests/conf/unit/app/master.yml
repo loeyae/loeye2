@@ -20,6 +20,8 @@
         test: test1
         text:
             aaa: bbb
+        appid: ${LOEYE_APP_ID:10001}
+        appsecret: ${LOEYE_APP_SECRET:bbcd}
   configuration:
       property_name: loeyae
       timezone: Asia/Shanghai
