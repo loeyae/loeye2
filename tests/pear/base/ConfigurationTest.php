@@ -2,6 +2,7 @@
 
 namespace loeye\unit\base;
 
+use InvalidArgumentException;
 use loeye\base\Configuration;
 use loeye\config\app\DeltaDefinition;
 use loeye\config\module\ConfigDefinition;
@@ -79,6 +80,7 @@ class ConfigurationTest extends TestCase {
      * @covers \loeye\base\Configuration::isFresh
      * @covers \loeye\base\Configuration::getEnv
      * @covers \loeye\base\Configuration::bundle()
+     * @expectedException InvalidArgumentException
      */
     public function testSetDefinition()
     {
@@ -93,6 +95,7 @@ class ConfigurationTest extends TestCase {
         $config = $configuration->getConfig();
         $this->assertArrayHasKey('loeyae.login', $config);
         $this->assertArrayHasKey('loeyae.logout', $config);
+        $configuration->setDefinition('test');
     }
 
 
