@@ -314,7 +314,7 @@ class Utils
             self::throwException('data key for set not exists in setting',
                 BusinessException::INVALID_PLUGIN_SET_CODE, [], BusinessException::class);
         }
-        $expire = $setting['expire'] ?? $context->getExpire();
+        $expire = $setting['expire'] ?? null;
         $context->set($key, $data, $expire);
     }
 

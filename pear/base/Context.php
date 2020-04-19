@@ -33,8 +33,10 @@ use Throwable;
 class Context implements ArrayAccess
 {
 
+    public const ERRORS_KEY = 'errors';
+
     /**
-     * @var array
+     * @var ContextData[]
      */
     private $_data;
 
@@ -94,6 +96,10 @@ class Context implements ArrayAccess
         'Request',
         'Response',
         'Router',
+        'ParallelClientManager',
+        'Expire',
+        'Template',
+        'Module',
     );
     /**
      * @var bool
@@ -109,11 +115,11 @@ class Context implements ArrayAccess
      */
     public function __construct(AppConfig $appConfig = null)
     {
-        $this->_appConfig      = $appConfig;
-        $this->_data           = array();
-        $this->_cdata          = array();
-        $this->_traceData      = array();
-        $this->_errors         = array();
+        $this->_appConfig = $appConfig;
+        $this->_data = array();
+        $this->_cdata = array();
+        $this->_traceData = array();
+        $this->_errors = array();
         $this->_errorProcessed = false;
     }
 
@@ -148,18 +154,18 @@ class Context implements ArrayAccess
      */
     public function cacheData(): void
     {
-        if ($this->_cache instanceof Cache) {
-            $g    = $this->getDataGenerator();
-            $data = [];
-            $time = time();
-            foreach ($g as $key => $value) {
-                if (!$value->isExpire($time)) {
-                    $data[$key] = serialize($value);
-                }
+        if (!$this->_cache){
+            $this->_cache = Factory::cache();
+        }
+        $g = $this->getDataGenerator();
+        $data = [];
+        foreach ($g as $key => $value) {
+            if (!$value->isExpire()) {
+                $data[$key] = serialize($value);
             }
-            if ($data) {
-                $this->_cache->set($this->getRequest()->getModuleId(), $data, 0);
-            }
+        }
+        if ($data) {
+            $this->_cache->set($this->getRequest()->getModuleId(), $data, $this->getExpire());
         }
     }
 
@@ -171,15 +177,16 @@ class Context implements ArrayAccess
      */
     public function loadCacheData(): void
     {
-        if ($this->_cache instanceof Cache) {
-            $array = $this->_cache->get($this->getRequest()->getModuleId());
-            if ($array) {
-                foreach ($array as $key => $value) {
-                    $cdata = unserialize($value, ['allowed_classes' => true]);
-                    if (($cdata instanceof ContextData) && !$cdata->isExpire()) {
-                        $this->_data[$key]  = $cdata;
-                        $this->_cdata[$key] = $cdata;
-                    }
+        if (!$this->_cache){
+            $this->_cache = Factory::cache();
+        }
+        $array = $this->_cache->get($this->getRequest()->getModuleId());
+        if ($array) {
+            foreach ($array as $key => $value) {
+                $cdata = unserialize($value, ['allowed_classes' => true]);
+                if (($cdata instanceof ContextData) && !$cdata->isExpire()) {
+                    $this->_data[$key] = $cdata;
+                    $this->_cdata[$key] = $cdata;
                 }
             }
         }
@@ -189,23 +196,26 @@ class Context implements ArrayAccess
      * offsetSet
      *
      * @param mixed $offset offset
-     * @param mixed $value  value
+     * @param mixed $value value
      *
      * @return void
      */
     public function offsetSet($offset, $value): void
     {
-        $short = mb_substr($offset, 3);
-        if ($offset === 'errors') {
+        if ($offset === self::ERRORS_KEY) {
             if (is_array($value)) {
                 foreach ($value as $key => $error) {
+                    if (is_numeric($key)) {
+                        $key = $this->_errors ? count($this->_errors) : $key;
+                    }
                     $this->addErrors($key, $error);
                 }
             } else {
-                $this->addErrors(0, $value);
+                $this->addErrors($this->_errors ? count($this->_errors) : 0, $value);
             }
-        } else if (in_array($short, $this->_object, true)) {
-            $this->$offset($value);
+        } else if (in_array($offset, $this->_object, true)) {
+            $method = 'set' . $offset;
+            $this->$method($value);
         } else {
             $this->_data[$offset] = ContextData::init($value);
         }
@@ -220,13 +230,12 @@ class Context implements ArrayAccess
      */
     public function offsetExists($offset): bool
     {
-        $short = mb_substr($offset, 3);
-        if ($offset === 'errors') {
+        if ($offset === self::ERRORS_KEY) {
             return $this->hasErrors();
         }
-
-        if (in_array($short, $this->_object, true)) {
-            return true;
+        if (in_array($offset, $this->_object, true)) {
+            $method = 'get' . $offset;
+            return $this->$method() ? true : false;
         }
         return isset($this->_data[$offset]);
     }
@@ -240,16 +249,15 @@ class Context implements ArrayAccess
      */
     public function offsetGet($offset)
     {
-        $short = mb_substr($offset, 3);
-        if ($offset === 'errors') {
+        if ($offset === self::ERRORS_KEY) {
             return $this->getErrors();
         }
-
-        if (in_array($short, $this->_object, true)) {
-            return $this->$offset();
+        if (in_array($offset, $this->_object, true)) {
+            $method = 'get' . $offset;
+            return $this->$method();
         }
 
-        return $this->_data[$offset] ?? null;
+        return isset($this->_data[$offset]) ? $this->_data[$offset]->getData() : null;
     }
 
     /**
@@ -261,7 +269,12 @@ class Context implements ArrayAccess
      */
     public function offsetUnset($offset): void
     {
-        if (isset($this->_data[$offset])) {
+        if ($offset === self::ERRORS_KEY) {
+            $this->_errors = [];
+        } else if (in_array($offset, $this->_object, true)) {
+            $method = 'set' . $offset;
+            $this->$method(null);
+        } else if (isset($this->_data[$offset])) {
             unset($this->_data[$offset]);
         }
     }
@@ -273,22 +286,22 @@ class Context implements ArrayAccess
      */
     public function __destruct()
     {
-        $this->_appConfig             = null;
-        $this->_data                  = null;
-        $this->_errors                = null;
+        $this->_appConfig = null;
+        $this->_data = null;
+        $this->_errors = null;
         $this->_parallelClientManager = null;
-        $this->_request               = null;
-        $this->_response              = null;
-        $this->_router                = null;
-        $this->_template              = null;
-        $this->_traceData             = null;
+        $this->_request = null;
+        $this->_response = null;
+        $this->_router = null;
+        $this->_template = null;
+        $this->_traceData = null;
     }
 
     /**
      * __set
      *
-     * @param string $key   key
-     * @param mixed  $value value
+     * @param string $key key
+     * @param mixed $value value
      *
      * @return void
      */
@@ -321,7 +334,7 @@ class Context implements ArrayAccess
     public function __get($key)
     {
         if (array_key_exists($key, $this->_data)) {
-            return $this->_data[$key];
+            return $this->_data[$key]->getData();
         }
         return null;
     }
@@ -341,9 +354,9 @@ class Context implements ArrayAccess
     /**
      * set
      *
-     * @param string $key    key
-     * @param mixed  $value  value
-     * @param int    $expire int
+     * @param string $key key
+     * @param mixed $value value
+     * @param int $expire int
      *
      * @return void
      */
@@ -355,8 +368,8 @@ class Context implements ArrayAccess
     /**
      * get
      *
-     * @param string $key     key
-     * @param mixed  $default default
+     * @param string $key key
+     * @param mixed $default default
      *
      * @return mixed
      */
@@ -364,20 +377,20 @@ class Context implements ArrayAccess
     {
         if (array_key_exists($key, $this->_data)) {
             $data = $this->_data[$key];
-            $value = $data();
             if ($data->isExpire()) {
                 unset($this->_data[$key]);
+                return $default;
             }
-            return $value;
+            return $data();
         }
         return $default;
     }
-    
+
     /**
      * getWithTrace
-     * 
+     *
      * @param string $key key
-     * 
+     *
      * @return mixed
      */
     public function getWithTrace($key)
@@ -388,13 +401,13 @@ class Context implements ArrayAccess
         }
         return null;
     }
-    
-    
+
+
     /**
      * setTraceData
      *
-     * @param string $key   key
-     * @param mixed  $value value
+     * @param string $key key
+     * @param mixed $value value
      *
      * @return void
      */
@@ -407,7 +420,7 @@ class Context implements ArrayAccess
      * getExpire
      *
      * @param string $key key
-     * 
+     *
      * @return mixed
      */
     public function getTraceData($key)
@@ -448,12 +461,9 @@ class Context implements ArrayAccess
      */
     public function getDataGenerator(): Generator
     {
-        $g = static function ($data) {
-            foreach ($data as $key => $value) {
-                yield $key => $value();
-            }
-        };
-        return $g($this->_data);
+        foreach ($this->_data as $key => $value) {
+            yield $key => $value;
+        }
     }
 
     /**
@@ -465,7 +475,7 @@ class Context implements ArrayAccess
      */
     public function isExist($key): bool
     {
-        return isset($this->_data[$key]);
+        return isset($this->_data[$key]) && !$this->_data[$key]->isExpire();
     }
 
     /**
@@ -498,8 +508,8 @@ class Context implements ArrayAccess
     /**
      * isEmpty
      *
-     * @param string $key    key
-     * @param bool   $ignore ignore
+     * @param string $key key
+     * @param bool $ignore ignore
      *
      * @return boolean
      */
@@ -508,7 +518,7 @@ class Context implements ArrayAccess
         if (!isset($this->_data[$key])) {
             return true;
         }
-        return $this->_data[$key]->isEmpyt($ignore);
+        return $this->_data[$key]->isEmpty($ignore);
     }
 
     /**
@@ -532,7 +542,7 @@ class Context implements ArrayAccess
      *
      * @return void
      */
-    public function setAppConfig(AppConfig $appConfig): void
+    public function setAppConfig(AppConfig $appConfig = null): void
     {
         $this->_appConfig = $appConfig;
     }
@@ -554,7 +564,7 @@ class Context implements ArrayAccess
      *
      * @return void
      */
-    public function setRequest(Request $request): void
+    public function setRequest(Request $request = null): void
     {
         $this->_request = $request;
     }
@@ -576,7 +586,7 @@ class Context implements ArrayAccess
      *
      * @return void
      */
-    public function setResponse(Response $response): void
+    public function setResponse(Response $response = null): void
     {
         $this->_response = $response;
     }
@@ -597,7 +607,7 @@ class Context implements ArrayAccess
      * @param ParallelClientManager $clientManager
      * @return void
      */
-    public function setParallelClientManager(ParallelClientManager $clientManager): void
+    public function setParallelClientManager(ParallelClientManager $clientManager = null): void
     {
         $this->_parallelClientManager = $clientManager;
     }
@@ -622,7 +632,7 @@ class Context implements ArrayAccess
      *
      * @return void
      */
-    public function setRouter(Router $router): void
+    public function setRouter(Router $router = null): void
     {
         $this->_router = $router;
     }
@@ -644,7 +654,7 @@ class Context implements ArrayAccess
      *
      * @return void
      */
-    public function setModule(ModuleDefinition $module): void
+    public function setModule(ModuleDefinition $module = null): void
     {
         $this->_mDfnObj = $module;
     }
@@ -666,7 +676,7 @@ class Context implements ArrayAccess
      *
      * @return void
      */
-    public function setTemplate(Template $template): void
+    public function setTemplate(Template $template = null): void
     {
         $this->_template = $template;
     }
@@ -684,8 +694,8 @@ class Context implements ArrayAccess
     /**
      * addErrors
      *
-     * @param string $errorKey  error key
-     * @param mixed  $errorList error list
+     * @param string $errorKey error key
+     * @param mixed $errorList error list
      *
      * @return void
      */
