@@ -74,10 +74,14 @@ class ContextData
     /**
      * getData
      *
+     * @param bool $trace is trace
      * @return mixed
      */
-    public function getData()
+    public function getData($trace = false)
     {
+        if (false === $trace) {
+            ++$this->accessedTimes;
+        }
         return $this->data;
     }
 
@@ -94,15 +98,12 @@ class ContextData
     /**
      * __invoke
      *
-     * @param bool $trace trace info
+     * @param bool $trace is trace
      * @return mixed
      */
     public function __invoke($trace = false)
     {
-        if (false === $trace) {
-            ++$this->accessedTimes;
-        }
-        return $this->data;
+        return $this->getData($trace);
     }
 
     /**
@@ -127,10 +128,10 @@ class ContextData
      */
     public function isExpire(): bool
     {
-        if (0 === $this->allowAccessTimes || 0 === $this->accessedTimes):
+        if (0 === $this->accessedTimes || 0 === $this->getExpire()):
             return false;
         endif;
-        return $this->allowAccessTimes <= $this->accessedTimes;
+        return $this->getExpire() <= $this->accessedTimes;
     }
 
     /**

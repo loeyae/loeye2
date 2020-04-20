@@ -18,6 +18,7 @@ namespace loeye\unit\base;
 
 use loeye\base\AppConfig;
 use loeye\base\Context;
+use loeye\base\ContextData;
 use loeye\base\Exception;
 use loeye\base\ModuleDefinition;
 use loeye\base\Router;
@@ -53,7 +54,7 @@ class ContextTest extends TestCase
         $context['AppConfig'] = new AppConfig('unit');
         $this->assertTrue(isset($context['test']));
         $this->assertEquals('sample', $context['test']);
-        $this->assertEquals('sample', $context->get('test'));
+        $this->assertNull( $context->get('test'));
         $this->assertTrue(isset($context['errors']));
         $this->assertIsArray($context['errors']);
         $this->assertEquals(1, count($context['errors']));
@@ -91,7 +92,7 @@ class ContextTest extends TestCase
         $this->assertTrue($context->isExist('test'));
         $this->assertTrue($context->isExistKey('test'));
         $this->assertEquals('sample', $context->test);
-        $this->assertEquals('sample', $context->get('test'));
+        $this->assertNull( $context->get('test'));
         unset($context->test);
         $this->assertFalse(isset($context->test));
         $this->assertFalse($context->isExist('test'));
@@ -122,6 +123,13 @@ class ContextTest extends TestCase
      * @covers \loeye\base\Context::getDataGenerator
      * @covers \loeye\base\Context::getWithTrace
      * @covers \loeye\base\Context::unsetKey
+     * @covers \loeye\base\ContextData::init
+     * @covers \loeye\base\ContextData::expire
+     * @covers \loeye\base\ContextData::isEmpty
+     * @covers \loeye\base\ContextData::isExpire
+     * @covers \loeye\base\ContextData::__invoke
+     * @covers \loeye\base\ContextData::getData
+     * @covers \loeye\base\ContextData::getExpire
      */
     public function testData()
     {
@@ -287,6 +295,20 @@ class ContextTest extends TestCase
         $context->loadCacheData();
         $this->assertTrue($context->isExpire('cache'));
         $this->assertNull($context->get('cache'));
+    }
+
+    /**
+     * @covers \loeye\base\ContextData::init
+     * @covers \loeye\base\ContextData::__construct
+     * @covers \loeye\base\ContextData::expire
+     * @covers \loeye\base\ContextData::__toString
+     */
+    public function testContextData()
+    {
+        $data = ContextData::init(1);
+        $this->assertEquals('1', $data);
+        $array = ContextData::init([1,2]);
+        $this->assertEquals(var_export([1,2], true), (string)$array);
     }
 
 }

@@ -417,7 +417,7 @@ class Context implements ArrayAccess
     }
 
     /**
-     * getExpire
+     * getTraceData
      *
      * @param string $key key
      *
