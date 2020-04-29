@@ -22,6 +22,7 @@ use loeye\client\ParallelClientManager;
 use loeye\error\BusinessException;
 use loeye\error\ResourceException;
 use loeye\std\Plugin;
+use loeye\std\Render;
 use loeye\web\Request;
 use loeye\web\Response;
 use Psr\Cache\InvalidArgumentException;
@@ -142,10 +143,10 @@ class Factory
      *
      * @param string $format format
      *
-     * @return object
+     * @return Render
      * @throws ReflectionException
      */
-    public static function getRender($format = 'segment')
+    public static function getRender($format = 'segment'): Render
     {
         $renderFormat = array(
             RENDER_TYPE_HTML,
