@@ -17,6 +17,7 @@
 
 namespace loeye\base;
 
+use loeye\render\SegmentRender;
 use loeye\web\Request;
 use loeye\web\Response;
 use ReflectionException;
@@ -41,19 +42,15 @@ function ExceptionHandler(Throwable $exc, Context $context)
         $format = $appConfig ? $appConfig->getSetting('application.response.format', $context->getRequest()
             ->getFormatType()) : $context->getRequest()->getFormatType();
     }
+    $response = $context->getResponse();
+    if (!$response instanceof Response) {
+        $response = new Response();
+    }
+    $renderObj = new SegmentRender();
     switch ($format) {
         case 'xml':
         case 'json':
-            $response = $context->getResponse();
-            if (!$response instanceof Response) {
-                $response = new Response();
-            }
-            try {
-                $debug = $appConfig ? $appConfig->getSetting('debug', false) : false;
-            } catch (Exception $e) {
-                Logger::exception($e);
-                $debug = false;
-            }
+            $debug = $appConfig ? $appConfig->getSetting('debug', false) : false;
             $res = ['status' => ['code' => LOEYE_REST_STATUS_BAD_REQUEST, 'message' => 'Internal Error']];
             if ($debug) {
                 $res['data'] = [
@@ -67,8 +64,6 @@ function ExceptionHandler(Throwable $exc, Context $context)
             $response->addOutput($res);
             try {
                 $renderObj = Factory::getRender($format);
-                $renderObj->header($response);
-                $renderObj->output($response);
             } catch (ReflectionException $e) {
                 Logger::exception($e);
             }
@@ -88,13 +83,12 @@ function ExceptionHandler(Throwable $exc, Context $context)
                     }
                 }
             }
-            try {
-                echo Factory::includeErrorPage($context, $exc, $errorPage);
-            } catch (Exception $e) {
-                Logger::exception($e);
-            }
+            $html = Factory::includeErrorPage($context, $exc, $errorPage);
+            $response->addOutput($html);
             break;
     }
+    $renderObj->header($response);
+    $renderObj->output($response);
 }
 
 /**
