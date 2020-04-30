@@ -172,7 +172,7 @@ XML;
                 if ($this->_hasCDATA) {
                     $childNode->appendChild($childDom->createCDATASection($child));
                 } else {
-                    $childNode->appendChild($childDom->createTextNode($child));
+                    $childNode->appendChild($childDom->createTextNode((string)$child));
                 }
             }
         }
