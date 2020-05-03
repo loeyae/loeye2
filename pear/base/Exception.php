@@ -59,9 +59,10 @@ function ExceptionHandler(Throwable $exc, Context $context)
                     'traceInfo' => $exc->getTraceAsString(),
                 ];
             } else {
-                $res['data'] = $exc->getCode();
+                $res['data'] = $exc->getMessage();
             }
-            $response->addOutput($res);
+            $response->addOutput($res['status'], 'status');
+            $response->addOutput($res['data'], 'data');
             try {
                 $renderObj = Factory::getRender($format);
             } catch (ReflectionException $e) {
@@ -73,14 +74,8 @@ function ExceptionHandler(Throwable $exc, Context $context)
             if ($context->getModule() instanceof ModuleDefinition) {
                 $setting = $context->getModule()->getSetting();
                 if (isset($setting['error_page'])) {
-                    if (is_array($setting['error_page'])) {
-                        $code = $exc->getCode();
-                        if (isset($setting['error_page'][$code])) {
-                            $errorPage = $setting['error_page'][$code];
-                        }
-                    } else {
-                        $errorPage = PROJECT_ERRORPAGE_DIR . DIRECTORY_SEPARATOR . $setting['error_page'];
-                    }
+                    $code = $exc->getCode();
+                    $errorPage = $setting['error_page'][$code] ?? $setting['error_page']['default'] ?? null;
                 }
             }
             $html = Factory::includeErrorPage($context, $exc, $errorPage);

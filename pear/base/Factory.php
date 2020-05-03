@@ -194,6 +194,8 @@ class Factory
             if (!is_file($errorPage)) {
                 $errorPage = $errorPath . 'Error' . substr($e->getCode(), 0, 3) . '.php';
             }
+        } else {
+            $errorPage = $errorPath . $errorPage;
         }
         if (is_file($errorPage)) {
             return include $errorPage;
