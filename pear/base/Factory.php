@@ -198,15 +198,15 @@ class Factory
             $errorPage = $errorPath . $errorPage;
         }
         if (is_file($errorPage)) {
-            return self::fetchFile($errorPage, ['exc' => $e]);
+            return self::fetchFile($errorPage, ['context' => $context, 'exc' => $e]);
         }
 
         if (isset($propertyErrorPage) && is_file($propertyErrorPage)) {
-            return self::fetchFile($propertyErrorPage, ['exc' => $e]);
+            return self::fetchFile($propertyErrorPage, ['context' => $context, 'exc' => $e]);
         }
 
         if (is_file($defaultErrorPage)) {
-            return self::fetchFile($defaultErrorPage, ['exc' => $e]);
+            return self::fetchFile($defaultErrorPage, ['context' => $context, 'exc' => $e]);
         }
 
         return self::_getErrorPageInfo($context, $e);
