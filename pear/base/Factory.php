@@ -198,15 +198,15 @@ class Factory
             $errorPage = $errorPath . $errorPage;
         }
         if (is_file($errorPage)) {
-            return self::fetchFile($errorPage);
+            return self::fetchFile($errorPage, ['exc' => $e]);
         }
 
         if (isset($propertyErrorPage) && is_file($propertyErrorPage)) {
-            return self::fetchFile($propertyErrorPage);
+            return self::fetchFile($propertyErrorPage, ['exc' => $e]);
         }
 
         if (is_file($defaultErrorPage)) {
-            return self::fetchFile($defaultErrorPage);
+            return self::fetchFile($defaultErrorPage, ['exc' => $e]);
         }
 
         return self::_getErrorPageInfo($context, $e);
@@ -217,11 +217,16 @@ class Factory
      * fetchFile
      *
      * @param string $file file path
+     * @param array $parameter
      *
      * @return string
      */
-    public static function fetchFile($file): string
+    public static function fetchFile($file, $parameter = []): string
     {
+
+        if ($parameter) {
+            extract($parameter, EXTR_OVERWRITE & EXTR_PREFIX_INVALID, 'var');
+        }
         ob_start();
         include $file;
         return ob_get_clean();
@@ -231,7 +236,7 @@ class Factory
      * _getErrorPageInfo
      *
      * @param Context $context context
-     * @param \Exception $e e
+     * @param Throwable $e e
      *
      * @return string
      */
