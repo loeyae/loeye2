@@ -198,18 +198,33 @@ class Factory
             $errorPage = $errorPath . $errorPage;
         }
         if (is_file($errorPage)) {
-            return include $errorPage;
+            return self::fetchFile($errorPage);
         }
 
         if (isset($propertyErrorPage) && is_file($propertyErrorPage)) {
-            return include $propertyErrorPage;
+            return self::fetchFile($propertyErrorPage);
         }
 
         if (is_file($defaultErrorPage)) {
-            return include $defaultErrorPage;
+            return self::fetchFile($defaultErrorPage);
         }
 
         return self::_getErrorPageInfo($context, $e);
+    }
+
+
+    /**
+     * fetchFile
+     *
+     * @param string $file file path
+     *
+     * @return string
+     */
+    public static function fetchFile($file): string
+    {
+        ob_start();
+        include $file;
+        return ob_get_clean();
     }
 
     /**
