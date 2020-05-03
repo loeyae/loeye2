@@ -106,9 +106,9 @@ class UrlManager extends \loeye\std\Router
      *
      * @param array $params params
      *
-     * @return string
+     * @return string|null
      */
-    public function generate($params = array()): string
+    public function generate($params = array()): ?string
     {
         $url = '';
         if (defined('BASE_SERVER_URL')) {
@@ -118,26 +118,27 @@ class UrlManager extends \loeye\std\Router
             return $url . '/';
         }
         foreach ($this->_rule as $key => $null) {
+            $cloneParams = $params;
             $matches = [];
             if (preg_match_all('#<([\w-_]+):([^>]+)>#', $key, $matches)) {
                 [$search, $replaceKey, $validate] = $matches;
                 $replace = [];
                 foreach ($replaceKey as $index => $mKey) {
-                    if (!isset($params[$mKey])) {
+                    if (!isset($cloneParams[$mKey])) {
                         break;
                     }
-                    if (!preg_match('#' . $validate[$index] . '#', $params[$mKey])) {
+                    if (!preg_match('#' . $validate[$index] . '#', $cloneParams[$mKey])) {
                         break;
                     }
-                    $replace[$index] = $params[$mKey];
-                    unset($params[$mKey]);
+                    $replace[$index] = $cloneParams[$mKey];
+                    unset($cloneParams[$mKey]);
                 }
                 if (count($replace) !== count($search)) {
                     continue;
                 }
                 $url .= str_replace($search, $replace, $key);
-                if (!empty($params)) {
-                    $queryStr = http_build_query($params);
+                if (!empty($cloneParams)) {
+                    $queryStr = http_build_query($cloneParams);
                     $pos = mb_strpos($url, '?');
                     $len = mb_strlen($url);
                     if ($pos === false) {
