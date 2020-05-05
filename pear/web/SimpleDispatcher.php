@@ -132,10 +132,10 @@ class SimpleDispatcher extends \loeye\std\Dispatcher
     {
         $controllerNamespace = $this->context->getAppConfig()->getSetting('controller_namespace', '');
         if (!$controllerNamespace) {
-            $controllerNamespace = PROJECT_NAMESPACE . '\\controllers\\' . mb_convert_case
-                ($this->context->getAppConfig()->getPropertyName(), MB_CASE_LOWER);
+            $controllerNamespace = PROJECT_NAMESPACE . '\\controllers';
         }
-        $controller = $controllerNamespace . '\\' . ucfirst($this->controller) . ucfirst(self::KEY_CONTROLLER);
+        $controller = $controllerNamespace . ($this->module ? '\\'. $this->module : '')
+            . '\\' . ucfirst($this->controller) . ucfirst(self::KEY_CONTROLLER);
 
         $action = ucfirst($this->action) . ucfirst(self::KEY_ACTION);
 
