@@ -73,7 +73,7 @@ class Utils
     {
         $calendar = IntlDateFormatter::GREGORIAN;
         $dateFormat = datefmt_create($locale, $dateType, $timeType, $timezone, $calendar, $pattern);
-        return date_format($dateFormat, $time);
+        return datefmt_format($dateFormat, $time);
     }
 
     /**
