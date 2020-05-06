@@ -73,9 +73,11 @@ class Dispatcher extends \loeye\std\Dispatcher
             $this->setTimezone();
             $handlerNamespace = $this->context->getAppConfig()->getSetting('handler_namespace', '');
             if (!$handlerNamespace) {
-                $handlerNamespace = PROJECT_NAMESPACE . '\\services\\handler\\' . mb_convert_case($this->context->getAppConfig()->getPropertyName(), MB_CASE_LOWER);
+                $handlerNamespace = PROJECT_NAMESPACE . '\\services\\handler';
             }
-            $handler = $handlerNamespace . '\\' . $this->service . '\\' . ucfirst($this->handler) . ucfirst(self::KEY_HANDLER);
+            $handler = $handlerNamespace . ($this->module ? '\\'. $this->module : '')
+                . ($this->service ? '\\' . $this->service : '')
+                . '\\' . ucfirst($this->handler) . ucfirst(self::KEY_HANDLER);
             if (!class_exists($handler)) {
                 throw new ResourceException(ResourceException::PAGE_NOT_FOUND_MSG, ResourceException::PAGE_NOT_FOUND_CODE);
             }
@@ -213,7 +215,7 @@ class Dispatcher extends \loeye\std\Dispatcher
         } else {
             $this->handler = Utils::camelize($parts[0]);
         }
-        if (empty($this->module) || empty($this->service) || empty($this->handler)) {
+        if (empty($this->module) && empty($this->service) && empty($this->handler)) {
             throw new ResourceException(ResourceException::PAGE_NOT_FOUND_MSG, ResourceException::PAGE_NOT_FOUND_CODE);
         }
         $moduleKey = UrlManager::REWRITE_KEY_PREFIX . self::KEY_MODULE;
