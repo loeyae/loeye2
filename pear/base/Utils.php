@@ -950,7 +950,7 @@ class Utils
             );
         }
         $traceCount++;
-        $context->set($traceKey, $trace);
+        $context->setTraceData($traceKey, $trace);
     }
 
     /**
