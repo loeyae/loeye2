@@ -109,8 +109,7 @@ class Utils
         }
 
         if ($data instanceof Context) {
-            self::checkKeyExist($data, $key);
-            $origin = $data->get($key);
+            $origin = self::checkKeyExist($data, $key);
             if ($origin !== $value) {
                 self::throwException(DataException::CONTEXT_VALUE_NOT_EQUALS_MSG, DataException::CONTEXT_VALUE_NOT_EQUALS, ['key' => $key, 'expected' => $value], DataException::class);
             }
