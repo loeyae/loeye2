@@ -31,6 +31,7 @@ use Gedmo\Blameable\BlameableListener;
 use Gedmo\DoctrineExtensions;
 use Gedmo\Loggable\LoggableListener;
 use Gedmo\Sluggable\SluggableListener;
+use Gedmo\SoftDeleteable\SoftDeleteableListener;
 use Gedmo\Sortable\SortableListener;
 use Gedmo\Timestampable\TimestampableListener;
 use Gedmo\Translatable\TranslatableListener;
@@ -147,6 +148,10 @@ class EntityManager
         $sortableListener = new SortableListener;
         $sortableListener->setAnnotationReader($cachedAnnotationReader);
         $evm->addEventSubscriber($sortableListener);
+        // soft  delete
+        $softDeleteableListener = new SoftDeleteableListener();
+        $softDeleteableListener->setAnnotationReader($cachedAnnotationReader);
+        $evm->addEventListener($softDeleteableListener);
         // mysql set names UTF-8 if required
         //$evm->addEventSubscriber(new \Doctrine\DBAL\Event\Listeners\MysqlSessionInit());
         // Finally, create entity manager
