@@ -151,7 +151,7 @@ class EntityManager
         // soft  delete
         $softDeleteableListener = new SoftDeleteableListener();
         $softDeleteableListener->setAnnotationReader($cachedAnnotationReader);
-        $evm->addEventListener($softDeleteableListener);
+        $evm->addEventSubscriber($softDeleteableListener);
         // mysql set names UTF-8 if required
         //$evm->addEventSubscriber(new \Doctrine\DBAL\Event\Listeners\MysqlSessionInit());
         // Finally, create entity manager

@@ -103,7 +103,7 @@ class BuildQueryPlugin implements Plugin {
             $sortArray = (array)$sort;
             $orderArray = (array)$order;
             $sortCount = count($sortArray);
-            $orderArray = array_slice(array_pad($orderArray, $sortCount, 0), $sortCount);
+            $orderArray = array_slice(array_pad($orderArray, $sortCount, 0), 0, $sortCount);
             $orderBy = array_combine(array_map(static function($item){
                 return htmlentities($item);
             }, $sortArray), array_map(static function($item){

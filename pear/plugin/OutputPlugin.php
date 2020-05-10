@@ -51,7 +51,8 @@ class OutputPlugin implements Plugin
      *
      * @return mixed
      * @throws ReflectionException
-     * @throws Exception
+     * @throws \Psr\Cache\InvalidArgumentException
+     * @throws \Throwable
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     public function process(Context $context, array $inputs)
@@ -72,6 +73,8 @@ class OutputPlugin implements Plugin
         }
         if ($data instanceof Entity) {
             $data = Utils::entity2array(Factory::db()->em(), $data);
+        } else {
+            $data = Utils::entities2array(Factory::db()->em(), $data);
         }
         $redirect  = null;
         $routerKey = Utils::getData($inputs, 'router_key');
