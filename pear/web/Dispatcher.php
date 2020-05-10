@@ -131,7 +131,7 @@ class Dispatcher extends \loeye\std\Dispatcher
         if (isset($setting['continue_on_error']) && $setting['continue_on_error'] === 'true') {
             $continueOnError = true;
         }
-        $cacheAble = true;
+        $cacheAble = false;
         if (isset($setting['cache_able'])) {
             $cacheAble = ModuleParse::conditionResult($setting['cache_able'], $this->context);
         }
