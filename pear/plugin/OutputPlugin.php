@@ -73,7 +73,7 @@ class OutputPlugin implements Plugin
         }
         if ($data instanceof Entity) {
             $data = Utils::entity2array(Factory::db()->em(), $data);
-        } else {
+        } elseif (is_array($data)) {
             $data = Utils::entities2array(Factory::db()->em(), $data);
         }
         $redirect  = null;

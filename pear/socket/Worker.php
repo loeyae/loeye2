@@ -131,7 +131,7 @@ abstract class Worker
     /**
      * bind
      *
-     * @param Worker $worker worker instance
+     * @param \Workerman\Worker $worker worker instance
      * @param string $event event name
      * <p>
      * bufferFull bufferDrain connect close error workerStart workerReload workerStop
@@ -157,7 +157,7 @@ abstract class Worker
      *
      * @return void
      */
-    public static function bind(Worker $worker, $event, callable $callback): void
+    public static function bind(\Workerman\Worker $worker, $event, callable $callback): void
     {
         switch ($event) {
             case self::EVENT_BUFFER_DRAIN:
