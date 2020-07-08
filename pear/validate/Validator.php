@@ -95,7 +95,7 @@ class Validator
      */
     public function validate($data, $rule): array
     {
-        $ruleSets = $this->config->get('ruleSets');
+        $ruleSets = $this->config->get('rulesets');
         $validateSets = $this->config->getConfig(null, self::KEYWORD . '=' . $rule);
         if (empty($validateSets[self::KEYWORD]) || empty($validateSets[self::KEYWORD]['fields'])) {
             throw new BusinessException(

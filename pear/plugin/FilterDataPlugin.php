@@ -175,6 +175,9 @@ class FilterDataPlugin implements Plugin
     private function _executeResult(Context $context, array $inputs)
     {
         $data = Utils::getContextData($context, $inputs) or $data = [];
+        if (!$data) {
+            return [];
+        }
         if (isset($inputs['only_one'])) {
             if ($inputs['only_one'] === 'true') {
                 $result = current($data);

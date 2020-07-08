@@ -586,7 +586,7 @@ class Utils
             throw $error;
         }
 
-        self::throwException(serialize($error));
+        self::throwException(var_export($error, true));
     }
 
     /**

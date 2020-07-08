@@ -289,25 +289,27 @@ class Secure
         if ($openTag === false) {
             return $keyDbSetting;
         }
+        $keygroup = $keyname = $key = null;
         while ($XMReader->read()) {
             if ($XMReader->nodeType !== XMLReader::ELEMENT) {
                 continue;
             }
-            $keygroup = $keyname = null;
             switch ($XMReader->name) {
                 case 'keygroup':
                     $keygroup = $XMReader->getAttribute('name');
-                    $keyDbSetting[$keygroup] = array();
                     break;
                 case 'keyname':
                     $keyname = $XMReader->getAttribute('name');
-                    $keyDbSetting[$keygroup][$keyname] = array();
                     break;
                 case 'key':
-                    $keyDbSetting[$keygroup][$keyname]['value'] = $XMReader->getAttribute('value');
-                    $keyDbSetting[$keygroup][$keyname]['timestamp'] = $XMReader->getAttribute('timestamp');
-                    $keyDbSetting[$keygroup][$keyname]['expiry'] = $XMReader->getAttribute('expiry');
+                    $key['value'] = $XMReader->getAttribute('value');
+                    $key['timestamp'] = $XMReader->getAttribute('timestamp');
+                    $key['expiry'] = $XMReader->getAttribute('expiry');
                     break;
+            }
+            if ($key != null && $keygroup != null && $keyname != null) {
+                $keyDbSetting[$keygroup][$keyname] = $key;
+                $keygroup = $keyname = $key = null;
             }
             //$XMReader->next();
         }
