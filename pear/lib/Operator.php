@@ -118,7 +118,7 @@ class Operator
     ): bool
     {
         if ($operator === null && $subject2 === null) {
-            $return = ($subject1 === true);
+            $return = (!empty($subject1) || $subject1 === 0);
         } else if (in_array($operator, self::$operator, true)) {
             $return = self::_operation($subject1, $operator, $subject2);
         } else {

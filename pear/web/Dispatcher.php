@@ -407,7 +407,7 @@ class Dispatcher extends \loeye\std\Dispatcher
      * @throws ReflectionException
      * @throws Throwable
      */
-    private function _executeParallelPlugin($pluginList, $continueOnError = false): bool
+    private function _executeParallelPlugin($pluginList, $continueOnError = false): ?bool
     {
         $returnStatus = true;
         $pluginObjList = array();
