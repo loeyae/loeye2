@@ -350,9 +350,9 @@ abstract class Handler extends Resource
      * @throws InvalidArgumentException
      * @throws Throwable
      */
-    protected function validate($data, $entity, $group = null): array
+    protected function validate($data, $entity, $group = null): ?array
     {
-        if ($entity) {
+        if ($entity && $data) {
             try {
                 $entityObject = Utils::source2entity($data, $entity);
                 $validator = Validation::createValidator();

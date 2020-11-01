@@ -78,8 +78,11 @@ trait RepositoryTrait
      */
     public function all($criteria = null, $orderBy = null, $start = null, $offset = null): ?array
     {
+        if ($offset === null) {
+            $offset = DATABASE_PAGE_DEFAULT_LIMIT;
+        }
         if ($criteria === null) {
-            return $this->db->repository($this->entityClass)->findAll();
+            return $this->db->repository($this->entityClass)->findBy([], $orderBy, $offset, $start);
         }
         return $this->db->repository($this->entityClass)->findBy($criteria, $orderBy, $offset, $start);
     }
@@ -101,7 +104,7 @@ trait RepositoryTrait
      * @throws BusinessException
      * @throws DAOException
      */
-    public function page($query, $start = 0, $offset = 10, $orderBy = null, $groupBy = null, $having = null): ?array
+    public function page($query, $start = 0, $offset = 10, $orderBy = null, $groupBy = null, $having = null): ?Paginator
     {
         if ($query instanceof Query) {
             $query->setFirstResult($start)->setMaxResults($offset);
@@ -135,8 +138,7 @@ trait RepositoryTrait
         } else {
             throw new BusinessException(BusinessException::INVALID_PARAMETER_MSG, BusinessException::INVALID_PARAMETER_CODE);
         }
-        $paginator = new Paginator($query);
-        return Utils::paginator2array($this->db->em(), $paginator);
+        return new Paginator($query);
     }
 
     /**

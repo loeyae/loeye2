@@ -18,6 +18,7 @@
 namespace loeye\plugin;
 
 use loeye\base\{Context, Exception, Factory, Utils};
+use Doctrine\ORM\Tools\Pagination\Paginator;
 use loeye\database\Entity;
 use loeye\error\BusinessException;
 use loeye\lib\ModuleParse;
@@ -73,8 +74,8 @@ class OutputPlugin implements Plugin
         }
         if ($data instanceof Entity) {
             $data = Utils::entity2array(Factory::db()->em(), $data);
-        } elseif (is_array($data)) {
-            $data = Utils::entities2array(Factory::db()->em(), $data);
+        } elseif ($data instanceof  Paginator) {
+            $data = Utils::paginator2array(Factory::db()->em(), $data);
         }
         $redirect  = null;
         $routerKey = Utils::getData($inputs, 'router_key');

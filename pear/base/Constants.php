@@ -95,6 +95,10 @@ if (!defined('RUNTIME_LOG_DIR')) {
     define('RUNTIME_LOG_DIR', RUNTIME_DIR . D_S . 'log');
 }
 
+if (!defined('DATABASE_PAGE_DEFAULT_LIMIT')) {
+    defined('DATABASE_PAGE_DEFAULT_LIMIT', 200);
+}
+
 const PROJECT_SUCCESS = '';
 const RENDER_TYPE_SEGMENT = 'segment';
 const RENDER_TYPE_HTML = 'html';
