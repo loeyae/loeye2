@@ -18,10 +18,12 @@
 namespace loeye\base;
 
 use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\PersistentCollection;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use IntlDateFormatter;
 use loeye\client\Client;
 use loeye\error\{BusinessException, DataException, LogicException, ResourceException};
+use loeye\database\Entity;
 use loeye\web\Dispatcher;
 use loeye\web\Template;
 use Psr\Cache\InvalidArgumentException;
@@ -1210,9 +1212,11 @@ class Utils
                 $rs = null;
                 $ignoreClass[] = $target;
                 $value = self::getReadMethodValue($entity, $key);
-                if (is_array($value)) {
+                if ($value instanceof \Doctrine\Common\Collections\AbstractLazyCollection) {
+                    $rs = self::entities2array($em, $value->toArray(), $ignoreClass);
+                } if (is_array($value)) {
                     $rs = self::entities2array($em, $value, $ignoreClass);
-                } else if ($value) {
+                } else if ($value instanceof Entity) {
                     $rs = self::entity2array($em, $value, $ignoreClass);
                 }
                 $r[$key] = $rs;

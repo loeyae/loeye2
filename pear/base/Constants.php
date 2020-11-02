@@ -96,7 +96,7 @@ if (!defined('RUNTIME_LOG_DIR')) {
 }
 
 if (!defined('DATABASE_PAGE_DEFAULT_LIMIT')) {
-    defined('DATABASE_PAGE_DEFAULT_LIMIT', 200);
+    define('DATABASE_PAGE_DEFAULT_LIMIT', 200);
 }
 
 const PROJECT_SUCCESS = '';
