@@ -90,14 +90,15 @@ class OutputPlugin implements Plugin
                 $redirect = $url;
             }
         }
-        if ($format === RENDER_TYPE_SEGMENT) {
-            $status = Utils::getData($inputs, 'code');
-            $header = Utils::getData($inputs, 'header', null);
-            if (!empty($header) && !empty($status)) {
-                header($header, true, $status);
-            } else if (!empty($header)) {
-                header($header);
+        $status  = Utils::getData($inputs, 'code', $this->reponseCode);
+        $header = Utils::getData($inputs, 'header', []);
+        if (!empty($header)) {
+            foreach ($header as $key => $value) {
+                $context->getResponse()->addHeader($key, $value);
             }
+        }
+        if ($format === RENDER_TYPE_SEGMENT) {
+            $context->getResponse()->setStatusCode($status);
             if (!empty($redirect)) {
                 header('Location: ' . $redirect, true, LOEYE_REST_STATUS_REDIRECT);
             }
@@ -116,12 +117,7 @@ class OutputPlugin implements Plugin
                 }
             }
         } else {
-            $header = Utils::getData($inputs, 'header', null);
-            if (!empty($header)) {
-                header($header);
-            }
             $context->getResponse()->setFormat($format);
-            $status  = Utils::getData($inputs, 'code', $this->reponseCode);
             $context->getResponse()->addOutput($status, 'status');
             $message = Utils::getData($inputs, 'msg', $this->responseMsg);
             if ($message !== null) {
@@ -131,6 +127,7 @@ class OutputPlugin implements Plugin
                         if ($result === true) {
                             $msg = $this->printf($msg, $context, $inputs);
                             $context->getResponse()->addOutput($msg, 'message');
+                            break;
                         }
                     }
                 } else {

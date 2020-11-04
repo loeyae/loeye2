@@ -32,6 +32,11 @@ abstract class Response implements ArrayAccess
     protected $format;
 
     /**
+     * @var int
+     */
+    protected $statusCode = 200;
+
+    /**
      * offsetExists
      *
      * @param mixed $offset offset
@@ -152,10 +157,21 @@ abstract class Response implements ArrayAccess
             if (is_numeric($key)) {
                 header($value);
             } else {
-                header("$key:$value");
+                header("$key:$value", true, $this->statusCode);
             }
         }
     }
+
+    /**
+     * setStatusCode
+     *
+     * @param int $statusCode
+     */
+    public function setStatusCode(int $statusCode)
+    {
+        $this->statusCode = $statusCode;
+    }
+
 
     abstract public function getOutput();
 }

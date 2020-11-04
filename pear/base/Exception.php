@@ -51,18 +51,16 @@ function ExceptionHandler(Throwable $exc, Context $context)
         case 'xml':
         case 'json':
             $debug = $appConfig ? $appConfig->getSetting('debug', false) : false;
-            $res = ['status' => ['code' => LOEYE_REST_STATUS_BAD_REQUEST, 'message' => 'Internal Error']];
             if ($debug) {
-                $res['data'] = [
-                    'code' => $exc->getCode(),
-                    'message' => $exc->getMessage(),
+                $res = [
                     'traceInfo' => $exc->getTraceAsString(),
                 ];
             } else {
-                $res['data'] = $exc->getMessage();
+                $res = null;
             }
-            $response->addOutput($res['status'], 'status');
-            $response->addOutput($res['data'], 'data');
+            $response->addOutput($exc->getCode(), 'status');
+            $response->addOutput($exc->getMessage(), 'message');
+            $response->addOutput($res, 'data');
             try {
                 $renderObj = Factory::getRender($format);
             } catch (ReflectionException $e) {

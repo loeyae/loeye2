@@ -719,7 +719,7 @@ class Request implements ArrayAccess
      *
      * @return array
      */
-    public function getBrowser(): array
+    public function getBrowser(): ?array
     {
         if (empty($this->_browser)) {
             $this->_findBrowser();
@@ -730,9 +730,9 @@ class Request implements ArrayAccess
     /**
      * getProperty
      *
-     * @return string
+     * @return string|null
      */
-    public function getProperty(): string
+    public function getProperty(): ?string
     {
         if ($this->_moduleId) {
             $parseModule = explode('.', $this->_moduleId);
@@ -746,7 +746,7 @@ class Request implements ArrayAccess
      *
      * @return string
      */
-    public function getCountry(): string
+    public function getCountry(): ?string
     {
         $this->_findCountry();
         return $this->_country;
@@ -757,7 +757,7 @@ class Request implements ArrayAccess
      *
      * @return string
      */
-    public function getModuleId(): string
+    public function getModuleId(): ?string
     {
         $this->_moduleId ?: $this->_findModuleId();
         return $this->_moduleId;
@@ -768,7 +768,7 @@ class Request implements ArrayAccess
      *
      * @return array
      */
-    public function getDevice(): array
+    public function getDevice(): ?array
     {
         $this->_device ?: $this->_findDevice();
         return $this->_device;
@@ -779,7 +779,7 @@ class Request implements ArrayAccess
      *
      * @return string
      */
-    public function getLanguage(): string
+    public function getLanguage(): ?string
     {
         $this->_findLanguage();
         return $this->_lang;
@@ -790,7 +790,7 @@ class Request implements ArrayAccess
      *
      * @return string
      */
-    public function getFormatType(): string
+    public function getFormatType(): ?string
     {
         $format = $this['get']['fmt'] ?? RENDER_TYPE_SEGMENT;
         if (in_array($format, $this->_allowedFormatType, true)) {
