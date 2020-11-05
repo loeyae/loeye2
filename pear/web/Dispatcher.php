@@ -641,7 +641,7 @@ class Dispatcher extends \loeye\std\Dispatcher
      * @return string
      * @throws BusinessException
      */
-    protected function parseUrl($moduleId = null): string
+    protected function parseUrl($moduleId = null): ?string
     {
         if (empty($moduleId)) {
             if ($this->context->getRouter() instanceof UrlManager) {

@@ -566,7 +566,7 @@ class Context implements ArrayAccess
      */
     public function setRequest(Request $request = null): void
     {
-        $this->_request = $request;
+        $this->_request = $request ?? Factory::request(null);
     }
 
     /**
@@ -598,7 +598,7 @@ class Context implements ArrayAccess
      */
     public function getResponse()
     {
-        return $this->_response;
+        return $this->_response ?? Factory::response();
     }
 
     /**
