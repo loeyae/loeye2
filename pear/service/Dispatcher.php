@@ -87,7 +87,6 @@ class Dispatcher extends \loeye\std\Dispatcher
                 throw new ResourceException(ResourceException::PAGE_NOT_FOUND_MSG, ResourceException::PAGE_NOT_FOUND_CODE);
             }
             $handlerObject->handle();
-            $this->executeOutput();
         } catch (ValidateError $exc) {
             $request = ($this->getContext()->getRequest() ?? new Request());
             $response = ($this->getContext()->getResponse() ?? new Response($request));
@@ -100,17 +99,6 @@ class Dispatcher extends \loeye\std\Dispatcher
             $response->addOutput(
                 ['code' => $exc->getCode(), 'message' => $exc->getMessage()], 'status');
             $response->addOutput($exc->getValidateMessage(), 'data');
-            try {
-                $renderObj = Factory::getRender($response->getFormat());
-
-                $renderObj->header($response);
-                $renderObj->output($response);
-            } catch (ReflectionException $e) {
-                Logger::exception($e);
-                $renderObj = new SegmentRender();
-                $renderObj->header($response);
-                $renderObj->output($response);
-            }
         } catch (Throwable $exc) {
             Utils::errorLog($exc);
             $request = ($this->getContext()->getRequest() ?? new Request());
@@ -123,22 +111,12 @@ class Dispatcher extends \loeye\std\Dispatcher
             $response->setStatusMessage('Internal Error');
             $response->addOutput(
                 ['code' => $exc->getCode(), 'message' => $exc->getMessage()], 'status');
-            try {
-                $renderObj = Factory::getRender($response->getFormat());
-
-                $renderObj->header($response);
-                $renderObj->output($response);
-            } catch (ReflectionException $e) {
-                Logger::exception($e);
-                $renderObj = new SegmentRender();
-                $renderObj->header($response);
-                $renderObj->output($response);
-            }
         } finally {
             if ($this->processMode > LOEYE_PROCESS_MODE__NORMAL) {
                 $this->setTraceDataIntoContext(array());
                 Utils::logContextTrace($this->context, null, false);
             }
+            $this->executeOutput();
         }
     }
 

@@ -39,14 +39,13 @@ function ExceptionHandler(Throwable $exc, Context $context)
     $format = null;
     $appConfig = $context->getAppConfig();
     if ($context->getRequest() instanceof Request) {
-        $format = $appConfig ? $appConfig->getSetting('application.response.format', $context->getRequest()
-            ->getFormatType()) : $context->getRequest()->getFormatType();
+        $format = $context->get('format') ?: ($appConfig ? $appConfig->getSetting('application.response.format', $context->getRequest()
+            ->getFormatType()) : $context->getRequest()->getFormatType());
     }
     $response = $context->getResponse();
     if (!$response instanceof Response) {
         $response = new Response();
     }
-    $renderObj = new SegmentRender();
     switch ($format) {
         case 'xml':
         case 'json':
@@ -61,11 +60,6 @@ function ExceptionHandler(Throwable $exc, Context $context)
             $response->addOutput($exc->getCode(), 'status');
             $response->addOutput($exc->getMessage(), 'message');
             $response->addOutput($res, 'data');
-            try {
-                $renderObj = Factory::getRender($format);
-            } catch (ReflectionException $e) {
-                Logger::exception($e);
-            }
             break;
         default :
             $errorPage = null;
@@ -80,8 +74,6 @@ function ExceptionHandler(Throwable $exc, Context $context)
             $response->addOutput($html);
             break;
     }
-    $renderObj->header($response);
-    $renderObj->output($response);
 }
 
 /**

@@ -464,7 +464,7 @@ abstract class Dispatcher
     {
         $format = $this->context->getResponse()->getFormat();
         if ($format === null) {
-            $format = $this->context->getRequest()->getFormatType();
+            $format = $this->context->get('format') ?: $this->context->getRequest()->getFormatType();
         }
 
         $renderObj = Factory::getRender($format);

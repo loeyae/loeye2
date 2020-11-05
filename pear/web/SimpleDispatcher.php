@@ -73,15 +73,16 @@ class SimpleDispatcher extends \loeye\std\Dispatcher
 
             $view = $this->getView($object);
             $this->executeView($view);
-            $this->executeOutput();
         } catch (Exception $exc) {
             ExceptionHandler($exc, $this->context);
         } catch (\Exception $exc) {
             ExceptionHandler($exc, $this->context);
-        }
-        if ($this->processMode === LOEYE_PROCESS_MODE__TEST) {
-            $this->setTraceDataIntoContext(array());
-            Utils::logContextTrace($this->context);
+        } finally {
+            if ($this->processMode === LOEYE_PROCESS_MODE__TEST) {
+                $this->setTraceDataIntoContext(array());
+                Utils::logContextTrace($this->context);
+            }
+            $this->executeOutput();
         }
     }
 

@@ -81,7 +81,6 @@ class Dispatcher extends \loeye\std\Dispatcher
             $this->redirectUrl();
             $view = $this->getView();
             $this->executeView($view);
-            $this->executeOutput();
         } catch (InvalidArgumentException $e) {
             ExceptionHandler($e, $this->context);
         } catch (Throwable $e) {
@@ -91,6 +90,7 @@ class Dispatcher extends \loeye\std\Dispatcher
                 $this->setTraceDataIntoContext(array());
                 Utils::logContextTrace($this->context, null, false);
             }
+            $this->executeOutput();
         }
     }
 
