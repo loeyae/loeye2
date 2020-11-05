@@ -21,6 +21,7 @@ use loeye\base\{Context, Exception, Factory, Utils};
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use loeye\database\Entity;
 use loeye\error\BusinessException;
+use loeye\error\ValidateError;
 use loeye\lib\ModuleParse;
 use loeye\std\Plugin;
 use ReflectionException;
@@ -71,6 +72,17 @@ class OutputPlugin implements Plugin
             $this->reponseCode = LOEYE_REST_STATUS_BAD_REQUEST;
             $this->responseMsg = 'error';
             $data = Utils::getErrors($context, $inputs, $inputs['error']);
+            if (!empty($data) && $error = current($data)) {
+                if ($error instanceof ValidateError) {
+                    $this->reponseCode = $error->getCode();
+                    $this->responseMsg = $error->getMessage();
+                    $data = $error->getValidateMessage();
+                } elseif ($error instanceof \Throwable) {
+                    $this->responseMsg = $error->getMessage();
+                } else {
+                    $this->responseMsg = $error;
+                }
+            }
         }
         if ($data instanceof Entity) {
             $data = Utils::entity2array(Factory::db()->em(), $data);

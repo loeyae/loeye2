@@ -21,6 +21,7 @@ use loeye\base\Context;
 use loeye\base\Exception;
 use loeye\base\Utils;
 use loeye\error\BusinessException;
+use loeye\error\ValidateError;
 use loeye\std\Plugin;
 use loeye\validate\Validation;
 use loeye\validate\Validator;
@@ -75,7 +76,7 @@ class ValidatePlugin implements Plugin
             $violationList = $validator->validate($entityObject, null, $groups);
             $errors        = Validator::buildErrmsg($violationList, Validator::initTranslator($context->getAppConfig()));
             if ($errors) {
-                Utils::addErrors($errors, $context, $inputs, self::ERROR_KEY);
+                Utils::addErrors(new ValidateError($errors), $context, $inputs, self::ERROR_KEY);
             }
             Utils::setContextData($data, $context, $inputs, self::DATA_KEY);
         } else {
@@ -85,7 +86,7 @@ class ValidatePlugin implements Plugin
             $report     = $validation->validate($data, $rule);
             if ($report['has_error']) {
                 Utils::addErrors(
-                        $report['error_message'], $context, $inputs, self::ERROR_KEY);
+                        new ValidateError($report['error_message']), $context, $inputs, self::ERROR_KEY);
             }
             Utils::setContextData(
                     $report['valid_data'], $context, $inputs, self::DATA_KEY);
