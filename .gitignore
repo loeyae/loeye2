@@ -14,6 +14,11 @@ out/
 
 # mpeltonen/sbt-idea plugin
 .idea_modules/
+vendor/
+nbproject/
+tests/runtime/
+tests/.phpunit.result.cache
+composer.lock
 
 # JIRA plugin
 atlassian-ide-plugin.xml
