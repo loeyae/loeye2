@@ -46,6 +46,7 @@ function ExceptionHandler(Throwable $exc, Context $context)
     if (!$response instanceof Response) {
         $response = new Response();
     }
+    $response->setFormat($format);
     switch ($format) {
         case 'xml':
         case 'json':
