@@ -20,9 +20,12 @@ namespace loeye\plugin;
 use loeye\base\Context;
 use loeye\base\Exception;
 use loeye\base\Utils;
-use loeye\base\Validator;
+use loeye\validate\Validator;
 use loeye\error\BusinessException;
+use loeye\error\ValidateError;
 use loeye\std\Plugin;
+use loeye\validate\Validation;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 /**
  * FileValidatePlugin
@@ -31,6 +34,12 @@ use loeye\std\Plugin;
  */
 class FileValidatePlugin implements Plugin
 {
+    public const ENTITY_KEY     = 'entity';
+    public const RULE_KEY       = 'validate_rule';
+    public const BUNDLE_KEY     = 'bundle';
+    public const GROUPS_KEY     = 'groups';
+    public const ERROR_KEY      = 'FileValidatePlugin_validate_error';
+    public const DATA_KEY       = 'FileValidatePlugin_filter_data';
 
     /**
      * process
@@ -46,16 +55,30 @@ class FileValidatePlugin implements Plugin
      */
     public function process(Context $context, array $inputs): void
     {
-        $rule       = Utils::checkNotEmpty($inputs, 'validate_rule');
-        $customBundle = Utils::getData($inputs, 'bundle', null);
-        $validation = new Validator($context->getAppConfig(), $customBundle);
-        $report     = $validation->validate($this->_formatFileData(), $rule);
-        if ($report['has_error'] == true) {
-            Utils::addErrors(
-                    $report['error_message'], $context, $inputs, __CLASS__ . '_validate_error');
+        $data = $this->_formatFileData();
+        $entity = Utils::getData($inputs, self::ENTITY_KEY);
+        if ($entity) {
+            $groups = Utils::getData($inputs, self::GROUPS_KEY);
+            $entityObject = Utils::source2entity($data, $entity);
+            $validator     = Validation::createValidator();
+            $violationList = $validator->validate($entityObject, null, $groups);
+            $errors        = Validator::buildErrmsg($violationList, Validator::initTranslator($context->getAppConfig()));
+            if ($errors) {
+                Utils::addErrors(new ValidateError($errors), $context, $inputs, self::ERROR_KEY);
+            }
+            Utils::setContextData($data, $context, $inputs, self::DATA_KEY);
+        } else {
+            $rule = Utils::checkNotEmpty($inputs, self::RULE_KEY);
+            $customBundle = Utils::getData($inputs, self::BUNDLE_KEY, null);
+            $validation = new Validator($context->getAppConfig(), $customBundle);
+            $report = $validation->validate($data, $rule);
+            if ($report['has_error'] == true) {
+                Utils::addErrors(
+                    new ValidateError($report['error_message']), $context, $inputs, self::ERROR_KEY);
+            }
+            Utils::setContextData(
+                $report['valid_data'], $context, $inputs, self::DATA_KEY);
         }
-        Utils::setContextData(
-                $report['valid_data'], $context, $inputs, __CLASS__ . '_filter_data');
     }
 
     /**
@@ -70,7 +93,7 @@ class FileValidatePlugin implements Plugin
             if (is_array($fields['name'])) {
                 $data[$key] = $this->_parseData($fields);
             } else if (isset($fields['size']) && $fields['size'] > 0 && !empty($fields['name']) && !empty($fields['tmp_name']) && empty($fields['error'])) {
-                $data[$key] = $fields;
+                $data[$key] = new UploadedFile($fields['tmp_name'], $fields['name'], $fields['error']);
             }
         }
         return $data;
@@ -96,10 +119,7 @@ class FileValidatePlugin implements Plugin
                 );
                 $data[$key] = $this->_parseData($tmpData);
             } else if (isset($fields['size'][$key]) && $fields['size'][$key] > 0 && !empty($fields['name'][$key]) && !empty($fields['tmp_name'][$key]) && empty($fields['error'][$key])) {
-                $data[$key]['name']     = $fields['name'][$key];
-                $data[$key]['tmp_name'] = $fields['tmp_name'][$key];
-                $data[$key]['size']     = $fields['size'][$key];
-                $data[$key]['error']    = $fields['error'][$key];
+                $data[$key] = new UploadedFile($fields['tmp_name'][$key], $fields['name'][$key], $fields['error'][$key]);
             }
         }
         return $data;
