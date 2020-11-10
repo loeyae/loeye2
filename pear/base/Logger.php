@@ -299,4 +299,36 @@ class Logger
         return $message;
     }
 
+
+    /**
+     * exceptionTrace
+     *
+     * @param Throwable $exc
+     */
+    public static function exceptionTrace(Throwable $exc): void
+    {
+        $message = [$exc->getMessage()];
+        foreach ($exc->getTrace() as $i => $t) {
+            if (!isset($t['file'])) {
+                $t['file'] = 'unknown';
+            }
+            if (!isset($t['line'])) {
+                $t['line'] = 0;
+            }
+            if (!isset($t['function'])) {
+                $t['function'] = 'unknown';
+            }
+            $msg = "{$t['file']}({$t['line']}): ";
+            if (isset($t['class'])) {
+                $msg .= $t['class'] . '->';
+            }
+            $msg .= "{$t['function']}()";
+            $message[] = $msg;
+        }
+        if (filter_has_var(INPUT_SERVER, 'REQUEST_URI')) {
+            $message[] = '# REQUEST_URI: ' . filter_input(INPUT_SERVER, 'REQUEST_URI') . PHP_EOL;
+        }
+        static::error($message);
+    }
+
 }

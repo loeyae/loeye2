@@ -34,7 +34,7 @@ use Throwable;
 function ExceptionHandler(Throwable $exc, Context $context)
 {
     if (!($exc instanceof Exception)) {
-        Logger::exception($exc);
+        Logger::exceptionTrace($exc);
     }
     $format = null;
     $appConfig = $context->getAppConfig();

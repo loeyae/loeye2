@@ -423,9 +423,12 @@ EOF;
      * @throws Throwable
      * @throws InvalidArgumentException
      */
-    public static function db($type = 'default'): DB
+    public static function db($type = null): DB
     {
         static $db = [];
+        if (!$type) {
+            $type = self::appConfig()->getSetting('application.database.default', 'default');
+        }
         if (!isset($db[$type])) {
             $db[$type] = DB::getInstance(self::appConfig(), $type);
         }

@@ -203,7 +203,7 @@ class AppConfig implements ArrayAccess
      *
      * @return string
      */
-    public function getPropertyName(): string
+    public function getPropertyName(): ?string
     {
         if (!empty($this->_propertyName)) {
             return $this->_propertyName;
