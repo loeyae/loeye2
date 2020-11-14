@@ -88,6 +88,8 @@ class OutputPlugin implements Plugin
             $data = Utils::entity2array(Factory::db()->em(), $data);
         } elseif ($data instanceof  Paginator) {
             $data = Utils::paginator2array(Factory::db()->em(), $data);
+        } elseif (is_array($data)) {
+            $data = Utils::entities2array(Factory::db()->em(), $data);
         }
         $redirect  = null;
         $routerKey = Utils::getData($inputs, 'router_key');

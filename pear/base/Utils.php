@@ -1190,10 +1190,10 @@ class Utils
      * @param EntityManager $em entity manager
      * @param mixed $entity entity
      * @param array $ignore ignore
-     * @return array
+     * @return mixed
      * @throws ReflectionException
      */
-    public static function entity2array(EntityManager $em, $entity, $ignore = []): array
+    public static function entity2array(EntityManager $em, $entity, $ignore = [])
     {
         if (is_object($entity)) {
             $r = [];
