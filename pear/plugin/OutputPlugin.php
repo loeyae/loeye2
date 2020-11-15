@@ -69,10 +69,10 @@ class OutputPlugin implements Plugin
             $data = Utils::getData($context, $outDataKey);
         } 
         if (empty($data) && isset($inputs['error'])) {
-            $this->reponseCode = LOEYE_REST_STATUS_BAD_REQUEST;
-            $this->responseMsg = 'error';
-            $data = Utils::getErrors($context, $inputs, $inputs['error']);
-            if (!empty($data) && $error = current($data)) {
+            $errors = Utils::getErrors($context, $inputs, $inputs['error']);
+            if (!empty($errors) && $error = current($errors)) {
+                $this->reponseCode = LOEYE_REST_STATUS_BAD_REQUEST;
+                $this->responseMsg = 'error';
                 if ($error instanceof ValidateError) {
                     $this->reponseCode = $error->getCode();
                     $this->responseMsg = $error->getMessage();
