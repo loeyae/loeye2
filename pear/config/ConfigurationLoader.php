@@ -136,7 +136,7 @@ class ConfigurationLoader {
             return $configs[$context] ?? null;
         }
         if (is_array($context)) {
-            $current = [key($context) => current($context)];
+            $current = ['key' => key($context), 'value' => current($context)];
             $config  = $configs[$current['key']] ?? array();
             if(empty($config)) {
                 return null;
@@ -179,7 +179,7 @@ class ConfigurationLoader {
             return $configs[$context] ?? null;
         }
         if (is_array($context)) {
-            $current = [key($context) => current($context)];
+            $current = ['key' => key($context), 'value' => current($context)];
             $config  = $configs[$current['key']] ?? array();
             return $config[$current['value']] ?? null;
         }
@@ -240,7 +240,7 @@ class ConfigurationLoader {
             return $item->get();
         }
         if (is_array($key)) {
-            $current = [key($key), current($key)];
+            $current = ['key' => key($key), 'value' => current($key)];
             $item    = $this->configCache->cacheAdapter()->getItem($current['key']);
             $config  = $item->get();
             return $config[$current['value']] ?? null;

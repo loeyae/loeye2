@@ -135,7 +135,7 @@ class Processor extends \Symfony\Component\Config\Definition\Processor {
                     $tree    = $configuration->getConfigTreeBuilder()->buildTree();
                     $config  = $tree->normalize($config);
                     $config  = $this->parseConfig($config, $tree, $currentConfiguration);
-                    $setting = [key($config), current($config)];
+                    $setting = ['key' => key($config), 'value' => current($config)];
                     if (static::DEFAULT_SETTINGS === $setting['key']) {
                         if (!isset($currentConfig[static::DEFAULT_SETTINGS])) {
                             $currentConfig[static::DEFAULT_SETTINGS] = [];
@@ -145,7 +145,7 @@ class Processor extends \Symfony\Component\Config\Definition\Processor {
                         if (!isset($currentConfig[$setting['key']])) {
                             $currentConfig[$setting['key']] = [];
                         }
-                        $delta = [key($setting['value']), current($setting['value'])];
+                        $delta = ['key' => key($setting['value']), 'value' => current($setting['value'])];
                         if (!isset($currentConfig[$setting['key']][$delta['key']])) {
                             $currentConfig[$setting['key']][$delta['key']] = [];
                         }
@@ -183,7 +183,7 @@ class Processor extends \Symfony\Component\Config\Definition\Processor {
         }
 
         if (is_array($settings[0])) {
-            $setting = [key($settings[0]), current($settings[0])];
+            $setting = ['key' => key($settings[0]), 'value' => current($settings[0])];
             if (!isset($currentConfiguration[$setting['key']])) {
                 $currentConfiguration[$setting['key']] = [$setting['value'] => $tree];
             } else {
