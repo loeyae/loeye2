@@ -148,7 +148,7 @@ trait RepositoryTrait
      *
      * @return QueryBuilder
      */
-    private function parseOrderBy(QueryBuilder $qb, $orderBy): QueryBuilder
+    protected function parseOrderBy(QueryBuilder $qb, $orderBy): QueryBuilder
     {
         if ($orderBy) {
             $expr = new OrderBy();
@@ -175,7 +175,7 @@ trait RepositoryTrait
      * @param mixed $groupBy groupBy
      * @return QueryBuilder
      */
-    private function parseGroupBy(QueryBuilder $qb, $groupBy): QueryBuilder
+    protected function parseGroupBy(QueryBuilder $qb, $groupBy): QueryBuilder
     {
         if ($groupBy) {
             if (is_array($groupBy)) {
@@ -197,7 +197,7 @@ trait RepositoryTrait
      * @return QueryBuilder
      * @throws DAOException
      */
-    private function parseHaving(QueryBuilder $qb, $having): QueryBuilder
+    protected function parseHaving(QueryBuilder $qb, $having): QueryBuilder
     {
         if ($having) {
             $object = null;
