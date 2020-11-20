@@ -66,7 +66,7 @@ class AppConfig implements ArrayAccess
         if ($profile) {
             $deltaConfig = $configuration->getConfig(null, ['profile' => $profile]) ?? [];
         }
-        $this->mergeConfiguration($masterConfig, $deltaConfig);
+        $this->_config = $this->mergeConfiguration($masterConfig, $deltaConfig);
     }
 
     /**
@@ -75,14 +75,18 @@ class AppConfig implements ArrayAccess
      * @param array $mater
      * @param array $delta
      */
-    protected function mergeConfiguration(array $mater, array $delta): void
+    protected function mergeConfiguration(array $mater, array $delta): array
     {
         foreach ($delta as $key => $value) {
             if ($value) {
-                $mater[$key] = $value;
+                if (is_array($value) && is_array($mater[$key])) {
+                    $mater[$key] = $this->mergeConfiguration($mater[$key], $value);
+                } else {
+                    $mater[$key] = $value;
+                }
             }
         }
-        $this->_config = $mater;
+        return $mater;
     }
 
     /**
