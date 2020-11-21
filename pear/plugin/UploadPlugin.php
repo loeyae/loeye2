@@ -30,6 +30,10 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
  */
 class UploadPlugin implements Plugin
 {
+    /**
+     * @var mixed|null
+     */
+    private $baseUploadDir;
 
     /**
      * process
@@ -94,7 +98,7 @@ class UploadPlugin implements Plugin
             }
             $upload = Utils::getData($inputs, 'base_url', 'upload');
             $replace = (defined('BASE_SERVER_URL') ? trim(BASE_SERVER_URL, '/') : '') . '/' . $upload;
-            $r = str_replace([$path, '\\'], [$replace, '/'], $data);
+            $r = str_replace([$this->baseUploadDir, '\\'], [$replace, '/'], $data);
             $url = array(
                 'name' => pathinfo($data, PATHINFO_BASENAME),
                 'url' => $r,
@@ -188,6 +192,7 @@ class UploadPlugin implements Plugin
                     $errorMessage, Exception::INVALID_PLUGIN_SET_CODE);
             }
         }
+        $this->baseUploadDir = $uploadPath;
         $dir = Utils::getData($inputs, 'path', null);
         if (!empty($dir)) {
             $uploadPath .= '/' . $dir;
@@ -213,7 +218,7 @@ class UploadPlugin implements Plugin
         }
         if (!empty($path)) {
             $uploadPath .= '/' . $path;
-            if (!file_exists($uploadPath) && (mkdir($uploadPath, 0777) || is_dir($uploadPath))) {
+            if (!file_exists($uploadPath) && (mkdir($uploadPath, 0777) || !is_dir($uploadPath))) {
                 $errorMessage = 'mkdir failed';
                 throw new Exception(
                     $errorMessage, Exception::DEFAULT_ERROR_CODE);
