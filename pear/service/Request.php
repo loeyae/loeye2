@@ -52,11 +52,9 @@ class Request extends \loeye\std\Request
     }
 
     /**
-     * getContent
-     *
-     * @return string
+     * @return false|resource|string|null
      */
-    public function getContent(): string
+    public function getContent()
     {
         return $this->content;
     }
@@ -68,6 +66,9 @@ class Request extends \loeye\std\Request
      */
     public function getContentLength(): int
     {
+        if ($this->content == false || $this->content == null || is_resource($this->content)) {
+            return 0;
+        }
         return strlen($this->content);
     }
 
