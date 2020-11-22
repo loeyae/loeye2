@@ -145,6 +145,10 @@ class DB
         }
         $cache = $this->getCache($appConfig);
         $this->em = \loeye\database\EntityManager::getManager($dbSetting, $property, $cache);
+        if (!isset($dbSetting['softAble']) || $dbSetting['softAble']) {
+            $this->em->getFilters()->enable("soft-deleteable");
+        }
+
     }
 
     /**

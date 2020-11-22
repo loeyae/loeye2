@@ -110,6 +110,7 @@ class EntityManager
         $config->setQueryCacheImpl($cache);
         $logger = new Logger();
         $config->setSQLLogger($logger);
+        $config->addFilter('soft-deleteable', 'Gedmo\SoftDeleteable\Filter\SoftDeleteableFilter');
         // Third, create event manager and hook prefered extension listeners
         $evm = new EventManager();
         // gedmo extension listeners
