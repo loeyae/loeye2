@@ -17,14 +17,12 @@
 
 namespace loeye\std;
 
-use ArrayAccess;
-
 /**
  * interface Response
  *
  * @author   Zhang Yi <loeyae@gmail.com>
  */
-abstract class Response implements ArrayAccess
+abstract class Response
 {
 
     protected $header = array();
@@ -34,54 +32,7 @@ abstract class Response implements ArrayAccess
     /**
      * @var int
      */
-    protected $statusCode = 200;
-
-    /**
-     * offsetExists
-     *
-     * @param mixed $offset offset
-     *
-     * @return boolean
-     */
-    public function offsetExists($offset): bool
-    {
-        return true;
-    }
-
-    /**
-     * offsetGet
-     *
-     * @param mixed $offset offset
-     *
-     * @return mixed
-     */
-    public function offsetGet($offset)
-    {
-        return null;
-    }
-
-    /**
-     * offsetSet
-     *
-     * @param mixed $offset offset
-     * @param mixed $value  value
-     *
-     * @return mixed|void
-     */
-    public function offsetSet($offset, $value)
-    {
-    }
-
-    /**
-     * offsetUnset
-     *
-     * @param mixed $offset offset
-     *
-     * @return mixed|void
-     */
-    public function offsetUnset($offset)
-    {
-    }
+    protected $statusCode;
 
     /**
      * addHeader
