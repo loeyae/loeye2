@@ -25,9 +25,22 @@ namespace loeye\service;
 class Response extends \loeye\std\Response
 {
 
+    /**
+     * @var string
+     */
     private $_serverProtocol;
+    /**
+     * @var int
+     */
     private $_statusCode;
+
+    /**
+     * @var string
+     */
     private $_statusMessage;
+    /**
+     * @var string
+     */
     private $_contentType;
     /**
      * @var string
