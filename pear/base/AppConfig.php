@@ -79,7 +79,7 @@ class AppConfig implements ArrayAccess
     {
         foreach ($delta as $key => $value) {
             if ($value) {
-                if (is_array($value) && is_array($mater[$key])) {
+                if (is_array($value) && isset($mater[$key]) && is_array($mater[$key])) {
                     $mater[$key] = $this->mergeConfiguration($mater[$key], $value);
                 } else {
                     $mater[$key] = $value;

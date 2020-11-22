@@ -360,8 +360,11 @@ class Context implements ArrayAccess
      *
      * @return void
      */
-    public function set($key, $value, $expire = 1): void
+    public function set(string $key, $value, $expire = 1): void
     {
+        if (isset($this->_data[$key])) {
+            unset($this->_data[$key]);
+        }
         $this->_data[$key] = ContextData::init($value, $expire);
     }
 
