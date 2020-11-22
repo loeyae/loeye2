@@ -153,7 +153,8 @@ class Dispatcher extends \loeye\std\Dispatcher
      */
     protected function initIOObject($moduleId): void
     {
-        $request = new Request($moduleId);
+        $request = Request::createFromGlobals();
+        $request->setModuleId($moduleId);
         $request->setRouter($this->context->getRouter());
         $this->context->setRequest($request);
         $response = new Response($request);

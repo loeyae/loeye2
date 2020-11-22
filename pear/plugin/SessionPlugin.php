@@ -68,7 +68,7 @@ class SessionPlugin implements Plugin
         $key = Utils::getData($inputs, 'get', null);
         $data = array();
         if (empty($key)) {
-            $session = $context->getRequest()->getSession();
+            $session = $context->getRequest()->getSession()->all();
             foreach ($session as $key => $value) {
                 if (mb_strpos($key, $propertyName) === 0) {
                     $key = str_replace($propertyName . '_', '', $key);
@@ -78,7 +78,7 @@ class SessionPlugin implements Plugin
         } else {
             foreach ((array)$key as $item) {
                 $sessionKey = $propertyName . '_' . $item;
-                $data[$item] = $context->getRequest()->getSession($sessionKey);
+                $data[$item] = $context->getRequest()->getSession()->get($sessionKey);
             }
         }
         Utils::setContextData($data, $context, $inputs, $this->outKey);

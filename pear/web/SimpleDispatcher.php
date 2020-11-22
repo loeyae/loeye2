@@ -95,8 +95,8 @@ class SimpleDispatcher extends \loeye\std\Dispatcher
      */
     protected function initIOObject($moduleId): void
     {
-        $request = new Request($moduleId);
-
+        $request = Request::createFromGlobals();
+        $request->setModuleId($moduleId);
         $this->context->setRequest($request);
 
         $response = new Response();

@@ -145,7 +145,7 @@ class Dispatcher extends \loeye\std\Dispatcher
         if ($this->processMode > LOEYE_PROCESS_MODE__NORMAL) {
             $this->setTraceDataIntoContext(array());
         }
-        $mockMode = $this->context->getRequest()->getParameterGet('ly_p_m');
+        $mockMode = $this->context->getRequest()->query->get('ly_p_m');
         if ($this->processMode > LOEYE_PROCESS_MODE__NORMAL && $mockMode === 'mock') {
             $mockPlugins = $this->_mDfnObj->getMockPlugins();
             [$returnStatus] = $this->_executePlugin($mockPlugins, false, true);
@@ -171,7 +171,8 @@ class Dispatcher extends \loeye\std\Dispatcher
      */
     protected function initIOObject($moduleId): void
     {
-        $request = Factory::request($moduleId);
+        $request = Factory::request();
+        $request->setModuleId($moduleId);
         $request->setRouter($this->context->getRouter());
         $this->context->setRequest($request);
 

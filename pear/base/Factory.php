@@ -20,6 +20,7 @@ namespace loeye\base;
 use FilesystemIterator;
 use loeye\client\ParallelClientManager;
 use loeye\error\BusinessException;
+use loeye\error\LogicException;
 use loeye\error\ResourceException;
 use loeye\std\Plugin;
 use loeye\std\Render;
@@ -459,12 +460,16 @@ EOF;
      *
      * @param null $moduleId
      * @return Request
+     * @throws LogicException
      */
     public static function request($moduleId = null): Request
     {
         static $request = null;
         if (null === $request) {
-            $request = new Request($moduleId);
+            $request = Request::createFromGlobals();
+        }
+        if ($moduleId) {
+            $request->setModuleId($moduleId);
         }
         return $request;
     }

@@ -57,7 +57,7 @@ class CookiePlugin implements Plugin
         $key = Utils::getData($inputs, 'get', null);
         $data = array();
         if (empty($key)) {
-            $cookie = $context->getRequest()->getCookie();
+            $cookie = $context->getRequest()->cookies->all();
             if (!empty($cookie)) {
                 foreach ($cookie as $key => $value) {
                     $data[$key] = $value;
@@ -65,7 +65,7 @@ class CookiePlugin implements Plugin
             }
         } else {
             foreach ((array)$key as $item) {
-                $data[$item] = $context->getRequest()->getCookie($item);
+                $data[$item] = $context->getRequest()->cookies->get($item);
             }
         }
         Utils::setContextData($data, $context, $inputs, $this->outKey);

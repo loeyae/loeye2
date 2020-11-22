@@ -121,7 +121,7 @@ class FuncLibraries
         $fileKey = self::getFileKey($context, $params);
         $cache = new Cache($context->getAppConfig());
         $content = $cache->get($fileKey);
-        return $content !== false;
+        return !empty($content);
     }
 
     /**

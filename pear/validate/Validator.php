@@ -528,9 +528,9 @@ class Validator
      *
      * @param array $data data
      * @param array $ruleset ruleset
-     * @return array
+     * @return mixed
      */
-    private function _filterVar($data, $ruleset): array
+    private function _filterVar($data, $ruleset)
     {
         if (is_iterable($data)) {
             $filtered = [];
