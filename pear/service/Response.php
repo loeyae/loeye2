@@ -65,18 +65,6 @@ class Response extends \loeye\std\Response
     }
 
     /**
-     * setStatusCode
-     *
-     * @param int $code status code
-     *
-     * @return void
-     */
-    public function setStatusCode($code): void
-    {
-        $this->_statusCode = $code;
-    }
-
-    /**
      * setStatusMessage
      *
      * @param string $message message

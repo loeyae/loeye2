@@ -52,14 +52,6 @@ class Request extends \loeye\std\Request
     }
 
     /**
-     * @return false|resource|string|null
-     */
-    public function getContent()
-    {
-        return $this->content;
-    }
-
-    /**
      * getContentLength
      *
      * @return int
