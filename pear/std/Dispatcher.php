@@ -182,7 +182,7 @@ abstract class Dispatcher
     protected function initAppConfig(): void
     {
 
-        $property = $this->context->getRequest()['property'];
+        $property = $this->context->getRequest()->getProperty();
         if (!defined('PROJECT_PROPERTY')) {
             define('PROJECT_PROPERTY', $property);
         }
