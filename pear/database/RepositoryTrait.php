@@ -97,7 +97,7 @@ trait RepositoryTrait
      * @param mixed $groupBy
      *
      * @param null $having
-     * @return array|null
+     * @return Paginator
      *
      * @throws QueryException
      * @throws ReflectionException
