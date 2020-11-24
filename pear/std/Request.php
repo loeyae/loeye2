@@ -17,12 +17,7 @@
 
 namespace loeye\std;
 
-use ArrayAccess;
 use GuzzleHttp\Psr7\Uri;
-use loeye\error\LogicException;
-use phpDocumentor\Reflection\Types\String_;
-use Symfony\Component\HttpFoundation\ParameterBag;
-use const loeye\base\RENDER_TYPE_SEGMENT;
 
 /**
  * Request
@@ -464,7 +459,7 @@ class Request extends \Symfony\Component\HttpFoundation\Request
      */
     public function getFormatType(): ?string
     {
-        $format = $this->query->get('fmt', RENDER_TYPE_SEGMENT);
+        $format = $this->query->get('fmt');
         if (in_array($format, $this->_allowedFormatType, true)) {
             return $format;
         }
