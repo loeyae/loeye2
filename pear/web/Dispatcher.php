@@ -504,7 +504,7 @@ class Dispatcher extends \loeye\std\Dispatcher
     {
         if (is_array($inputs)) {
             foreach ($inputs as $key => $value) {
-                $this->context->set($key, $value);
+                $this->context->set($key, $value, 0);
             }
         }
     }
