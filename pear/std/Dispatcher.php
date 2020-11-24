@@ -30,6 +30,9 @@ use loeye\web\Template;
 use ReflectionException;
 use Smarty;
 use SmartyException;
+use const loeye\base\RENDER_TYPE_JSON;
+use const loeye\base\RENDER_TYPE_SEGMENT;
+use const loeye\base\RENDER_TYPE_XML;
 
 if (!defined('LOEYE_PROCESS_MODE__NORMAL')) {
     define('LOEYE_PROCESS_MODE__NORMAL', 0);
@@ -344,6 +347,24 @@ abstract class Dispatcher
         }
     }
 
+    /**
+     * executeOutput
+     *
+     * @return void
+     * @throws ReflectionException
+     */
+    protected function executeOutput(): void
+    {
+        $format = $this->context->getResponse()->getFormat();
+        if ($format === null) {
+            $format = $this->context->getFormat();
+        }
+
+        $renderObj = Factory::getRender($format);
+
+        $renderObj->header($this->context->getResponse());
+        $renderObj->output($this->context->getResponse());
+    }
 
     /**
      * executeView
@@ -358,6 +379,9 @@ abstract class Dispatcher
     protected function executeView($view): void
     {
         if ($view) {
+            if (in_array($this->context->getFormat(), [RENDER_TYPE_JSON, RENDER_TYPE_XML])) {
+                $this->context->getResponse()->setFormat(RENDER_TYPE_SEGMENT);
+            }
             $content = $this->getContent($view);
             if (!$content) {
                 if (isset($view['src'])) {
@@ -451,26 +475,6 @@ abstract class Dispatcher
                 $this->_addResource(Resource::RESOURCE_TYPE_JS, $view['js']);
             }
         }
-    }
-
-
-    /**
-     * executeOutput
-     *
-     * @return void
-     * @throws ReflectionException
-     */
-    protected function executeOutput(): void
-    {
-        $format = $this->context->getResponse()->getFormat();
-        if ($format === null) {
-            $format = $this->context->get('format') ?: $this->context->getRequest()->getFormatType();
-        }
-
-        $renderObj = Factory::getRender($format);
-
-        $renderObj->header($this->context->getResponse());
-        $renderObj->output($this->context->getResponse());
     }
 
 }

@@ -36,14 +36,6 @@ class Response extends \loeye\std\Response
     private $_redirectUrl;
 
     /**
-     * __construct
-     */
-    public function __construct()
-    {
-        $this->header = array();
-    }
-
-    /**
      * addHtmlHead
      *
      * @param string $data data
@@ -182,7 +174,8 @@ class Response extends \loeye\std\Response
             $redirectUrl = $this->_redirectUrl;
         }
         if (!empty($redirectUrl)) {
-            header("Location:$redirectUrl");
+            $this->headers->set('Location', $redirectUrl);
+            $this->sendHeaders();
             exit;
         }
         throw new BusinessException(

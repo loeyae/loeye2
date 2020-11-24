@@ -59,7 +59,7 @@ class OutputPlugin implements Plugin
      */
     public function process(Context $context, array $inputs)
     {
-        $format     = Utils::getData($inputs, 'format', $context->get('format', 'json'));
+        $format     = Utils::getData($inputs, 'format', $context->getFormat( 'json'));
         $data       = array();
         $outDataKey = Utils::getData($inputs, $this->dataKey, null);
         if ($outDataKey === null) {

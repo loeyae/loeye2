@@ -36,12 +36,8 @@ function ExceptionHandler(Throwable $exc, Context $context)
     if (!($exc instanceof Exception)) {
         Logger::exceptionTrace($exc);
     }
-    $format = null;
+    $format = $context->getFormat();
     $appConfig = $context->getAppConfig();
-    if ($context->getRequest() instanceof Request) {
-        $format = $context->get('format') ?: ($appConfig ? $appConfig->getSetting('application.response.format', $context->getRequest()
-            ->getFormatType()) : $context->getRequest()->getFormatType());
-    }
     $response = $context->getResponse();
     if (!$response instanceof Response) {
         $response = new Response();

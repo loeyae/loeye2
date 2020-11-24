@@ -17,22 +17,48 @@
 
 namespace loeye\std;
 
+use loeye\base\Factory;
+
 /**
  * interface Response
  *
  * @author   Zhang Yi <loeyae@gmail.com>
  */
-abstract class Response
+abstract class Response extends \Symfony\Component\HttpFoundation\Response
 {
-
-    protected $header = array();
     protected $output = array();
     protected $format;
 
     /**
-     * @var int
+     * __construct
+     *
+     * @param Request|null $req
+     * @param string $content
+     * @param int $status
+     * @param array $headers
      */
-    protected $statusCode;
+    public function __construct(Request $req = null, $content = '', int $status = 200, array $headers = [])
+    {
+        parent::__construct($content, $status, $headers);
+        $this->prepare($req);
+    }
+
+    /**
+     * create
+     *
+     * @param Request|null $req
+     * @param string $content
+     * @param int $status
+     * @param array $headers
+     * @return Response
+     */
+    public static function create(Request $req = null, $content = '', $status = 200, $headers = [])
+    {
+        if (!$req) {
+            $req = Factory::request();
+        }
+        return new static($req, $content, $status, $headers);
+    }
 
     /**
      * addHeader
@@ -44,7 +70,7 @@ abstract class Response
      */
     public function addHeader($name, $value): void
     {
-        $this->header[$name] = $value;
+        $this->headers->set($name, $value);
     }
 
     /**
@@ -83,7 +109,7 @@ abstract class Response
      */
     public function getFormat()
     {
-        return (!empty($this->format)) ? $this->format : null;
+        return !empty($this->format) ? $this->format : null;
     }
 
     /**
@@ -93,7 +119,7 @@ abstract class Response
      */
     public function getHeaders(): array
     {
-        return $this->header;
+        return $this->headers->all();
     }
 
 
@@ -104,13 +130,7 @@ abstract class Response
 */
     public function setHeaders(): void
     {
-        foreach ($this->header as $key => $value) {
-            if (is_numeric($key)) {
-                header($value);
-            } else {
-                header("$key:$value", true, $this->statusCode);
-            }
-        }
+        $this->sendHeaders();
     }
 
     /**

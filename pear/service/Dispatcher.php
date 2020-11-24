@@ -18,15 +18,11 @@
 namespace loeye\service;
 
 use loeye\base\AppConfig;
-use loeye\base\Factory;
-use loeye\base\Logger;
 use loeye\base\UrlManager;
 use loeye\base\Utils;
 use loeye\error\ResourceException;
 use loeye\error\ValidateError;
-use loeye\render\SegmentRender;
 use ReflectionClass;
-use ReflectionException;
 use Throwable;
 
 /**
@@ -157,7 +153,7 @@ class Dispatcher extends \loeye\std\Dispatcher
         $request->setModuleId($moduleId);
         $request->setRouter($this->context->getRouter());
         $this->context->setRequest($request);
-        $response = new Response($request);
+        $response = Response::create($request);
         $response->setFormat($request->getFormatType());
         $this->context->setResponse($response);
     }

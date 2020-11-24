@@ -32,6 +32,7 @@ use ReflectionException;
 use Symfony\Component\Cache\Exception\CacheException;
 use Throwable;
 use function loeye\base\ExceptionHandler;
+use const loeye\base\RENDER_TYPE_SEGMENT;
 
 define('LOEYE_PLUGIN_HAS_ERROR', 'lyHasError');
 
@@ -678,5 +679,6 @@ class Dispatcher extends \loeye\std\Dispatcher
         $res = new Resource($type, $resource);
         $this->context->getResponse()->addResource($res);
     }
+
 
 }

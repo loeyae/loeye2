@@ -758,4 +758,20 @@ class Context implements ArrayAccess
         return !empty($this->_errors);
     }
 
+    /**
+     * getFormat
+     *
+     * @param string $default
+     *
+     * @return mixed|string|null
+     */
+    public function getFormat($default = RENDER_TYPE_SEGMENT)
+    {
+        if ($this->getRequest() instanceof Request && $this->getRequest()->getFormatType()) {
+            return $this->getRequest()->getFormatType();
+        }
+        $format = $this->get('format', $this->_appConfig->getSetting('application.response.format'));
+        return $format ?? $default;
+    }
+
 }

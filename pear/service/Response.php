@@ -26,45 +26,6 @@ class Response extends \loeye\std\Response
 {
 
     /**
-     * @var string
-     */
-    private $_serverProtocol;
-    /**
-     * @var int
-     */
-    private $_statusCode;
-
-    /**
-     * @var string
-     */
-    private $_statusMessage;
-    /**
-     * @var string
-     */
-    private $_contentType;
-    /**
-     * @var string
-     */
-    private $_responseData;
-
-    /**
-     * __construct
-     *
-     * @param Request $req request
-     *
-     * @return void
-     */
-    public function __construct(Request $req)
-    {
-        $this->_serverProtocol = $req->getServerProtocol();
-        $this->_statusCode     = LOEYE_REST_STATUS_OK;
-        $this->_statusMessage  = 'OK';
-        $this->_contentType    = 'text/plain; charset=utf-8';
-        $this->_responseData   = '';
-        $this->header = [];
-    }
-
-    /**
      * setStatusMessage
      *
      * @param string $message message
@@ -73,7 +34,7 @@ class Response extends \loeye\std\Response
      */
     public function setStatusMessage($message): void
     {
-        $this->_statusMessage = $message;
+        $this->statusText = $message;
     }
 
     /**
@@ -87,23 +48,11 @@ class Response extends \loeye\std\Response
     public function setContent($data, $contentType = null): void
     {
         if (!empty($contentType)) {
-            $this->_contentType = $contentType;
+            $this->headers->set('Content-Type', $contentType);
         }
         $this->output = $data;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function setHeaders(): void
-    {
-        $header = $this->_serverProtocol . ' ' . $this->_statusCode . ' ' . $this->_statusMessage;
-        header($header);
-        parent::setHeaders();
-        if (!array_key_exists('Content-Type', $this->header)) {
-            header('Content-Type:'. $this->_contentType);
-        }
-    }
 
     /**
      * output

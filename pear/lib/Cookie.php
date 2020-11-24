@@ -17,6 +17,8 @@
 
 namespace loeye\lib;
 
+use loeye\base\Factory;
+
 /**
  * Description of Cookie
  *
@@ -53,7 +55,9 @@ class Cookie
             $httponly = false
     ): bool
     {
-        return setcookie($name, $value, $expire, $path, $domain, $secure, $httponly);
+        $cookie = new \Symfony\Component\HttpFoundation\Cookie($name, $value, $expire, $path, $domain, $secure, $httponly);
+        Factory::response()->headers->setCookie($cookie);
+        return true;
     }
 
     /**
@@ -65,12 +69,7 @@ class Cookie
      */
     public static function getCookie($name=null): ?string
     {
-        if ($name === null) {
-            return  filter_input_array(INPUT_COOKIE);
-        }
-        if (filter_has_var(INPUT_COOKIE, $name)) {
-            return filter_input(INPUT_COOKIE, $name);
-        }
+        Factory::request()->cookies->get($name);
         return null;
     }
 
@@ -83,7 +82,8 @@ class Cookie
      */
     public static function destructCookie($name): bool
     {
-        return setcookie($name, null, -1, '/');
+        Factory::response()->headers->clearCookie($name);
+        return true;
     }
 
     /**
@@ -129,8 +129,8 @@ class Cookie
      */
     public static function getLoeyeCookie($name = null, $decode = true)
     {
-        if (filter_has_var(INPUT_COOKIE, self::USRE_MESSAGE_INFO)) {
-            $userMessageInfo = json_decode(filter_input(INPUT_COOKIE, self::USRE_MESSAGE_INFO), true);
+        if (Factory::request()->cookies->has(self::USRE_MESSAGE_INFO)) {
+            $userMessageInfo = json_decode(Factory::request()->cookies->get(self::USRE_MESSAGE_INFO), true);
             $cryptFields     = json_decode(self::crypt($userMessageInfo[self::CRYPT_COOKIE_FIELDS], true), true);
             if (!empty($cryptFields) && $decode) {
                 foreach ($userMessageInfo as $key => $value) {

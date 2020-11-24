@@ -70,8 +70,11 @@ class BusinessException extends Exception
     public const INVALID_PLUGIN_INSTANCE_CODE = 500502;
     public const INVALID_PLUGIN_INSTANCE_MSG = 'Invalid plugin instance';
 
-    public const INVALID_RENDER_SET_CODE = 500501;
+    public const INVALID_RENDER_SET_CODE = 500503;
     public const INVALID_RENDER_SET_MSG = 'Invalid render setting';
+
+    public const INVALID_CONTROLLER_ERROR_CODE = 500504;
+    public const INVALID_CONTROLLER_ERROR_MSG = 'Invalid controller';
 
     public function __construct(string $errorMessage = self::DEFAULT_ERROR_MSG, int $errorCode =
     self::DEFAULT_ERROR_CODE, $parameter = array())

@@ -460,7 +460,7 @@ class Request extends \Symfony\Component\HttpFoundation\Request
     /**
      * getFormatType
      *
-     * @return string
+     * @return string|null
      */
     public function getFormatType(): ?string
     {
@@ -469,7 +469,7 @@ class Request extends \Symfony\Component\HttpFoundation\Request
             return $format;
         }
 
-        return RENDER_TYPE_SEGMENT;
+        return null;
     }
 
     /**

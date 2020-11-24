@@ -18,11 +18,15 @@
 namespace loeye\web;
 
 use loeye\base\Exception;
+use loeye\base\Factory;
 use loeye\base\UrlManager;
 use loeye\base\Utils;
+use loeye\error\BusinessException;
+use loeye\error\LogicException;
 use loeye\error\ResourceException;
 use loeye\lib\ModuleParse;
 use loeye\std\Controller;
+use phpDocumentor\Reflection\DocBlockFactory;
 use Psr\Cache\InvalidArgumentException;
 use ReflectionClass;
 use ReflectionException;
@@ -95,18 +99,24 @@ class SimpleDispatcher extends \loeye\std\Dispatcher
      */
     protected function initIOObject($moduleId): void
     {
-        $request = Request::createFromGlobals();
+        $request = Factory::request();
         $request->setModuleId($moduleId);
         $this->context->setRequest($request);
 
-        $response = new Response();
+        $response = Factory::response();
         if (defined('MOBILE_RENDER_ENABLE') && MOBILE_RENDER_ENABLE && $request['device']) {
             $response->setRenderId(Response::DEFAULT_MOBILE_RENDER_ID);
         }
-        $response->setFormat($request->getFormatType());
+        $response->setFormat($this->context->getFormat());
         $this->context->setResponse($response);
     }
 
+    /**
+     * getView
+     *
+     * @param Controller $object
+     * @return array|string[]
+     */
     protected function getView(Controller $object): array
     {
         $view = [];
@@ -116,9 +126,9 @@ class SimpleDispatcher extends \loeye\std\Dispatcher
             } else {
                 $view = (array) $object->view;
             }
-        }
-        if (!empty($object->layout)) {
-            $view['layout'] = $object->layout;
+            if (!empty($object->layout)) {
+                $view['layout'] = $object->layout;
+            }
         }
         return $view;
     }
@@ -145,6 +155,9 @@ class SimpleDispatcher extends \loeye\std\Dispatcher
         }
         $ref    = new ReflectionClass($controller);
         $object = $ref->newInstance($this->context);
+        if (!($object instanceof Controller)) {
+            throw new BusinessException(BusinessException::INVALID_CONTROLLER_ERROR_MSG, BusinessException::INVALID_CONTROLLER_ERROR_CODE);
+        }
         if (!method_exists($object, $action)) {
             throw new ResourceException(ResourceException::PAGE_NOT_FOUND_MSG, ResourceException::PAGE_NOT_FOUND_CODE);
         }
