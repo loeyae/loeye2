@@ -366,22 +366,16 @@ class Request extends \Symfony\Component\HttpFoundation\Request
     /**
      * getEnv
      *
-     * @param string $key key
-     * @param int $filter filter key
-     * @param string $flag flag key
-     *
+     * @param null $key key
+     * @param null $default
      * @return mixed
      */
-    public function getEnv($key = null, $filter = FILTER_DEFAULT, $flag = null)
+    public function getEnv($key = null, $default = null)
     {
         if (isset($key)) {
-            if (filter_has_var(INPUT_ENV, $key)) {
-                return filter_input(INPUT_ENV, $key, $filter, $flag);
-            }
-
-            return null;
+            return getenv($key) ?: $default;
         }
-        return filter_input_array(INPUT_ENV);
+        return getenv();
     }
 
     /**

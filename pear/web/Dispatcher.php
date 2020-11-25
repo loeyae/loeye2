@@ -60,6 +60,7 @@ class Dispatcher extends \loeye\std\Dispatcher
     public function dispatch($moduleId = null): void
     {
         try {
+            $this->context->setRequest(Factory::request());
             $moduleId = $this->parseUrl($moduleId);
             $this->initIOObject($moduleId);
             if (empty($moduleId)) {
@@ -172,10 +173,9 @@ class Dispatcher extends \loeye\std\Dispatcher
      */
     protected function initIOObject($moduleId): void
     {
-        $request = Factory::request();
+        $request = $this->context->getRequest();
         $request->setModuleId($moduleId);
         $request->setRouter($this->context->getRouter());
-        $this->context->setRequest($request);
 
         $response = Factory::response();
         if (defined('MOBILE_RENDER_ENABLE') && MOBILE_RENDER_ENABLE && $request->getDevice()) {
@@ -647,15 +647,12 @@ class Dispatcher extends \loeye\std\Dispatcher
     {
         if (empty($moduleId)) {
             if ($this->context->getRouter() instanceof UrlManager) {
-                $moduleId = $this->context->getRouter()->match(filter_input(INPUT_SERVER, 'REQUEST_URI'));
+                $moduleId = $this->context->getRouter()->match($this->context->getRequest()->getRequestUri());
             } else {
-                if (filter_has_var(INPUT_SERVER, 'REDIRECT_routerDir')) {
-                    $routerDir = filter_input(INPUT_SERVER, 'REDIRECT_routerDir', FILTER_SANITIZE_STRING);
-                } else if (filter_has_var(INPUT_SERVER, 'routerDir')) {
-                    $routerDir = filter_input(INPUT_SERVER, 'routerDir', FILTER_SANITIZE_STRING);
-                } else if (filter_has_var(INPUT_GET, 'routerDir')) {
-                    $routerDir = filter_input(INPUT_GET, 'routerDir', FILTER_SANITIZE_STRING);
-                } else {
+                $request = $this->context->getRequest();
+                $routerDir = $request->get("routerDir", $request->server->get('routerDir',
+                    $request->server->get('REDIRECT_routerDir', $request->getEnv('routerDir'))));
+                if (!$routerDir) {
                     $routerDir = defined('PROJECT_PROPERTY') ? PROJECT_PROPERTY : PROJECT_NAMESPACE;
                 }
                 $moduleId = $this->_executeRouter($routerDir);

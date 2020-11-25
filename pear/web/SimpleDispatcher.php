@@ -65,6 +65,7 @@ class SimpleDispatcher extends \loeye\std\Dispatcher
     public function dispatch($moduleId = null): void
     {
         try {
+            $this->context->setRequest(Factory::request());
             $this->parseUrl();
             $this->initIOObject($moduleId ?? $this->module);
             $this->initAppConfig();
@@ -99,9 +100,8 @@ class SimpleDispatcher extends \loeye\std\Dispatcher
      */
     protected function initIOObject($moduleId): void
     {
-        $request = Factory::request();
+        $request = $this->context->getRequest();
         $request->setModuleId($moduleId);
-        $this->context->setRequest($request);
 
         $response = Factory::response();
         if (defined('MOBILE_RENDER_ENABLE') && MOBILE_RENDER_ENABLE && $request['device']) {
@@ -199,7 +199,7 @@ class SimpleDispatcher extends \loeye\std\Dispatcher
      */
     protected function parseUrl(): void
     {
-        $requestUrl = filter_input(INPUT_SERVER, 'REQUEST_URI');
+        $requestUrl = $this->context->getRequest()->getRequestUri();
         $path       = null;
         if ($this->rewrite) {
             $router = new UrlManager($this->rewrite);
