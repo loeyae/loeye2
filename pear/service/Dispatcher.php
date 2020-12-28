@@ -153,7 +153,7 @@ class Dispatcher extends \loeye\std\Dispatcher
         $request->setModuleId($moduleId);
         $request->setRouter($this->context->getRouter());
         $this->context->setRequest($request);
-        $response = Response::create($request);
+        $response = Response::createFromRequest($request);
         $response->setFormat($request->getFormatType());
         $this->context->setResponse($response);
     }

@@ -484,7 +484,7 @@ EOF;
     {
         static $response = null;
         if (null === $response) {
-            $response = Response::create();
+            $response = Response::createFromRequest();
         }
         return $response;
     }

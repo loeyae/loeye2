@@ -52,10 +52,10 @@ abstract class Response extends \Symfony\Component\HttpFoundation\Response
      * @param array $headers
      * @return Response
      */
-    public static function create(Request $req = null, $content = '', $status = 200, $headers = [])
+    public static function createFromRequest(Request $req = null, $content = '', $status = 200, $headers = [])
     {
         if (!$req) {
-            $req = Factory::request();
+            $req = \loeye\web\Request::createFromGlobals();
         }
         return new static($req, $content, $status, $headers);
     }
