@@ -17,6 +17,7 @@
 
 namespace loeye\database;
 
+use Doctrine\Common\Collections\Criteria;
 use Doctrine\Common\Collections\Expr\Comparison;
 use Doctrine\Common\Collections\Expr\CompositeExpression;
 use Doctrine\Common\Collections\Expr\Expression;
@@ -50,6 +51,61 @@ class ExpressionFactory {
         Comparison::STARTS_WITH => [ExpressionBuilder::class, 'startsWith'],
         Comparison::ENDS_WITH   => [ExpressionBuilder::class, 'endsWith'],
     ];
+
+    /**
+     * @param $query
+     * @return CompositeExpression|null
+     * @throws DAOException
+     */
+    public static function create($query): ?CompositeExpression
+    {
+        $expression = self::createExpr($query);
+        if ($expression instanceof CompositeExpression) {
+            return $expression;
+        }
+        return $expression ? new CompositeExpression(CompositeExpression::TYPE_AND, [$expression]) : null;
+    }
+
+    /**
+     * @param CompositeExpression $expression
+     * @param $data
+     * @return CompositeExpression|null
+     */
+    public static function filter(CompositeExpression $expression, $data): ?CompositeExpression
+    {
+        $expressionList = $expression->getExpressionList();
+        $filteredExpression = array_filter($expressionList, static function ($item) use ($data) {
+            return ($item instanceof Comparison && array_key_exists($item->getField(), $data));
+        });
+        if ($filteredExpression) {
+            return new CompositeExpression($expression->getType(), $filteredExpression);
+        }
+        return null;
+    }
+
+    /**
+     * @param CompositeExpression $expression
+     * @return array
+     */
+    public static function toFieldArray(CompositeExpression $expression): array
+    {
+        $expressionList = $expression->getExpressionList();
+        return array_reduce($expressionList, static function($carry, $item) {
+            if ($item instanceof Comparison) {
+                $carry[$item->getField()] = $item->getValue()->getValue();
+            }
+            return $carry;
+        }, []);
+    }
+
+    /**
+     * @param Expression|null $expression
+     * @return Criteria|null
+     */
+    public static function toCriteria(Expression $expression = null): ?Criteria
+    {
+        return $expression ? Criteria::create()->andWhere($expression) : null;
+    }
 
     /**
      * createExpr

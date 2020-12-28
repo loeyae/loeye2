@@ -352,9 +352,9 @@ abstract class Handler extends Resource
      */
     protected function validate($data, $entity, $group = null): ?array
     {
-        if ($entity && $data) {
+        if ($entity) {
             try {
-                $entityObject = Utils::source2entity($data, $entity);
+                $entityObject = Utils::source2entity($data ?? [], $entity);
                 $validator = Validation::createValidator();
                 $violationList = $validator->validate($entityObject, null, $group);
                 if ($violationList->count() > 0) {

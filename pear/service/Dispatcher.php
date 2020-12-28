@@ -166,7 +166,7 @@ class Dispatcher extends \loeye\std\Dispatcher
      */
     protected function parseUrl(): void
     {
-        $requestUrl = filter_input(INPUT_SERVER, 'REQUEST_URI', FILTER_UNSAFE_RAW);
+        $requestUrl = $this->context->getRequest()->getRequestUri();
         $path = null;
         if ($this->rewrite) {
             $router = new UrlManager($this->rewrite);

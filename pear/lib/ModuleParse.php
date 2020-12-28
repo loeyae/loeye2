@@ -27,7 +27,7 @@ use loeye\base\Context;
 class ModuleParse
 {
 
-    public const MAGIC_VAR_REGEX_PATTERN = '/^\$_(GET|POST|REQUEST|SERVER|COOKIE|SESSION|CONST|CONTEXT)\[(.*?)\]$/';
+    public const MAGIC_VAR_REGEX_PATTERN = '/^\$_(GET|POST|REQUEST|SERVER|COOKIE|SESSION|CONST|CONTEXT|ENV|FILES)\[(.*?)\]$/';
     public const MAGIC_FUNC_REGEX_PATTERN = '/^__([a-z]\w*)\[(.*?)\]$/';
     public const CONDITION_KEY = 'if';
     public const PARALLEL_KEY = 'parallel';
@@ -70,20 +70,36 @@ class ModuleParse
                                 $input = constant($const);
                             }
                             break;
-                        case 'REQUEST':
-                            if (isset($_REQUEST[$matchedValue])) {
-                                $input = $_REQUEST[$matchedValue];
-                            }
-                            break;
                         case 'SESSION':
-                            if (isset($_SESSION[$matchedValue])) {
-                                $input = $_SESSION[$matchedValue];
-                            }
+                            $input = $context->getRequest()->getSession()->get($matchedValue);
+                            break;
+                        case 'REQUEST':
+                            $input = $context->getRequest()->getParameter($matchedValue);
+                            break;
+                        case 'GET':
+                            $input = $context->getRequest()->query->get($matchedValue);
+                            break;
+                        case 'POST':
+                            $input = $context->getRequest()->request->get($matchedValue);
+                            break;
+                        case 'COOKIE':
+                            $input = $context->getRequest()->cookies->get($matchedValue);
+                            break;
+                        case 'HEADER':
+                            $input = $context->getRequest()->headers->get($matchedValue);
+                            break;
+                        case 'PATH':
+                            $input = $context->getRequest()->getPathVariable($matchedValue);
+                            break;
+                        case 'ENV':
+                            $input = $context->getRequest()->getEnv($matchedValue);
+                            break;
+                        case 'FILES':
+                            $input = $context->getRequest()->files->get($matchedValue);
                             break;
                         default :
-                            $inputType = 'INPUT_' . $matchedKey;
-                            $input = filter_input(constant($inputType),
-                                $matchedValue, FILTER_SANITIZE_STRING);
+                            $input = $context->getRequest()->server->get($matchedValue) ??
+                                $_SERVER[$matchedValue] ?? null;
                             break;
                     }
                     if (!empty($valueList)) {

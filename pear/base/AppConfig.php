@@ -60,33 +60,14 @@ class AppConfig implements ArrayAccess
      */
     protected function processConfiguration(Configuration $configuration): void
     {
-        $masterConfig = $configuration->getConfig();
         $profile = $configuration->get('profile');
+        $cloneConfig = clone $configuration;
         $deltaConfig = [];
         if ($profile) {
-            $deltaConfig = $configuration->getConfig(null, ['profile' => $profile]) ?? [];
+            $deltaConfig = $cloneConfig->getConfig(null, ['profile' => $profile]) ?? [];
         }
-        $this->_config = $this->mergeConfiguration($masterConfig, $deltaConfig);
-    }
-
-    /**
-     * mergeConfiguration
-     *
-     * @param array $mater
-     * @param array $delta
-     */
-    protected function mergeConfiguration(array $mater, array $delta): array
-    {
-        foreach ($delta as $key => $value) {
-            if ($value) {
-                if (is_array($value) && isset($mater[$key]) && is_array($mater[$key])) {
-                    $mater[$key] = $this->mergeConfiguration($mater[$key], $value);
-                } else {
-                    $mater[$key] = $value;
-                }
-            }
-        }
-        return $mater;
+        $configuration->merge($deltaConfig);
+        $this->_config = $configuration->getConfig();
     }
 
     /**

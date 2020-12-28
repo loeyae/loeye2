@@ -32,7 +32,6 @@ use ReflectionException;
 use Symfony\Component\Cache\Exception\CacheException;
 use Throwable;
 use function loeye\base\ExceptionHandler;
-use const loeye\base\RENDER_TYPE_SEGMENT;
 
 define('LOEYE_PLUGIN_HAS_ERROR', 'lyHasError');
 

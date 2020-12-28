@@ -222,6 +222,50 @@ class Configuration
     }
 
     /**
+     * merge
+     *
+     * @param array $config config settings
+     * @param bool $replace is replace exists key
+     */
+    public function merge(array $config, $replace = false): void
+    {
+        foreach ($config as $key => $value) {
+            if ($value) {
+                if ($replace) {
+                    $this->_config[$key] = $value;
+                } else if (!isset($this->_config[$key]) || $this->_config[$key] === null) {
+                    $this->_config[$key] = $value;
+                } else if (is_array($value) || is_array($this->_config[$key])) {
+                    $this->_config[$key] = $this->mergeConfiguration($this->_config[$key], $value);
+                } else {
+                    $this->_config[$key] = $value;
+                }
+            }
+        }
+    }
+
+    /**
+     * mergeConfiguration
+     *
+     * @param array $mater
+     * @param array $delta
+     * @return array
+     */
+    protected function mergeConfiguration(array $mater, array $delta): array
+    {
+        foreach ($delta as $key => $value) {
+            if ($value) {
+                if (is_array($value) && isset($mater[$key]) && is_array($mater[$key])) {
+                    $mater[$key] = $this->mergeConfiguration($mater[$key], $value);
+                } else {
+                    $mater[$key] = $value;
+                }
+            }
+        }
+        return $mater;
+    }
+
+    /**
      *
      * @return string
      */
