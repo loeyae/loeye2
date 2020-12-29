@@ -54,9 +54,9 @@ class UrlManager extends \loeye\std\Router
         $path = parse_url($url, PHP_URL_PATH) or $path = '/';
         foreach ($this->_rule as $key => $item) {
             if (strpos($key, '#') !== false) {
-                $key = '#' . str_replace('#', '\#', $key);
+                $key = str_replace('#', '\#', $key);
             }
-            $pattern = '#^' . preg_replace('#<([\w-_]+):([^>]+)>#', '(?\'$1\'$2)', $key) . '$#';
+            $pattern = '#^' . preg_replace('#<([\w\-_]+):([^>]+)>#', '(?P<$1>$2)', $key) . '$#';
             $matches = [];
             if (preg_match($pattern, $path, $matches)) {
                 $this->setMatchedRule($item);
@@ -68,7 +68,7 @@ class UrlManager extends \loeye\std\Router
                 if (preg_match_all('({[\w\-_]+})', $item, $iMatches)) {
                     foreach ($iMatches[0] as $match) {
                         $search[] = $match;
-                        $replaceKey[] = mb_substr($match, 1, -1, '7bit');
+                        $replaceKey[] = mb_substr($match, 1, -1);
                     }
                 }
                 if (!empty($replaceKey)) {
