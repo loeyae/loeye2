@@ -112,7 +112,6 @@ class OutputPlugin implements Plugin
             }
         }
         if ($format === RENDER_TYPE_SEGMENT) {
-            $context->getResponse()->setStatusCode($status);
             if (!empty($redirect)) {
                 header('Location: ' . $redirect, true, LOEYE_REST_STATUS_REDIRECT);
             }
