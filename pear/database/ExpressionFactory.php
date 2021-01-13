@@ -156,7 +156,9 @@ class ExpressionFactory {
     {
         $exps = [];
         foreach ($array as $key => $value) {
-            $exps[] = static::createExprByKv($key, $value);
+            if ($value !== null) {
+                $exps[] = static::createExprByKv($key, $value);
+            }
         }
         return $exps;
     }
