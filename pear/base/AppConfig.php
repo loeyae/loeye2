@@ -265,7 +265,7 @@ class AppConfig implements ArrayAccess
      *
      * @return string
      */
-    public function getActiveProfile(): string
+    public function getActiveProfile(): ?string
     {
         return $this->getSetting('profile');
     }

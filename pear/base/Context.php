@@ -107,6 +107,11 @@ class Context implements ArrayAccess
     private $_errorProcessed;
 
     /**
+     * @var bool
+     */
+    private $_isWeb;
+
+    /**
      * __construct
      *
      * @param AppConfig $appConfig application configuration
@@ -445,6 +450,22 @@ class Context implements ArrayAccess
     }
 
     /**
+     * @param bool $isWeb
+     */
+    public function setIsWeb(bool $isWeb): void
+    {
+        $this->_isWeb = $isWeb;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isIsWeb(): bool
+    {
+        return $this->_isWeb;
+    }
+
+    /**
      * getData
      *
      * @return array
@@ -569,7 +590,7 @@ class Context implements ArrayAccess
      */
     public function setRequest(Request $request = null): void
     {
-        $this->_request = $request ?? Factory::request(null);
+        $this->_request = $request;
     }
 
     /**
@@ -579,7 +600,7 @@ class Context implements ArrayAccess
      */
     public function getRequest()
     {
-        return $this->_request;
+        return $this->_request ?? Factory::request(null, $this->_isWeb);
     }
 
     /**
@@ -601,7 +622,7 @@ class Context implements ArrayAccess
      */
     public function getResponse()
     {
-        return $this->_response ?? Factory::response();
+        return $this->_response ?? Factory::response($this->_isWeb);
     }
 
     /**

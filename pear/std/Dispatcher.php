@@ -87,6 +87,11 @@ abstract class Dispatcher
      */
     protected $tracedContextData;
 
+    /**
+     * @var bool
+     */
+    protected $isWeb = true;
+
 
     /**
      * __construct
@@ -98,6 +103,7 @@ abstract class Dispatcher
     public function __construct($processMode = LOEYE_PROCESS_MODE__NORMAL)
     {
         $this->context = new Context();
+        $this->context->setIsWeb($this->isWeb);
         $this->processMode = $processMode;
         if ($this->processMode > LOEYE_PROCESS_MODE__NORMAL) {
             $this->setTraceDataIntoContext(array());

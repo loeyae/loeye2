@@ -458,15 +458,16 @@ EOF;
      *
      * @staticvar \loeye\web\Request $request
      *
-     * @param null $moduleId
+     * @param string|null $moduleId
+     * @param bool $isWeb
      * @return Request
      * @throws LogicException
      */
-    public static function request($moduleId = null): Request
+    public static function request($moduleId = null, $isWeb = true): Request
     {
         static $request = null;
         if (null === $request) {
-            $request = Request::createFromGlobals();
+            $request = $isWeb ? Request::createFromGlobals() : service/Request::createFromGlobals();
         }
         if ($moduleId) {
             $request->setModuleId($moduleId);
@@ -478,13 +479,14 @@ EOF;
      *
      * @staticvar \loeye\web\Response $response
      *
+     * @param bool $isWeb
      * @return Response
      */
-    public static function response(): Response
+    public static function response($isWeb = true): Response
     {
         static $response = null;
         if (null === $response) {
-            $response = Response::createFromRequest();
+            $response = $isWeb ? Response::createFromRequest() : service/Request::createFromGlobals();
         }
         return $response;
     }

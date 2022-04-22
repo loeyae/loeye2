@@ -37,6 +37,8 @@ class Dispatcher extends \loeye\std\Dispatcher
     public const KEY_HANDLER = 'handler';
     public const KEY_REWRITE = 'rewrite';
 
+    protected $isWeb = false;
+
     /**
      * config
      *
@@ -95,6 +97,8 @@ class Dispatcher extends \loeye\std\Dispatcher
             $response->addOutput(
                 ['code' => $exc->getCode(), 'message' => $exc->getMessage()], 'status');
             $response->addOutput($exc->getValidateMessage(), 'data');
+            $this->context->setRequest($request);
+            $this->context->setResponse($response);
         } catch (Throwable $exc) {
             Utils::errorLog($exc);
             $request = ($this->getContext()->getRequest() ?? new Request());
@@ -107,6 +111,8 @@ class Dispatcher extends \loeye\std\Dispatcher
             $response->setStatusMessage('Internal Error');
             $response->addOutput(
                 ['code' => $exc->getCode(), 'message' => $exc->getMessage()], 'status');
+            $this->context->setRequest($request);
+            $this->context->setResponse($response);
         } finally {
             if ($this->processMode > LOEYE_PROCESS_MODE__NORMAL) {
                 $this->setTraceDataIntoContext(array());

@@ -79,7 +79,7 @@ class Request extends \loeye\std\Request
      *
      * @return string
      */
-    public function getServerProtocol(): string
+    public function getServerProtocol(): ?string
     {
         return $this->server->get('SERVER_PROTOCOL');
     }
