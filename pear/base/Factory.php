@@ -24,8 +24,12 @@ use loeye\error\LogicException;
 use loeye\error\ResourceException;
 use loeye\std\Plugin;
 use loeye\std\Render;
-use loeye\web\Request;
-use loeye\web\Response;
+use loeye\std\Request;
+use loeye\std\Response;
+use loeye\web\Request as wRequest;
+use loeye\web\Response as wResponse;
+use loeye\service\Request as sRequest;
+use loeye\service\Response as sResponse;
 use Psr\Cache\InvalidArgumentException;
 use ReflectionClass;
 use ReflectionException;
@@ -467,7 +471,7 @@ EOF;
     {
         static $request = null;
         if (null === $request) {
-            $request = $isWeb ? Request::createFromGlobals() : service/Request::createFromGlobals();
+            $request = $isWeb ? wRequest::createFromGlobals() : sRequest::createFromGlobals();
         }
         if ($moduleId) {
             $request->setModuleId($moduleId);
@@ -486,7 +490,7 @@ EOF;
     {
         static $response = null;
         if (null === $response) {
-            $response = $isWeb ? Response::createFromRequest() : service/Request::createFromGlobals();
+            $response = $isWeb ? wResponse::createFromRequest() : sResponse::createFromGlobals();
         }
         return $response;
     }
