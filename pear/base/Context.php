@@ -791,7 +791,7 @@ class Context implements ArrayAccess
         if ($this->getRequest() instanceof Request && $this->getRequest()->getFormatType()) {
             return $this->getRequest()->getFormatType();
         }
-        $format = $this->get('format', $this->_appConfig->getSetting('application.response.format'));
+        $format = $this->get('format', $this->_appConfig ? $this->_appConfig->getSetting('application.response.format') : RENDER_TYPE_SEGMENT);
         return $format ?? $default;
     }
 
