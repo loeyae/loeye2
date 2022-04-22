@@ -490,7 +490,7 @@ EOF;
     {
         static $response = null;
         if (null === $response) {
-            $response = $isWeb ? wResponse::createFromRequest() : sResponse::createFromGlobals();
+            $response = $isWeb ? wResponse::createFromRequest() : sResponse::createFromRequest();
         }
         return $response;
     }
