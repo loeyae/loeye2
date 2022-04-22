@@ -50,7 +50,9 @@ class Response extends \loeye\std\Response
         if (!empty($contentType)) {
             $this->headers->set('Content-Type', $contentType);
         }
-        $this->output = $data;
+        if (!empty($data)) {
+            $this->output = $data;
+        }
     }
 
 
