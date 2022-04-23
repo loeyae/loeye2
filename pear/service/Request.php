@@ -58,10 +58,11 @@ class Request extends \loeye\std\Request
      */
     public function getContentLength(): int
     {
-        if ($this->content == false || $this->content == null || is_resource($this->content)) {
+        $content = $this->getContent();
+        if ($content == false || $content == null || is_resource($content)) {
             return 0;
         }
-        return strlen($this->content);
+        return strlen($content);
     }
 
     /**
