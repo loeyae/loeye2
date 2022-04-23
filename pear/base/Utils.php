@@ -1200,8 +1200,8 @@ class Utils
             $class = get_class($entity);
             $ignore[] = $class;
             $metadata = $em->getClassMetadata($class);
-            foreach ($metadata->fieldNames as $field) {
-                $r[$field] = self::getReadMethodValue($entity, $field);
+            foreach ($metadata->fieldNames as $column => $field) {
+                $r[$column] = self::getReadMethodValue($entity, $field);
             }
             foreach ($metadata->associationMappings as $key => $association) {
                 $target = $association['targetEntity'];
