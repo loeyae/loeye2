@@ -374,6 +374,25 @@ abstract class Handler extends Resource
     }
 
     /**
+     * valid
+     *
+     * @param $data
+     * @param $ruleKey
+     * @param null $bundler
+     * @throws Exception
+     * @throws ReflectionException
+     * @throws \loeye\error\BusinessException
+     */
+    protected function valid($data, $ruleKey, $bundler = null) {
+        $validation = new Validator($this->context->getAppConfig(), $bundler);
+        $report     = $validation->validate($data, $ruleKey);
+        if ($report['has_error']) {
+            throw new ValidateError($report['error_message']);
+        }
+        return $report['valid_data'];
+    }
+
+    /**
      * getOrderBy
      *
      * @param $req
