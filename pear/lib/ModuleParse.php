@@ -62,7 +62,7 @@ class ModuleParse
                     $input = null;
                     switch ($matchedKey) {
                         case 'CONTEXT':
-                            $input = $context->get($matchedValue);
+                            $input = $context->getWithTrace($matchedValue);
                             break;
                         case 'CONST':
                             $const = $matchedValue;
