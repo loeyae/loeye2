@@ -211,4 +211,15 @@ class FuncLibraries
         return $data;
     }
 
+
+    /**
+     * lyIsAjax
+     *
+     * @param Context $context
+     * @return bool
+     */
+    public static function lyIsAjax(Context $context): bool
+    {
+        return $context->getRequest()->isAjaxRequest;
+    }
 }
