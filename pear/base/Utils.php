@@ -1190,18 +1190,25 @@ class Utils
      * @param EntityManager $em entity manager
      * @param mixed $entity entity
      * @param array $ignore ignore
+     * @param bool $isSql
      * @return mixed
      * @throws ReflectionException
      */
-    public static function entity2array(EntityManager $em, $entity, $ignore = [])
+    public static function entity2array(EntityManager $em, $entity, $ignore = [], $isSql = false)
     {
         if (is_object($entity)) {
             $r = [];
             $class = get_class($entity);
             $ignore[] = $class;
             $metadata = $em->getClassMetadata($class);
-            foreach ($metadata->fieldNames as $column => $field) {
-                $r[$column] = self::getReadMethodValue($entity, $field);
+            if ($isSql) {
+                foreach ($metadata->fieldNames as $column => $field) {
+                    $r[$column] = self::getReadMethodValue($entity, $field);
+                }
+            } else {
+                foreach ($metadata->fieldNames as $field) {
+                    $r[$field] = self::getReadMethodValue($entity, $field);
+                }
             }
             foreach ($metadata->associationMappings as $key => $association) {
                 $target = $association['targetEntity'];

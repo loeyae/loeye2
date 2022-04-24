@@ -62,6 +62,7 @@ class OutputPlugin implements Plugin
         $format     = Utils::getData($inputs, 'format', $context->getFormat( 'json'));
         $data       = array();
         $outDataKey = Utils::getData($inputs, $this->dataKey, null);
+        $convert = Utils::getData($inputs, 'convert', true);
         if ($outDataKey === null) {
             $outDataKey = Utils::getData($inputs, 'data', null);
         }
@@ -84,12 +85,14 @@ class OutputPlugin implements Plugin
                 }
             }
         }
-        if ($data instanceof Entity) {
-            $data = Utils::entity2array(Factory::db()->em(), $data);
-        } elseif ($data instanceof  Paginator) {
-            $data = Utils::paginator2array(Factory::db()->em(), $data);
-        } elseif (is_array($data)) {
-            $data = Utils::entities2array(Factory::db()->em(), $data);
+        if ($convert) {
+            if ($data instanceof Entity) {
+                $data = Utils::entity2array(Factory::db()->em(), $data);
+            } elseif ($data instanceof Paginator) {
+                $data = Utils::paginator2array(Factory::db()->em(), $data);
+            } elseif (is_array($data)) {
+                $data = Utils::entities2array(Factory::db()->em(), $data);
+            }
         }
         $redirect  = null;
         $routerKey = Utils::getData($inputs, 'router_key');
