@@ -62,7 +62,7 @@ class OutputPlugin implements Plugin
         $format     = Utils::getData($inputs, 'format', $context->getFormat( 'json'));
         $data       = array();
         $outDataKey = Utils::getData($inputs, $this->dataKey, null);
-        $convert = Utils::getData($inputs, 'convert', true);
+        $convert    = Utils::getData($inputs, 'convert', true);
         if ($outDataKey === null) {
             $outDataKey = Utils::getData($inputs, 'data', null);
         }
