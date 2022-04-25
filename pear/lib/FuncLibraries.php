@@ -222,4 +222,20 @@ class FuncLibraries
     {
         return $context->getRequest()->isAjaxRequest;
     }
+
+    /**
+     * lyHasMethod
+     *
+     * @param Context $context
+     * @param $methods
+     * @return bool
+     */
+    public static function lyHasMethod(Context $context, $methods = array()): bool
+    {
+        if (empty($methods)) {
+            return false;
+        }
+        $methods = array_map("strtoupper", $methods);
+        return in_array($context->getRequest()->getMethod(), $methods);
+    }
 }

@@ -42,7 +42,9 @@ class ValidateError extends BusinessException
     {
         parent::__construct($errorMessage, $errorCode, $parameter);
         $this->validateMessage = $validateMessage;
-        Logger::trace(implode('\r\n', $this->validateMessage), $errorCode, __FILE__, __LINE__, Logger::LOEYE_LOGGER_TYPE_ERROR);
+        Logger::trace(implode("\r\n", array_map(function ($key, $val) {
+            return $key .'=>'. $val;
+        } , array_keys($validateMessage), $validateMessage)), $errorCode, __FILE__, __LINE__, Logger::LOEYE_LOGGER_TYPE_ERROR);
     }
 
     /**

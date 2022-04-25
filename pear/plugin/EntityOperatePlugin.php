@@ -75,10 +75,10 @@ class EntityOperatePlugin implements Plugin
                 $result = [];
                 if ($loop == true) {
                     foreach ((array)$parameter as $dkey => $param) {
-                        $result[$dkey] = call_user_func_array(array($server, $key), (array)$param);
+                        $result[$dkey] = call_user_func_array(array($server, $key), [$param]);
                     }
                 } else {
-                    $result[0] = call_user_func_array(array($server, $key), (array)$parameter);
+                    $result[0] = call_user_func_array(array($server, $key), [$parameter]);
                 }
                 $result = $this->_filterResult($result);
                 $data = array();
