@@ -189,7 +189,7 @@ class UploadPlugin implements Plugin
             } else {
                 $errorMessage = 'upload base dir not set';
                 throw new Exception(
-                    $errorMessage, Exception::INVALID_PLUGIN_SET_CODE);
+                    $errorMessage, \loeye\error\BusinessException::INVALID_PLUGIN_SET_CODE);
             }
         }
         $this->baseUploadDir = $uploadPath;
@@ -218,11 +218,11 @@ class UploadPlugin implements Plugin
         }
         if (!empty($path)) {
             $uploadPath .= '/' . $path;
-            if (!file_exists($uploadPath) && (mkdir($uploadPath, 0777) || !is_dir($uploadPath))) {
-                $errorMessage = 'mkdir failed';
-                throw new Exception(
-                    $errorMessage, Exception::DEFAULT_ERROR_CODE);
-            }
+        }
+        if (!file_exists($uploadPath) && (mkdir($uploadPath, 0777, true) || !is_dir($uploadPath))) {
+            $errorMessage = 'mkdir failed';
+            throw new Exception(
+                $errorMessage, Exception::DEFAULT_ERROR_CODE);
         }
         return $uploadPath;
     }
