@@ -1268,4 +1268,44 @@ class Utils
             $paginator->getQuery()->getMaxResults(), 'list' => $result];
     }
 
+    /**
+     * mimeType
+     *
+     * @param $file
+     * @return mixed
+     */
+    public static function mimeType($file)
+    {
+        $ext = pathinfo($file, PATHINFO_EXTENSION);
+        switch ($ext) {
+            case 'css':
+                return 'text/css';
+            case 'js':
+                return 'text/javascript';
+            case 'json':
+                return 'application/json';
+            default:
+                $finfo = finfo_open(FILEINFO_MIME);
+                $mimeType = finfo_file($finfo, $file);
+                finfo_close($finfo);
+                return $mimeType;
+        }
+    }
+
+    /**
+     * @param array $data
+     * @param $key
+     * @param null $default
+     * @return array
+     */
+    public static function arrayPop(array $data, $key, $default = null): array
+    {
+        $value = $default;
+        if (array_key_exists($key, $data)) {
+            $value = $data[$key];
+            unset($data[$key]);
+        }
+        return [$data, $value];
+    }
+
 }
