@@ -20,6 +20,7 @@ namespace loeye\plugin;
 use loeye\base\Context;
 use loeye\base\Exception;
 use loeye\base\Utils;
+use loeye\error\BusinessException;
 use loeye\std\Plugin;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
@@ -189,7 +190,7 @@ class UploadPlugin implements Plugin
             } else {
                 $errorMessage = 'upload base dir not set';
                 throw new Exception(
-                    $errorMessage, \loeye\error\BusinessException::INVALID_PLUGIN_SET_CODE);
+                    $errorMessage, BusinessException::INVALID_PLUGIN_SET_CODE);
             }
         }
         $this->baseUploadDir = $uploadPath;
@@ -222,7 +223,7 @@ class UploadPlugin implements Plugin
         if (!file_exists($uploadPath) && (mkdir($uploadPath, 0777, true) || !is_dir($uploadPath))) {
             $errorMessage = 'mkdir failed';
             throw new Exception(
-                $errorMessage, Exception::DEFAULT_ERROR_CODE);
+                $errorMessage, BusinessException::DEFAULT_ERROR_CODE);
         }
         return $uploadPath;
     }
