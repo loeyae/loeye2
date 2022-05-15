@@ -17,6 +17,8 @@
 
 namespace loeye\database;
 
+use Doctrine\Common\Persistence\ObjectRepository;
+use Doctrine\ORM\EntityRepository;
 use loeye\base\AppConfig;
 use loeye\base\DB;
 use loeye\base\Exception;
@@ -83,6 +85,16 @@ class Server
     final public function getEntity(): string
     {
         return $this->entityClass;
+    }
+
+    /**
+     * repository
+     *
+     * @return ObjectRepository|EntityRepository
+     */
+    final public function repository()
+    {
+        return $this->db->repository($this->entityClass);
     }
 
 }
