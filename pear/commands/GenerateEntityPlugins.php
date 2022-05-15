@@ -188,7 +188,7 @@ EOF;
         $refClass = new ReflectionClass($serverClass);
         $methods = $refClass->getMethods();
         foreach ($methods as $method) {
-            if ($method->isConstructor() || $method->isFinal() || $method->isPrivate()) {
+            if ($method->isConstructor() || $method->isFinal() || $method->isPrivate() || $method->isProtected()) {
                 continue;
             }
             $methodName = $method->getName();

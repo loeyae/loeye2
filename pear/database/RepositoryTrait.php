@@ -86,6 +86,33 @@ trait RepositoryTrait
         }
         return $this->db->repository($this->entityClass)->findBy($criteria, $orderBy, $offset, $start);
     }
+    /**
+     * query
+     *
+     * @param $criteria
+     * @param $orderBy
+     * @param $groupBy
+     * @param $having
+     * @param $start
+     * @param $offset
+     * @return array|float|int|string
+     * @throws BusinessException
+     * @throws DAOException
+     * @throws QueryException
+     */
+    public function query($criteria = null, $orderBy = null, $groupBy = null, $having = null, $start = null, $offset = null)
+    {
+        $qb = $this->buildQuery($criteria, $orderBy, $groupBy, $having);
+        $query = $qb->getQuery();
+        if ($start !== null) {
+            $query->setFirstResult($start);
+        }
+        if ($offset !== null) {
+            $query->setMaxResults($offset);
+        }
+
+        return $query->getArrayResult();
+    }
 
     /**
      * page
@@ -108,37 +135,53 @@ trait RepositoryTrait
     {
         if ($query instanceof Query) {
             $query->setFirstResult($start)->setMaxResults($offset);
-        } else if ($query instanceof Criteria) {
-            $qb = $this->db->repository($this->entityClass)->createQueryBuilder(static::$alias);
-            $qb->setFirstResult($start)->setMaxResults($offset);
+        } else {
+            $qb = $this->buildQuery($query, $orderBy, $groupBy, $having);
+            $query = $qb->getQuery();
+            $query->setFirstResult($start);
+            $query->setMaxResults($offset);
+        }
+        return new Paginator($query);
+    }
+
+    /**
+     * buildQuery
+     *
+     * @param $query
+     * @param $orderBy
+     * @param $groupBy
+     * @param $having
+     * @return QueryBuilder
+     * @throws BusinessException
+     * @throws DAOException
+     * @throws QueryException
+     */
+    protected function buildQuery($query, $orderBy = null, $groupBy = null, $having = null): QueryBuilder
+    {
+        $qb = $this->db->repository($this->entityClass)->createQueryBuilder(static::$alias);
+        if ($query instanceof Criteria) {
             $this->parseOrderBy($qb, $orderBy);
             $this->parseGroupBy($qb, $groupBy);
             $this->parseHaving($qb, $having);
             $qb->addCriteria($query)->addSelect(static::$alias);
-            $query = $qb->getQuery();
         } else if (is_array($query)) {
-            $qb = $this->db->repository($this->entityClass)->createQueryBuilder(static::$alias);
             $expr = ExpressionFactory::createExpr($query);
             if ($expr) {
                 $criteria = Criteria::create()->andWhere($expr);
                 $qb->addCriteria($criteria);
             }
-            $qb->setFirstResult($start)->setMaxResults($offset);
             $this->parseOrderBy($qb, $orderBy);
             $this->parseGroupBy($qb, $groupBy);
             $this->parseHaving($qb, $having);
-            $query = $qb->getQuery();
         } else if ($query === null) {
-            $qb = $this->db->repository($this->entityClass)->createQueryBuilder(static::$alias);
-            $qb->addSelect(static::$alias)->setFirstResult($start)->setMaxResults($offset);
+            $qb->addSelect(static::$alias);
             $this->parseOrderBy($qb, $orderBy);
             $this->parseGroupBy($qb, $groupBy);
             $this->parseHaving($qb, $having);
-            $query = $qb->getQuery();
         } else {
             throw new BusinessException(BusinessException::INVALID_PARAMETER_MSG, BusinessException::INVALID_PARAMETER_CODE);
         }
-        return new Paginator($query);
+        return $qb;
     }
 
     /**
